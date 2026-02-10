@@ -5,67 +5,35 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<script type="text/javascript" src="<?php echo base_url();?>darken/shader.js"></script>
 	<title>Login</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<?php include 'esses/notifications.php';?>
 <body>
 	<header>
-		<?php include 'esses/nav.php';?>
 	</header>
 	<main>
-		<div class="ui basic segment">
-			<form class="ui form" enctype="multipart/form-data" id="login_form">
-				<div class="ui column grid centered">
-					<div class="column row centered tablet computed large screen only"></div>
-					<div class="column row centered">
-						<div class="sixteen wide mobile six wide tablet five wide computer six wide large screen column middle">
-							
-							<div class="ui center aligned very padded basic segment">
-								<div class="ui center aligned padded basic segment">
-									<h1 class="ui header center aligned">
-										<a id="page_label">Sign In</a>
-									</h1>
-									<div class="field">
-										<div class="ui right action input tiny fluid">
-											<input type="text" value="" placeholder="Username" name="username" id="username" autocomplete="off">
-											<div class="ui animated button basic mini" tabindex="-1">
-												<div class="hidden content"><small>Username</small></div>
-												<div class="visible content">
-													<i class="lock icon teal"></i>
-												</div>
-											</div>
-										</div>
-								  	</div>
-								  	<div class="field">
-										<div class="ui right action input tiny fluid">
-											<input type="password" value="" placeholder="Password" name="password" id="password" autocomplete="off">
-											<div class="ui animated button basic mini" tabindex="-1">
-												<div class="hidden content"><small>Password</small></div>
-												<div class="visible content">
-													<i class="key icon teal"></i>
-												</div>
-											</div>
-										</div>
-								  	</div>
-								  	<div class="ui horizontal divider">
-									    Or
-								  	</div>
-									<div class="ui center aligned basic segment">
-										<div class="ui header small">
-											<a href="<?php echo base_url();?>i.php/sys_control/user_registration">
-												Apply for Registration
-											</a>	
-										</div>
-								  	</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</form>
+		<div class="container-fluid vh-100 d-flex align-items-center justify-content-center">
+		    <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
+		        <h4 class="text-center mb-4">Login</h4>
+
+		        <form>
+		            <div class="mb-3">
+		                <label class="form-label">Username</label>
+		                <input type="text" class="form-control" placeholder="Enter username">
+		            </div>
+
+		            <div class="mb-3">
+		                <label class="form-label">Password</label>
+		                <input type="password" class="form-control" placeholder="Enter password">
+		            </div>
+
+		            <button type="submit" class="btn btn-primary w-100">
+		                Sign In
+		            </button>
+		        </form>
+		    </div>
 		</div>
 	</main>
 	<footer>
-		<?php include 'esses/footer.php';?>
 	</footer>
 </body>
 <script type="text/javascript">

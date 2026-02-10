@@ -32,14 +32,7 @@ class Sys_control extends CI_Controller
 	}
 	public function login()
 	{
-		$this->load->model('sys_model');
-		if ($this->sys_model->admin_security_check() == TRUE) {
-			session_destroy();	
-			$this->load->view('login');	
-		}
-		else {
-			echo $_SERVER['warning_message'];
-		}
+		$this->load->view('login');	
 	}
 	public function play()
 	{
