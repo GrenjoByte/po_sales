@@ -1,0 +1,12 @@
+{
+  "name": "sirsys-dev",
+  "version": "1.0.0",
+  "main": "i.php",
+  "scripts": {
+  	"start": "browser-sync start --proxy 'http://localhost/SiRSys-dev' --files 'application/**/*.{php,css,js}'"
+  },
+  "keywords": [],
+  "author": "Grenjo",
+  "license": "ISC",
+  "description": ""
+}

@@ -1,0 +1,1 @@
+igcopy la an sulod han "application" ngadto ha application folder tas an "qr_tracker.sql" ig import nala ha qr_tracker database gamit phpmyadmin.
