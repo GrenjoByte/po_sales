@@ -1,0 +1,73 @@
+<style>
+    .spinner-xs {
+        width: 1rem !important;
+        height: 1rem !important;
+        border-width: 0.125rem !important; /* thinner border for small spinner */
+    }
+
+    .spinner-sm {
+        width: 1.5rem !important;
+        height: 1.5rem !important;
+        border-width: 0.2rem !important;
+    }
+
+    .spinner-md {
+        width: 2rem !important;
+        height: 2rem !important;
+        border-width: 0.25rem !important;
+    }
+
+    .spinner-lg {
+        width: 3rem !important;
+        height: 3rem !important;
+        border-width: 0.3rem !important;
+    }
+
+    .spinner-xl {
+        width: 4rem !important;
+        height: 4rem !important;
+        border-width: 0.35rem !important; 
+    }
+</style>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+<script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous">      
+</script>
+<div class="modal fade" tabindex="-1" id="notification_modal">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="notification_title">Notification Title</h5>
+                <button type="button" tabindex="-1" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="d-flex justify-content-center" id="notification_body"></p>
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-grow spinner-lg text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function load_notification(title, message) {
+        const notification_modal = $('#notification_modal');
+
+        notification_modal.find('#notification_title').text(title);
+        notification_modal.find('#notification_body').html(message);
+
+        notification_modal.off('shown.bs.modal').on('shown.bs.modal', function () {
+            $('#login_button').focus();
+        });
+
+        const notification_instance = new bootstrap.Modal(notification_modal[0]);
+        notification_instance.show();
+    }
+
+</script>
