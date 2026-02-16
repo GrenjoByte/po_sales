@@ -31,64 +31,44 @@ class Sys_model extends CI_Model {
 	}
 	public function attempt_login()
 	{
-		$hr_db = $this->load->database('hr_database', TRUE);
-		$sql = "SELECT user_id, last_name, gender, status FROM user_basic_info WHERE username = ?";
-		$query = $hr_db->query($sql, $_POST['username']);
-		foreach ($query->result() as $row) {
- 			$user_id = $row->user_id;
- 			$last_name = $row->last_name;
- 			$gender = $row->gender;
- 			$status = $row->status;
-		}
-		if (isset($user_id) AND ($status == 500 OR $status == 520)) {
-			$sql = "SELECT pass_key FROM user_pass WHERE user_id = ?";
-			$query = $hr_db->query($sql, $user_id);
-			foreach ($query->result() as $row) {
-	 			$user_pass = $row->pass_key;
-			}
-			if (isset($user_pass) AND $user_pass == $_POST['password']) {
-				$_SESSION['534X39a'] = $user_id;
-				$sql = "SELECT designation_key FROM designations WHERE user_id = ?";
-				$query = $hr_db->query($sql, $_SESSION['534X39a']);
-				foreach ($query->result() as $row) {
-		 			$designation_key = $row->designation_key;
-				}
-				if (isset($designation_key)) {
-					$_SESSION['kJaW31i'] = $designation_key;
-				}
-				else {
-					$_SESSION['kJaW31i'] = '000000';
-				}
-				$attempt_response = array(
-			        'last_name' => $last_name, 
-			        'gender' => $gender
-			    );
-			    echo json_encode([$attempt_response]);
-				$_SESSION['login_attempts'] = 0;
-			}
-			else {
-		        $attempt_response = array(
-			        'last_name' => '', 
-			        'gender' => 'failed'
-			    );
-			    echo json_encode([$attempt_response]);
-			}
-		}
-		else if (isset($user_id) AND $status == 400) {
-			$attempt_response = array(
-		        'last_name' => '', 
-		        'gender' => 'unregistered'
-		    );
-		    echo json_encode([$attempt_response]);
-			$_SESSION['login_attempts'] = 0;
-		}
-		else {
-			$attempt_response = array(
-		        'last_name' => '', 
-		        'gender' => 'failed'
-		    );
-		    echo json_encode([$attempt_response]);
-		}
+	    $username = $this->input->post('username', TRUE);
+	    $password = $this->input->post('password', TRUE);
+
+	    $sql = "SELECT user_id, username, password FROM user_accounts WHERE username = ?";
+	    $query = $this->db->query($sql, [$username]);
+	    $row = $query->row();
+
+	    if ($row && $password === $row->password) {
+	        $user_id = $row->user_id;
+
+	        $sql = "SELECT last_name, gender FROM user_info WHERE user_id = ?";
+	        $query = $this->db->query($sql, [$user_id]);
+	        $row = $query->row();
+
+	        if ($row) {
+	            $attempt_response = array(
+	                'status' => 'success',
+	                'last_name' => $row->last_name,
+	                'gender' => $row->gender
+	            );
+	        } else {
+	            $attempt_response = array(
+	                'status' => 'error',
+	                'last_name' => '',
+	                'gender' => 'failed'
+	            );
+	        }
+	    } else {
+	        $attempt_response = array(
+	            'status' => 'error',
+                'last_name' => '',
+	            'gender' => 'Invalid username or password'
+	        );
+	    }
+
+	    // header('Content-Type: application/json');
+	    echo json_encode($attempt_response);
+	    // exit;
 	}
 	public function save_child_profile()
 	{

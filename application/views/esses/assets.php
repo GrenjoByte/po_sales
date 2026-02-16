@@ -46,8 +46,8 @@
             </div>
             <div class="modal-body">
                 <p class="d-flex justify-content-center" id="notification_body"></p>
-                <div class="d-flex justify-content-center">
-                    <div class="spinner-grow spinner-lg text-success" role="status">
+                <div class="d-flex justify-content-center" id="notification_spinner">
+                    <div class="spinner-grow spinner-lg" role="status" id="notification_status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
@@ -56,7 +56,43 @@
     </div>
 </div>
 <script type="text/javascript">
-    function load_notification(title, message) {
+    String.prototype.UCwords = function() {
+        return this.replace(/[\wñÑáéíóúÁÉÍÓÚüÜ]+/g, function(a){ 
+            return a.charAt(0).toUpperCase() + a.slice(1).toLowerCase()
+        })
+    }
+    String.prototype.UCfirst = function() {
+        return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase()
+    }
+    String.prototype.isNumber = function() {
+        return /^\d+$/.test(this);
+    }
+    String.prototype.dateWords = function() {
+        words_date = new Date(this);
+        long_date = words_date.toLocaleDateString('en-us', {year:"numeric", month:"long"})
+        return long_date;
+    }
+    function load_notification(title, message, status) {
+        $('#notification_status').removeClass('text-danger','text-success','text-primary')
+        if (status == 'error') {
+            status_class = 'text-danger';
+        }
+        else if (status == 'success') {
+            status_class = 'text-success';
+        }
+        else if (status == 'neutral') {
+            status_class = 'text-primary';
+        }
+
+        if (status == 'none') {
+            $('#notification_spinner').addClass('d-none');
+        }
+        else {
+            $('#notification_spinner').removeClass('d-none');
+            $('#notification_status').addClass(status_class);
+        }
+
+        
         const notification_modal = $('#notification_modal');
 
         notification_modal.find('#notification_title').text(title);

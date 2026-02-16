@@ -26,6 +26,11 @@ class Sys_control extends CI_Controller
 		
 		// $this->model->grappler();
 	}
+	public function attempt_login()
+	{
+		$this->load->model('sys_model');	
+		$this->sys_model->attempt_login();
+	}
 	public function index()
 	{
 		$this->load->view('index');
