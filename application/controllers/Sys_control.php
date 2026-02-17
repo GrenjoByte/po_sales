@@ -26,11 +26,6 @@ class Sys_control extends CI_Controller
 		
 		// $this->model->grappler();
 	}
-	public function attempt_login()
-	{
-		$this->load->model('sys_model');	
-		$this->sys_model->attempt_login();
-	}
 	public function index()
 	{
 		$this->load->view('index');
@@ -39,9 +34,18 @@ class Sys_control extends CI_Controller
 	{
 		$this->load->view('login');	
 	}
-	public function play()
+	public function attempt_login()
 	{
-		$this->load->view('play');	
+		$this->load->model('sys_model');	
+		$this->sys_model->attempt_login();
+	}
+	public function inventory()
+	{
+		$this->load->view('inventory');	
+	}
+	public function sales()
+	{
+		$this->load->view('sales');	
 	}
 	public function save_child_profile()
 	{

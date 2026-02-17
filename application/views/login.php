@@ -74,20 +74,24 @@
 					else if (gender == 'female') {
 						address_text = 'Ms. '+last_name;
 					}	
-					address_element = `<b class="text-success">${address_text}</b>`;
+					var address_element = `
+					    <span class="text-success fw-semibold">
+					        ${address_text}
+					    </span>
+					`;
 
 					title = "Login Successful";
 					message = `Welcome ${address_element}! Please wait while we redirect you to your page.`;	
 					status = "success";
 					load_notification(title, message, status);
-					// setTimeout(function(){
-				  	// 	window.location.replace('<?php echo base_url();?>i.php/sys_control/play');
-				  	// }, 2500);
+					setTimeout(function(){
+				  		window.location.replace('<?php echo base_url();?>i.php/sys_control/inventory');
+				  	}, 2500);
 				}
-				else if (status == 'failed') {
+				else if (status == 'error') {
 					title = "Login Failed";
 					message = `The login credentials you provided were invalid.`;	
-					status = "failed";
+					status = "error";
 					load_notification(title, message, status);
 				}
 			})

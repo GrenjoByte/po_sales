@@ -28,6 +28,10 @@
         height: 4rem !important;
         border-width: 0.35rem !important; 
     }
+    .text-justified {
+        text-align: justify !important;
+    }
+
 </style>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -45,7 +49,7 @@
                 <button type="button" tabindex="-1" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p class="d-flex justify-content-center" id="notification_body"></p>
+                <p class="text-center" id="notification_body"></p>
                 <div class="d-flex justify-content-center" id="notification_spinner">
                     <div class="spinner-grow spinner-lg" role="status" id="notification_status">
                         <span class="visually-hidden">Loading...</span>
