@@ -1,0 +1,53 @@
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+	<div class="container-fluid">
+		<a class="navbar-brand" data-bs-toggle="offcanvas" href="#inventory_nav" role="button" aria-controls="inventory_nav">Inventory</a>
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#inventory_nav_collapse" aria-controls="inventory_nav_collapse" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="inventory_nav_collapse">
+			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+				<li class="nav-item">
+					<a class="nav-link active" aria-current="page" href="#">Management</a>
+				</li>
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+						Reports
+					</a>
+					<ul class="dropdown-menu">
+						<li><a class="dropdown-item" href="#">All</a></li>
+						<li><a class="dropdown-item" href="#">Restocking</a></li>
+						<li><a class="dropdown-item" href="#">Sales</a></li>
+					</ul>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="#">Logs</a>
+				</li>
+			</ul>
+			<form class="d-flex" role="search">
+				<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
+				<button class="btn btn-outline-success" type="submit">Search</button>
+			</form>
+		</div>
+	</div>
+</nav>
+<div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="inventory_nav" aria-labelledby="inventory_nav_canvas">
+	<div class="offcanvas-header">
+		<h5 class="offcanvas-title" id="inventory_nav_canvas">Inventory Manager</h5>
+		<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+	</div>
+	<div class="offcanvas-body">
+		<div>
+			Some text as placeholder. In real life you can have the elements you have chosen. Like, text, images, lists, etc.
+		</div>
+		<div class="dropdown mt-3">
+			<button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+				Dropdown button
+			</button>
+			<ul class="dropdown-menu">
+				<li><a class="dropdown-item" href="#">Action</a></li>
+				<li><a class="dropdown-item" href="#">Another action</a></li>
+				<li><a class="dropdown-item" href="#">Something else here</a></li>
+			</ul>
+		</div>
+	</div>
+</div>

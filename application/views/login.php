@@ -14,9 +14,9 @@
 </head>
 <body>
 	<header>
+		<?php include 'esses/assets.php';?>
 	</header>
 	<main>
-		<?php include 'esses/assets.php';?>
 		<div class="container-fluid vh-80 d-flex align-items-center justify-content-center">
 		    <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
 		        <h2 class="text-center mb-3">Login</h2>
