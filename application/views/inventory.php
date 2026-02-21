@@ -9,6 +9,7 @@
 	<header>
 		<?php include 'esses/assets.php';?>
 		<?php include 'esses/inventory_nav.html';?>
+		<?php include 'esses/inventory_assets.html';?>
 	</header>
 	<main>
 		<div class="container">
