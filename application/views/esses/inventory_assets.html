@@ -50,26 +50,60 @@
     </div>
 </div>
 <div class="modal fade" id="pos_restocking_cart_modal" tabindex="-1" aria-labelledby="pos_logs_title" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="pos_logs_title">Restocking Cart</h1>
+                <h1 class="modal-title fs-5" id="pos_logs_title">Restocking Cart</h1> 
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <table class="table table-striped table-hover">
-                    <thead>
-                        <th>Mando 1</th>
-                        <th>Mando 2</th>
-                        <th>Mando 3</th>
-                        <th>Mando 4</th>
+                    <thead class="text-center fs-6 fw-normal">
+                        <td>Item Name</td>
+                        <td>Item Code</td>
+                        <td>Price</td>
+                        <td>Quantity</td>
+                        <td>Total</td>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                    <tbody class="text-center fs-6 fw-lighter">
+                        <tr class="position-relative dropdown"data-bs-toggle="dropdown" aria-expanded="false" role="button">
+                            <td>Baby oil</td>
+                            <td>BO-001</td>
+                            <td>₱30.00</td>
+                            <td>5 pieces</td>
+                            <td>₱150.00</td>
+                            <td class="position-absolute z-3 end-0 top-50 translate-middle-y me-3 p-0 border-0">
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#">Modify</a></li>
+                                    <li><a class="dropdown-item text-danger" href="#">Remove</a></li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr class="position-relative dropdown"data-bs-toggle="dropdown" aria-expanded="false" role="button">
+                            <td>Baby oil</td>
+                            <td>BO-001</td>
+                            <td>₱30.00</td>
+                            <td>5 pieces</td>
+                            <td>₱150.00</td>
+                            <td class="position-absolute z-3 end-0 top-50 translate-middle-y me-3 p-0 border-0">
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#">Modify</a></li>
+                                    <li><a class="dropdown-item text-danger" href="#">Remove</a></li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr class="position-relative dropdown"data-bs-toggle="dropdown" aria-expanded="false" role="button">
+                            <td>Baby oil</td>
+                            <td>BO-001</td>
+                            <td>₱30.00</td>
+                            <td>5 pieces</td>
+                            <td>₱150.00</td>
+                            <td class="position-absolute z-3 end-0 top-50 translate-middle-y me-3 p-0 border-0">
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#">Modify</a></li>
+                                    <li><a class="dropdown-item text-danger" href="#">Remove</a></li>
+                                </ul>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
