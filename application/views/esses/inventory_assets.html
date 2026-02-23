@@ -57,52 +57,37 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <table class="table table-striped table-hover">
+                <table class="table table-hover">
                     <thead class="text-center fs-6 fw-normal">
                         <td>Item Name</td>
                         <td>Item Code</td>
                         <td>Price</td>
                         <td>Quantity</td>
+                        <td>Unit</td>
                         <td>Total</td>
                     </thead>
                     <tbody class="text-center fs-6 fw-lighter">
-                        <tr class="position-relative dropdown"data-bs-toggle="dropdown" aria-expanded="false" role="button">
+                        <tr>
                             <td>Baby oil</td>
                             <td>BO-001</td>
                             <td>₱30.00</td>
-                            <td>5 pieces</td>
+                            <td contenteditable="false">5</td>
+                            <td>pieces</td>
                             <td>₱150.00</td>
-                            <td class="position-absolute z-3 end-0 top-50 translate-middle-y me-3 p-0 border-0">
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="#">Modify</a></li>
-                                    <li><a class="dropdown-item text-danger" href="#">Remove</a></li>
-                                </ul>
-                            </td>
-                        </tr>
-                        <tr class="position-relative dropdown"data-bs-toggle="dropdown" aria-expanded="false" role="button">
-                            <td>Baby oil</td>
-                            <td>BO-001</td>
-                            <td>₱30.00</td>
-                            <td>5 pieces</td>
-                            <td>₱150.00</td>
-                            <td class="position-absolute z-3 end-0 top-50 translate-middle-y me-3 p-0 border-0">
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="#">Modify</a></li>
-                                    <li><a class="dropdown-item text-danger" href="#">Remove</a></li>
-                                </ul>
-                            </td>
-                        </tr>
-                        <tr class="position-relative dropdown"data-bs-toggle="dropdown" aria-expanded="false" role="button">
-                            <td>Baby oil</td>
-                            <td>BO-001</td>
-                            <td>₱30.00</td>
-                            <td>5 pieces</td>
-                            <td>₱150.00</td>
-                            <td class="position-absolute z-3 end-0 top-50 translate-middle-y me-3 p-0 border-0">
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="#">Modify</a></li>
-                                    <li><a class="dropdown-item text-danger" href="#">Remove</a></li>
-                                </ul>
+                            <td class="text-end">
+                                <div class="dropdown dropstart">
+                                    <button class="btn btn-sm btn-light"
+                                            type="button"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false">
+                                        ⋮
+                                    </button>
+
+                                    <ul class="dropdown-menu w-auto">
+                                        <li><a class="dropdown-item modify_row" href="#">Modify</a></li>
+                                        <li><a class="dropdown-item text-danger" href="#">Remove</a></li>
+                                    </ul>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -115,3 +100,19 @@
         </div>
     </div>
 </div>
+<script type="text/javascript">
+    $(function () {
+        $(document).on('click', '.modify_row', function (e) {
+            e.preventDefault();
+            var $current_row = $(this).closest('tr');
+
+            var $editable_cells = $current_row.find('td[contenteditable]');
+
+            $editable_cells.attr('contenteditable', 'true');
+
+            if ($editable_cells.length) {
+                $editable_cells.first().focus();
+            }
+        });
+    });
+</script>
