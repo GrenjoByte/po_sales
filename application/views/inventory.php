@@ -22,18 +22,23 @@
 				<div class="col">
 					<div class="card h-100">
 						<div class="card-header d-flex justify-content-center align-items-center" style="height: 120px;">
-							<i class="bi bi-box" style="font-size: 3rem;"></i>
+							<i class="bi bi-box" role="button" style="font-size: 3rem;"></i>
 						</div>
-						<div class="card-body">
-							<figure class="card-title fs-6 fw-light" role="button">
-								<blockquote class="blockquote">
-									<p class="text-truncate overflow-tooltip">Faber-Castell das dasd asd asd asdasd ballpen</p>
-								</blockquote>
-								
-								<figcaption class="blockquote-footer">
-									BO-001
-								</figcaption>
-							</figure>
+						<small class="card-body">
+							<div class="card-title fs-6 text-truncate overflow-tooltip" role="button">
+								Faber-Castell das dasd asd asd asdasd ballpen
+							</div>
+							<small class="card-subtitle text-muted d-block text-truncate">
+								Item Code: BO-001
+							</small>
+						</small>
+						<div class="card-footer">
+							<div class="d-flex justify-content-start align-items-center">
+								<button class="bi bi-dash mx-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
+								<small contenteditable class="px-2">0</small>
+								<button class="bi bi-plus ms-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>	
+								<button class="bi bi-cart-plus ms-auto fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
+							</div>
 						</div>
 					</div>
 				</div>
