@@ -57,42 +57,45 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <table class="table table-hover">
-                    <thead class="text-center fs-6 fw-normal">
-                        <td>Item Name</td>
-                        <td>Item Code</td>
-                        <td>Price</td>
-                        <td>Quantity</td>
-                        <td>Unit</td>
-                        <td>Total</td>
-                    </thead>
-                    <tbody class="text-center fs-6 fw-lighter">
-                        <tr>
-                            <td>Baby oil</td>
-                            <td>BO-001</td>
-                            <td>₱30.00</td>
-                            <td contenteditable="false">5</td>
-                            <td>pieces</td>
-                            <td>₱150.00</td>
-                            <td class="text-end">
-                                <div class="dropdown dropstart">
-                                    <button class="btn btn-sm btn-light"
-                                            type="button"
-                                            data-bs-toggle="dropdown"
-                                            aria-expanded="false">
-                                        ⋮
-                                    </button>
+                <table class="table table-borderless align-middle mb-0">
+                  <tbody>
+                    <!-- Single Cart Item -->
+                    <tr class="align-middle">
+                      <!-- Item (image + name + code) -->
+                      <td class="d-flex align-items-center gap-2" style="min-width:280px;">
+                        <img src="<?php echo base_url();?>photos/pos_images/c2_apple_1l.jpg"
+                        alt="item_image"
+                        class="rounded-circle"
+                        style="width:40px; height:40px; object-fit:cover;">
+                        <div>
+                          <div class="fw-bold text-truncate" style="max-width:280px; font-size:0.85rem;" title="Faber-Castell Ballpen">
+                            Faber-Castell Ballpen
+                        </div>
+                        <small class="text-muted" style="font-size:0.75rem;">BO-001</small>
+                    </div>
+                </td>
 
-                                    <ul class="dropdown-menu w-auto">
-                                        <li><a class="dropdown-item modify_row" href="#">Modify</a></li>
-                                        <li><a class="dropdown-item text-danger" href="#">Remove</a></li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                <!-- Price -->
+                <td class="text-end" style="font-size:0.85rem; width:60px;">
+                    ₱150.00
+                </td>
+
+                <!-- Quantity + Unit -->
+                <td class="d-flex align-items-center gap-1 justify-content-center" style="width:100px;">
+                    <button class="btn btn-outline-secondary btn-sm py-0 px-1" style="font-size:0.75rem;">-</button>
+                    <input type="text" class="form-control form-control-sm text-center" value="2" style="width:40px; font-size:0.75rem; padding:0.125rem;">
+                    <button class="btn btn-outline-secondary btn-sm py-0 px-1" style="font-size:0.75rem;">+</button>
+                    <span style="font-size:0.75rem;">pcs</span>
+                </td>
+
+                <!-- Total -->
+                <td class="fw-bold text-end" style="width:60px; font-size:0.85rem;">
+                    ₱300.00
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
             <!-- <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary">Save changes</button>
