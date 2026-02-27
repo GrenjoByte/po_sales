@@ -29,6 +29,10 @@
 			transform: scale(1);
 		}
 	</style>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 	<header>
@@ -52,9 +56,8 @@
 							alt="product_image"
 							style="aspect-ratio:5/3;object-fit:contain;background-color:#edf1f4;">
 
-							<!-- Dimmer overlay -->
 							<div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center">
-								<small class="btn btn-secondary btn-sm hover-btn" role="button">
+								<small class="btn btn-secondary btn-sm hover-btn pos_item_modifier" role="button">
 									Modify
 								</small>
 							</div>
@@ -86,8 +89,18 @@
 	</main>
 	<footer>
 	</footer>
-</body>
 <script type="text/javascript">
+	$(document).on('click', '.pos_item_modifier', function (e) {
+		e.preventDefault();
+
+		const item_id = $(this).data('id');
+
+		const modal_el = document.getElementById('update_pos_item_modal');
+		const modal_instance = bootstrap.Modal.getOrCreateInstance(modal_el);
+
+		modal_instance.show();
+	});
+
 	$(function() {
 		let current_page = 1;
 		const items_per_page = 15;
@@ -109,7 +122,6 @@
 							pos_item_price = item.pos_item_price;
 							pos_item_stock = item.pos_item_stock;
 							pos_item_unit = item.pos_item_unit;
-
 
 							if (pos_item_stock > 1) {
 								unit_last = pos_item_unit[pos_item_unit.length - 1].toLowerCase();
@@ -134,10 +146,12 @@
 		                                     alt="${item.pos_item_name}" 
 		                                     style="aspect-ratio:5/3;object-fit:contain;background-color:#edf1f4;">
 
-		                                <!-- Dimmer overlay -->
-		                                <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center">
+		                                <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center pos_item_modifier">
 		                                    <small class="btn btn-secondary btn-sm hover-btn" role="button">
 		                                        Modify
+		                                    </small>
+											<small class="btn btn-secondary btn-sm hover-btn" role="button">
+		                                        Barcodes
 		                                    </small>
 		                                </div>
 		                            </div>
@@ -198,4 +212,5 @@
 		});
 	});
 </script>
+</body>
 </html>

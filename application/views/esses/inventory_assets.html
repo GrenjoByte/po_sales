@@ -1,309 +1,369 @@
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-
 <style>
-    .dropdown-menu {
-        min-width: 0 !important; /* removes Bootstrap's default */
-        width: auto !important;  /* ensures it sizes to content */
-    }
+   .dropdown-menu {
+      min-width: 0 !important; /* removes Bootstrap's default */
+      width: auto !important;  /* ensures it sizes to content */
+   }
+   .dropdown-toggle::after {
+      display: none !important;
+   }
 </style>
 <div class="modal fade" id="pos_restocking_report_modal" tabindex="-1" aria-labelledby="pos_restocking_report_title" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="pos_restocking_report_title">Restocking Report</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                ...
-            </div>
-            <!-- <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
-            </div> -->
-        </div>
-    </div>
+   <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h1 class="modal-title fs-5" id="pos_restocking_report_title">Restocking Report</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            ...
+         </div>
+      </div>
+   </div>
 </div>
 <div class="modal fade" id="pos_sales_report_modal" tabindex="-1" aria-labelledby="pos_sales_report_title" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="pos_sales_report_title">Sales Report</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                ...
-            </div>
-            <!-- <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
-            </div> -->
-        </div>
-    </div>
+   <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h1 class="modal-title fs-5" id="pos_sales_report_title">Sales Report</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            ...
+         </div>
+      </div>
+   </div>
 </div>
 <div class="modal fade" id="pos_logs_modal" tabindex="-1" aria-labelledby="pos_logs_title" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="pos_logs_title">Sales Logs</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                ...
-            </div>
-            <!-- <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
-            </div> -->
-        </div>
-    </div>
+   <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h1 class="modal-title fs-5" id="pos_logs_title">Sales Logs</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            ...
+         </div>
+      </div>
+   </div>
 </div>
 <div class="modal fade" id="pos_restocking_cart_modal" tabindex="-1" aria-labelledby="pos_logs_title" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="pos_logs_title">Restocking Cart</h1> 
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <table class="table align-middle mb-0">
-                    <tbody>
-                        <tr class="text-center">
-                            <td class="text-start">
-                                <div class="d-flex align-items-center">
-                                    <img src="<?php echo base_url();?>photos/pos_images/c2_apple_1l.jpg"
-                                    alt="Item Image"
-                                    class="rounded-circle me-3"
-                                    width="40"
-                                    height="40">
+   <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h1 class="modal-title fs-5" id="pos_logs_title">Restocking Cart</h1> 
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <table class="table align-middle mb-0">
+               <tbody>
+                  <tr class="text-center">
+                     <td class="text-start">
+                        <div class="d-flex align-items-center">
+                           <img src="<?php echo base_url();?>photos/pos_images/c2_apple_1l.jpg"
+                           alt="Item Image"
+                           class="rounded-circle me-3"
+                           width="40"
+                           height="40">
 
-                                    <div>
-                                        <div class="fw-semibold d-block text-truncate overflow-tooltip">Premium Coffee Beans</div>
-                                        <small class="text-muted">Code: CFB-001</small>
-                                    </div>
-                                </div>
-                            </td>
+                           <div>
+                              <div class="fw-semibold d-block text-truncate overflow-tooltip">Premium Coffee Beans</div>
+                              <small class="text-muted">Code: CFB-001</small>
+                           </div>
+                        </div>
+                     </td>
 
-                            <td>₱350.00</td>
-                            <td>x</td>
-                            <td contenteditable="false">2</td>
-                            <td class="text-start">Packs</td>
-                            <td>=</td>
-                            <td class="fw-semibold">₱700.00</td>
-                            <td class="text-end">
-                                <div class="dropdown dropstart">
-                                    <button class="btn btn-sm btn-light"
-                                    type="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                    ⋮
-                                    </button>
-                                    <ul class="dropdown-menu w-auto">
-                                        <li><a class="dropdown-item modify_row" href="#">Modify</a></li>
-                                        <li><a class="dropdown-item text-danger remove_row" href="#">Remove</a></li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <!-- <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
-            </div> -->
-        </div>
-    </div>
+                     <td>₱350.00</td>
+                     <td>x</td>
+                     <td contenteditable="false">2</td>
+                     <td class="text-start">Packs</td>
+                     <td>=</td>
+                     <td class="fw-semibold">₱700.00</td>
+                     <td class="text-end">
+                        <div class="dropdown dropstart">
+                           <button class="btn btn-sm btn-light"
+                           type="button"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                           ⋮
+                        </button>
+                        <ul class="dropdown-menu w-auto">
+                           <li><a class="dropdown-item modify_row" href="#">Modify</a></li>
+                           <li><a class="dropdown-item text-danger remove_row" href="#">Remove</a></li>
+                        </ul>
+                     </div>
+                  </td>
+               </tr>
+            </tbody>
+         </table>
+      </div>
+   </div>
 </div>
-<div class="modal fade" id="pos_new_item_modal" tabindex="-1" aria-labelledby="pos_new_item_title" aria-hidden="true">
-    <div class="modal-dialog modal-sm modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="pos_new_item_title">New Item</h1> 
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="container-sm">
-                    <form id="pos_item_form" enctype="multipart/form-data">
-                        <div class="mb-2">
-                            <label for="pos_item_name" class="form-label">Item Name</label>
-                            <input type="text" class="form-control form-control-sm" 
-                            id="pos_item_name" 
-                            name="pos_item_name" 
-                            maxlength="200" 
-                            placeholder="e.g. Coca-Cola 1.5L" 
-                            required>
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="pos_item_code" class="form-label">Item Code</label>
-                            <input type="text" class="form-control form-control-sm" 
-                            id="pos_item_code" 
-                            name="pos_item_code" 
-                            maxlength="50" 
-                            placeholder="e.g. COKE-15L" 
-                            required>
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="pos_item_image" class="form-label">Item Image</label>
-                            <input type="file" 
-                            class="form-control form-control-sm" 
-                            id="pos_item_image" 
-                            name="pos_item_image" 
-                            accept="image/*">
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="pos_item_price" class="form-label">Price</label>
-                            <input type="number" 
-                            class="form-control form-control-sm" 
-                            id="pos_item_price" 
-                            name="pos_item_price" 
-                            step="0.01" 
-                            placeholder="e.g. 89.75" 
-                            required>
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="pos_item_stock" class="form-label">Stock</label>
-                            <input type="number" 
-                            class="form-control form-control-sm" 
-                            id="pos_item_stock" 
-                            name="pos_item_stock" 
-                            placeholder="e.g. 120" 
-                            required>
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="pos_item_unit" class="form-label">Unit</label>
-                            <input type="text" 
-                            class="form-control form-control-sm" 
-                            id="pos_item_unit" 
-                            name="pos_item_unit" 
-                            maxlength="10" 
-                            placeholder="e.g. pcs" 
-                            required>
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="pos_item_low" class="form-label">Low Stock Threshold</label>
-                            <input type="number" 
-                            class="form-control form-control-sm" 
-                            id="pos_item_low" 
-                            name="pos_item_low" 
-                            placeholder="e.g. 10" 
-                            required>
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="pos_item_status" class="form-label">Status</label>
-                            <select class="form-select" id="pos_item_status" name="pos_item_status" required>
-                                <option value="1" selected>Active</option>
-                                <option value="0">Inactive</option>
-                            </select>
-                        </div>
-
-                        <button type="submit" class="mt-3 btn btn-primary">Create Item</button>
-                    </form>
-                </div>
-            </div>
-            <!-- <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
-            </div> -->
-        </div>
-    </div>
 </div>
-<!-- Include Bootstrap 5.3 CSS and JS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<div class="modal fade" id="new_pos_item_modal" tabindex="-1" aria-labelledby="new_pos_item_title" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h1 class="modal-title fs-5" id="new_pos_item_title">New Item</h1> 
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <div class="container-sm">
+               <form id="pos_item_form" enctype="multipart/form-data">
+                  <div class="mb-2">
+                     <label for="new_pos_item_name" class="form-label">Item Name</label>
+                     <input type="text" class="form-control form-control-sm" 
+                     id="new_pos_item_name" 
+                     name="new_pos_item_name" 
+                     maxlength="200" 
+                     placeholder="e.g. Coca-Cola 1.5L" 
+                     required>
+                  </div>
+
+                  <div class="mb-2">
+                     <label for="new_pos_item_code" class="form-label">Item Code</label>
+                     <input type="text" class="form-control form-control-sm" 
+                     id="new_pos_item_code" 
+                     name="new_pos_item_code" 
+                     maxlength="50" 
+                     placeholder="e.g. COKE-15L" 
+                     required>
+                  </div>
+
+                  <div class="mb-2">
+                     <label for="new_pos_item_image" class="form-label">Item Image</label>
+                     <input type="file" 
+                     class="form-control form-control-sm" 
+                     id="new_pos_item_image" 
+                     name="new_pos_item_image" 
+                     accept="image/*">
+                  </div>
+
+                  <div class="mb-2">
+                     <label for="new_pos_item_price" class="form-label">Price</label>
+                     <input type="number" 
+                     class="form-control form-control-sm" 
+                     id="new_pos_item_price" 
+                     name="new_pos_item_price" 
+                     step="0.01" 
+                     placeholder="Price per unit" 
+                     required>
+                  </div>
+
+                  <div class="mb-2">
+                     <label for="new_pos_item_stock" class="form-label">Stock</label>
+                     <input type="number" 
+                     class="form-control form-control-sm" 
+                     id="new_pos_item_stock" 
+                     name="new_pos_item_stock" 
+                     placeholder="Current stock" 
+                     required>
+                  </div>
+
+                  <div class="mb-2">
+                     <label for="new_pos_item_unit" class="form-label">Unit</label>
+                     <input type="text" 
+                     class="form-control form-control-sm" 
+                     id="new_pos_item_unit" 
+                     name="new_pos_item_unit" 
+                     maxlength="10" 
+                     placeholder="e.g. pcs" 
+                     required>
+                  </div>
+
+                  <div class="mb-2">
+                     <label for="new_pos_item_low" class="form-label">Low Stock Threshold</label>
+                     <input type="number" 
+                     class="form-control form-control-sm" 
+                     id="new_pos_item_low" 
+                     name="new_pos_item_low" 
+                     placeholder="Low stock level" 
+                     required>
+                  </div>
+               </form>
+            </div>
+         </div>
+         <div class="modal-footer">
+            <button type="submit" form="pos_item_form" class="btn btn-primary">Create Item</button>
+         </div>
+      </div>
+   </div>
+</div>
+
+<div class="modal fade" id="update_pos_item_modal" tabindex="-1" aria-labelledby="update_pos_item_title" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h1 class="modal-title fs-5" id="update_pos_item_title">Update Item</h1> 
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <div class="container-sm">
+               <form id="pos_item_form" enctype="multipart/form-data">
+                  <div class="mb-2">
+                     <label for="update_pos_item_name" class="form-label">Item Name</label>
+                     <input type="text" class="form-control form-control-sm" 
+                     id="update_pos_item_name" 
+                     name="update_pos_item_name" 
+                     maxlength="200" 
+                     placeholder="e.g. Coca-Cola 1.5L" 
+                     required>
+                  </div>
+
+                  <div class="mb-2">
+                     <label for="update_pos_item_code" class="form-label">Item Code</label>
+                     <input type="text" class="form-control form-control-sm" 
+                     id="update_pos_item_code" 
+                     name="update_pos_item_code" 
+                     maxlength="50" 
+                     placeholder="e.g. COKE-15L" 
+                     required>
+                  </div>
+
+                  <div class="mb-2">
+                     <label for="update_pos_item_image" class="form-label">Item Image</label>
+                     <input type="file" 
+                     class="form-control form-control-sm" 
+                     id="update_pos_item_image" 
+                     name="update_pos_item_image" 
+                     accept="image/*">
+                  </div>
+
+                  <div class="mb-2">
+                     <label for="update_pos_item_price" class="form-label">Price</label>
+                     <input type="number" 
+                     class="form-control form-control-sm" 
+                     id="update_pos_item_price" 
+                     name="update_pos_item_price" 
+                     step="0.01" 
+                     placeholder="Price per unit" 
+                     required>
+                  </div>
+
+                  <div class="mb-2">
+                     <label for="update_pos_item_stock" class="form-label">Stock</label>
+                     <input type="number" 
+                     class="form-control form-control-sm" 
+                     id="update_pos_item_stock" 
+                     name="update_pos_item_stock" 
+                     placeholder="Current stock" 
+                     required>
+                  </div>
+
+                  <div class="mb-2">
+                     <label for="update_pos_item_unit" class="form-label">Unit</label>
+                     <input type="text" 
+                     class="form-control form-control-sm" 
+                     id="update_pos_item_unit" 
+                     name="update_pos_item_unit" 
+                     maxlength="10" 
+                     placeholder="e.g. pcs" 
+                     required>
+                  </div>
+
+                  <div class="mb-2">
+                     <label for="update_pos_item_low" class="form-label">Low Stock Threshold</label>
+                     <input type="number" 
+                     class="form-control form-control-sm" 
+                     id="update_pos_item_low" 
+                     name="update_pos_item_low" 
+                     placeholder="Low stock level" 
+                     required>
+                  </div>
+               </form>
+            </div>
+         </div>
+         <div class="modal-footer">
+            <button type="submit" form="pos_item_form" class="btn btn-primary">Create Item</button>
+         </div>
+      </div>
+   </div>
+</div>
 
 <div class="dropup position-fixed bottom-0 end-0 m-4">
-    <button class="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center dropdown-toggle"
-          type="button"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-          style="width: 40px; height: 40px;">
-          +
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end w-auto">
-        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#pos_new_item_modal" href="#">New Item</a></li>
-        <li><a class="dropdown-item" href="#">Action 2</a></li>
-        <li><a class="dropdown-item" href="#">Action 3</a></li>
-    </ul>
+   <button type="button"
+      class="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-expanded="false"
+      style="width: 48px; height: 48px;">
+
+      <i class="bi bi-grid fs-5"></i>
+   </button>
+
+   <ul class="dropdown-menu dropdown-menu-end w-auto">
+      <li>
+         <button type="button"
+            class="dropdown-item"
+            data-bs-toggle="modal"
+            data-bs-target="#new_pos_item_modal">
+            New Item
+         </button>
+      </li>
+   </ul>
 </div>
 <script type="text/javascript">
-    $(document).ready(function(){
-        $('#posItemForm').on('submit', function(e){
-            e.preventDefault();
-
-            var formData = new FormData(this);
-
-            $.ajax({
-                url: 'path_to_your_php_handler.php', // replace with your PHP handler
-                type: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function(response){
-                // handle success
-                    alert('Item created successfully!');
-                    $('#posItemForm')[0].reset();
-                },
-                error: function(xhr, status, error){
-                // handle error
-                    alert('Error: ' + xhr.responseText);
-                }
-            });
-        });
-    });
-    $(function () {
-        $('.overflow-tooltip').each(function () {
-            var $el = $(this);
-        // check if content is actually overflowing
-            if (this.scrollWidth > this.clientWidth) {
-                var full_text = $el.text().trim();
-
-                $el.attr('title', full_text)
-                .attr('data-bs-toggle', 'tooltip')
-                .attr('data-bs-placement', 'top');
-
-                new bootstrap.Tooltip(this);
+   $(document).ready(function(){
+      $('#posItemForm').on('submit', function(e){
+         e.preventDefault();
+         var formData = new FormData(this);
+         $.ajax({
+            url: 'path_to_your_php_handler.php',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response){
+               alert('Item created successfully!');
+               $('#posItemForm')[0].reset();
+            },
+            error: function(xhr, status, error){
+               alert('Error: ' + xhr.responseText);
             }
-        });
-    });
+         });
+      });
+   });
+   $(function () {
+      $('.overflow-tooltip').each(function () {
+         var $el = $(this);
+         if (this.scrollWidth > this.clientWidth) {
+            var full_text = $el.text().trim();
 
-    $(function () {
-        $(document).on('click', '.modify_row', function (e) {
-            e.preventDefault();
-            var $current_row = $(this).closest('tr');
+            $el.attr('title', full_text)
+            .attr('data-bs-toggle', 'tooltip')
+            .attr('data-bs-placement', 'top');
 
-            var $editable_cells = $current_row.find('td[contenteditable]');
+            new bootstrap.Tooltip(this);
+         }
+      });
+   });
 
-            $editable_cells.attr('contenteditable', 'true');
+   $(function () {
+      $(document).on('click', '.modify_row', function (e) {
+         e.preventDefault();
+         var $current_row = $(this).closest('tr');
 
-            if ($editable_cells.length) {
-                $editable_cells.first().focus();
-            }
-        });
-    });
+         var $editable_cells = $current_row.find('td[contenteditable]');
 
-    $(function () {
-        $(document).on('blur', 'td[contenteditable="true"]', function () {
-            $(this).attr('contenteditable', 'false');
-        });
-    });
+         $editable_cells.attr('contenteditable', 'true');
 
-    $(function () {
-        $(document).on('click', '.remove_row', function (e) {
-            e.preventDefault();
+         if ($editable_cells.length) {
+            $editable_cells.first().focus();
+         }
+      });
+   });
 
-            if (!confirm('Remove this item?')) return;
+   $(function () {
+      $(document).on('blur', 'td[contenteditable="true"]', function () {
+         $(this).attr('contenteditable', 'false');
+      });
+   });
 
-            $(this).closest('tr').remove();
-        });
-    });
+   $(function () {
+      $(document).on('click', '.remove_row', function (e) {
+         e.preventDefault();
+
+         if (!confirm('Remove this item?')) return;
+
+         $(this).closest('tr').remove();
+      });
+   });
 </script>
