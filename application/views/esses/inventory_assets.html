@@ -1,3 +1,13 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+<style>
+    .dropdown-menu {
+        min-width: 0 !important; /* removes Bootstrap's default */
+        width: auto !important;  /* ensures it sizes to content */
+    }
+</style>
 <div class="modal fade" id="pos_restocking_report_modal" tabindex="-1" aria-labelledby="pos_restocking_report_title" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
@@ -57,45 +67,48 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <table class="table table-borderless align-middle mb-0">
-                  <tbody>
-                    <!-- Single Cart Item -->
-                    <tr class="align-middle">
-                      <!-- Item (image + name + code) -->
-                      <td class="d-flex align-items-center gap-2" style="min-width:280px;">
-                        <img src="<?php echo base_url();?>photos/pos_images/c2_apple_1l.jpg"
-                        alt="item_image"
-                        class="rounded-circle"
-                        style="width:40px; height:40px; object-fit:cover;">
-                        <div>
-                          <div class="fw-bold text-truncate" style="max-width:280px; font-size:0.85rem;" title="Faber-Castell Ballpen">
-                            Faber-Castell Ballpen
-                        </div>
-                        <small class="text-muted" style="font-size:0.75rem;">BO-001</small>
-                    </div>
-                </td>
+                <table class="table align-middle mb-0">
+                    <tbody>
+                        <tr class="text-center">
+                            <td class="text-start">
+                                <div class="d-flex align-items-center">
+                                    <img src="<?php echo base_url();?>photos/pos_images/c2_apple_1l.jpg"
+                                    alt="Item Image"
+                                    class="rounded-circle me-3"
+                                    width="40"
+                                    height="40">
 
-                <!-- Price -->
-                <td class="text-end" style="font-size:0.85rem; width:60px;">
-                    ₱150.00
-                </td>
+                                    <div>
+                                        <div class="fw-semibold d-block text-truncate overflow-tooltip">Premium Coffee Beans</div>
+                                        <small class="text-muted">Code: CFB-001</small>
+                                    </div>
+                                </div>
+                            </td>
 
-                <!-- Quantity + Unit -->
-                <td class="d-flex align-items-center gap-1 justify-content-center" style="width:100px;">
-                    <button class="btn btn-outline-secondary btn-sm py-0 px-1" style="font-size:0.75rem;">-</button>
-                    <input type="text" class="form-control form-control-sm text-center" value="2" style="width:40px; font-size:0.75rem; padding:0.125rem;">
-                    <button class="btn btn-outline-secondary btn-sm py-0 px-1" style="font-size:0.75rem;">+</button>
-                    <span style="font-size:0.75rem;">pcs</span>
-                </td>
-
-                <!-- Total -->
-                <td class="fw-bold text-end" style="width:60px; font-size:0.85rem;">
-                    ₱300.00
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+                            <td>₱350.00</td>
+                            <td>x</td>
+                            <td contenteditable="false">2</td>
+                            <td class="text-start">Packs</td>
+                            <td>=</td>
+                            <td class="fw-semibold">₱700.00</td>
+                            <td class="text-end">
+                                <div class="dropdown dropstart">
+                                    <button class="btn btn-sm btn-light"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    ⋮
+                                    </button>
+                                    <ul class="dropdown-menu w-auto">
+                                        <li><a class="dropdown-item modify_row" href="#">Modify</a></li>
+                                        <li><a class="dropdown-item text-danger remove_row" href="#">Remove</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             <!-- <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary">Save changes</button>
@@ -103,7 +116,166 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="pos_new_item_modal" tabindex="-1" aria-labelledby="pos_new_item_title" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="pos_new_item_title">New Item</h1> 
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-sm">
+                    <form id="pos_item_form" enctype="multipart/form-data">
+                        <div class="mb-2">
+                            <label for="pos_item_name" class="form-label">Item Name</label>
+                            <input type="text" class="form-control form-control-sm" 
+                            id="pos_item_name" 
+                            name="pos_item_name" 
+                            maxlength="200" 
+                            placeholder="e.g. Coca-Cola 1.5L" 
+                            required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="pos_item_code" class="form-label">Item Code</label>
+                            <input type="text" class="form-control form-control-sm" 
+                            id="pos_item_code" 
+                            name="pos_item_code" 
+                            maxlength="50" 
+                            placeholder="e.g. COKE-15L" 
+                            required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="pos_item_image" class="form-label">Item Image</label>
+                            <input type="file" 
+                            class="form-control form-control-sm" 
+                            id="pos_item_image" 
+                            name="pos_item_image" 
+                            accept="image/*">
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="pos_item_price" class="form-label">Price</label>
+                            <input type="number" 
+                            class="form-control form-control-sm" 
+                            id="pos_item_price" 
+                            name="pos_item_price" 
+                            step="0.01" 
+                            placeholder="e.g. 89.75" 
+                            required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="pos_item_stock" class="form-label">Stock</label>
+                            <input type="number" 
+                            class="form-control form-control-sm" 
+                            id="pos_item_stock" 
+                            name="pos_item_stock" 
+                            placeholder="e.g. 120" 
+                            required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="pos_item_unit" class="form-label">Unit</label>
+                            <input type="text" 
+                            class="form-control form-control-sm" 
+                            id="pos_item_unit" 
+                            name="pos_item_unit" 
+                            maxlength="10" 
+                            placeholder="e.g. pcs" 
+                            required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="pos_item_low" class="form-label">Low Stock Threshold</label>
+                            <input type="number" 
+                            class="form-control form-control-sm" 
+                            id="pos_item_low" 
+                            name="pos_item_low" 
+                            placeholder="e.g. 10" 
+                            required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="pos_item_status" class="form-label">Status</label>
+                            <select class="form-select" id="pos_item_status" name="pos_item_status" required>
+                                <option value="1" selected>Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="mt-3 btn btn-primary">Create Item</button>
+                    </form>
+                </div>
+            </div>
+            <!-- <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div> -->
+        </div>
+    </div>
+</div>
+<!-- Include Bootstrap 5.3 CSS and JS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<div class="dropup position-fixed bottom-0 end-0 m-4">
+    <button class="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center dropdown-toggle"
+          type="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          style="width: 40px; height: 40px;">
+          +
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end w-auto">
+        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#pos_new_item_modal" href="#">New Item</a></li>
+        <li><a class="dropdown-item" href="#">Action 2</a></li>
+        <li><a class="dropdown-item" href="#">Action 3</a></li>
+    </ul>
+</div>
 <script type="text/javascript">
+    $(document).ready(function(){
+        $('#posItemForm').on('submit', function(e){
+            e.preventDefault();
+
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: 'path_to_your_php_handler.php', // replace with your PHP handler
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response){
+                // handle success
+                    alert('Item created successfully!');
+                    $('#posItemForm')[0].reset();
+                },
+                error: function(xhr, status, error){
+                // handle error
+                    alert('Error: ' + xhr.responseText);
+                }
+            });
+        });
+    });
+    $(function () {
+        $('.overflow-tooltip').each(function () {
+            var $el = $(this);
+        // check if content is actually overflowing
+            if (this.scrollWidth > this.clientWidth) {
+                var full_text = $el.text().trim();
+
+                $el.attr('title', full_text)
+                .attr('data-bs-toggle', 'tooltip')
+                .attr('data-bs-placement', 'top');
+
+                new bootstrap.Tooltip(this);
+            }
+        });
+    });
+
     $(function () {
         $(document).on('click', '.modify_row', function (e) {
             e.preventDefault();
@@ -116,6 +288,22 @@
             if ($editable_cells.length) {
                 $editable_cells.first().focus();
             }
+        });
+    });
+
+    $(function () {
+        $(document).on('blur', 'td[contenteditable="true"]', function () {
+            $(this).attr('contenteditable', 'false');
+        });
+    });
+
+    $(function () {
+        $(document).on('click', '.remove_row', function (e) {
+            e.preventDefault();
+
+            if (!confirm('Remove this item?')) return;
+
+            $(this).closest('tr').remove();
         });
     });
 </script>

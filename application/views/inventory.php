@@ -44,7 +44,7 @@
 		</div>
 		<div class="container mt-4">
 			<div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4" id="pos_item_cards_container">
-				<div class="col">
+				<div class="col" id="item_cards">
 					<div class="card h-100">
 						<div class="position-relative img-hover-wrapper">
 							<img src="<?php echo base_url();?>photos/pos_images/c2_apple_1l.jpg"
@@ -88,22 +88,114 @@
 	</footer>
 </body>
 <script type="text/javascript">
-$(function () {
+	$(function() {
+		let current_page = 1;
+		const items_per_page = 15;
 
-    $('.overflow-tooltip').each(function () {
-        var $el = $(this);
-        // check if content is actually overflowing
-        if (this.scrollWidth > this.clientWidth) {
-            var full_text = $el.text().trim();
+		function load_items(page = 1) {
+			$.ajax({
+				url: '<?php echo base_url();?>i.php/sys_control/load_pos_inventory',
+				method: 'POST',
+				data: { page: page, limit: items_per_page },
+				dataType: 'json',
+				success: function(response) {
+					const $container = $('#item_cards');
+					$container.empty();
 
-            $el.attr('title', full_text)
-               .attr('data-bs-toggle', 'tooltip')
-               .attr('data-bs-placement', 'top');
+					if (response.items && response.items.length) {
+						response.items.forEach(item => {
+							pos_item_id = item.pos_item_id;
+							pos_item_name = item.pos_item_name;
+							pos_item_price = item.pos_item_price;
+							pos_item_stock = item.pos_item_stock;
+							pos_item_unit = item.pos_item_unit;
 
-            new bootstrap.Tooltip(this);
-        }
-    });
 
-});
+							if (pos_item_stock > 1) {
+								unit_last = pos_item_unit[pos_item_unit.length - 1].toLowerCase();
+
+								if (
+									unit_last == 's' ||
+									unit_last == 'h' && pos_item_unit.endsWith('sh') ||
+									unit_last == 'h' && pos_item_unit.endsWith('ch') ||
+									unit_last == 'x' ||
+									unit_last == 'z'
+									) {
+									pos_item_unit = pos_item_unit + 'es';
+								} else {
+									pos_item_unit = pos_item_unit + 's';
+								}
+							}
+							const card_html = `
+		                        <div class="card h-100">
+		                            <div class="position-relative img-hover-wrapper">
+		                                <img src="<?php echo base_url();?>photos/pos_images/${item.pos_item_image}" 
+		                                     class="card-img-top" 
+		                                     alt="${item.pos_item_name}" 
+		                                     style="aspect-ratio:5/3;object-fit:contain;background-color:#edf1f4;">
+
+		                                <!-- Dimmer overlay -->
+		                                <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center">
+		                                    <small class="btn btn-secondary btn-sm hover-btn" role="button">
+		                                        Modify
+		                                    </small>
+		                                </div>
+		                            </div>
+		                            <small class="card-body">
+		                                <div class="card-title fs-6 text-truncate overflow-tooltip" role="button">
+		                                    ${item.pos_item_name}
+		                                </div>
+										<small class="card-subtitle text-muted d-block text-truncate">
+		                                    ${item.pos_item_code}
+		                                </small>
+		                                <div class="d-flex fs-6 mt-1 fw-semibold align-items-center gap-1">
+		                                    <span>${item.pos_item_stock}</span>
+		                                    <span>${item.pos_item_unit}</span>
+		                                </div>
+		                            </small>
+		                            <div class="card-footer">
+		                                <div class="d-flex justify-content-start align-items-center">
+		                                    <button class="bi bi-dash mx-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
+		                                    <small contenteditable class="px-2">0</small>
+		                                    <button class="bi bi-plus ms-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>    
+		                                    <button class="bi bi-cart-plus ms-auto fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
+		                                </div>
+		                            </div>
+								</div>`
+							;
+							$container.append(card_html);
+						});
+					} else {
+						$container.html('<p class="text-center">No items found.</p>');
+					}
+
+            // Update page info
+					const total_pages = Math.ceil(response.total / items_per_page);
+					$('#page_info').text(`Page ${page} of ${total_pages}`);
+
+            // Disable buttons if needed
+					$('#prev_page').prop('disabled', page <= 1);
+					$('#next_page').prop('disabled', page >= total_pages);
+				},
+				error: function() {
+					$('#item_cards').html('<p class="text-center text-danger">Failed to load items.</p>');
+				}
+			});
+		}
+
+		load_items(current_page);
+
+		$('#prev_page').click(function() {
+			if (current_page > 1) {
+				current_page--;
+				load_items(current_page);
+			}
+		});
+
+		$('#next_page').click(function() {
+			current_page++;
+			load_items(current_page);
+		});
+	});
 </script>
 </html>

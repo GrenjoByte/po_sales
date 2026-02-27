@@ -70,6 +70,46 @@ class Sys_model extends CI_Model {
 	    echo json_encode($attempt_response);
 	    // exit;
 	}
+	public function load_pos_inventory()
+	{
+		$page = isset($_POST['page']) ? (int)$_POST['page'] : 1;
+		$limit = isset($_POST['limit']) ? (int)$_POST['limit'] : 15;
+		$offset = ($page - 1) * $limit;
+
+    // Get total count
+		$total_sql = "SELECT COUNT(*) AS total FROM pos_inventory WHERE pos_item_status = 1";
+		$total_query = $this->db->query($total_sql);
+		$total = 0;
+		foreach ($total_query->result() as $row) {
+			$total = $row->total;
+		}
+
+    // Get paginated items
+		$sql = "SELECT pos_item_id, pos_item_name, pos_item_code, pos_item_price, pos_item_image, pos_item_unit, pos_item_stock
+		FROM pos_inventory
+		WHERE pos_item_status = 1
+		ORDER BY pos_item_name ASC
+		LIMIT ?, ?";
+		$query = $this->db->query($sql, array($offset, $limit));
+
+		$items = [];
+		foreach ($query->result() as $row) {
+			$items[] = [
+				'pos_item_id'    => $row->pos_item_id,
+				'pos_item_name'  => $row->pos_item_name,
+				'pos_item_code'  => $row->pos_item_code,
+				'pos_item_price' => $row->pos_item_price,
+				'pos_item_image' => $row->pos_item_image,
+				'pos_item_unit'  => $row->pos_item_unit,
+				'pos_item_stock' => $row->pos_item_stock
+			];
+		}
+
+		echo json_encode([
+			'items' => $items,
+			'total' => $total
+		]);
+	}
 	public function save_child_profile()
 	{
 	    $guardian_name      = $_POST['guardian_name'];
@@ -808,20 +848,6 @@ class Sys_model extends CI_Model {
 	    	$sql = "SELECT * FROM client_profiles JOIN time_logs ON client_profiles.client_id=time_logs.client_id WHERE YEAR(time_logs.time_stamp)=YEAR(?) ORDER BY time_logs.log_id ASC";
 	    }
 		$query = $this->db->query($sql, $log_date);
-		foreach ($query->result() as $row) {
- 			$output_data[] = $row;
-		}
-		if (isset($output_data)) {
-			echo json_encode($output_data);	
-		}
-		else {
-			echo json_encode('');
-		}
-	}
-	public function load_pos_inventory()
-	{
-	    $sql = "SELECT * FROM pos_inventory WHERE pos_item_status != 0";
-		$query = $this->db->query($sql);
 		foreach ($query->result() as $row) {
  			$output_data[] = $row;
 		}
