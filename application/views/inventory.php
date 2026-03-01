@@ -28,11 +28,11 @@
 			opacity: 1;
 			transform: scale(1);
 		}
+		.btn-sm {
+			padding: .25rem .5rem !important;
+			font-size: .75rem !important;
+		}
 	</style>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 	<header>
@@ -47,6 +47,7 @@
 			</div>
 		</div>
 		<div class="container mt-4">
+			<!-- <svg id="barcode"></svg> -->
 			<div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4" id="pos_item_cards_container">
 				<div class="col" id="item_cards">
 					<div class="card h-100">
@@ -57,7 +58,7 @@
 							style="aspect-ratio:5/3;object-fit:contain;background-color:#edf1f4;">
 
 							<div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center">
-								<small class="btn btn-secondary btn-sm hover-btn pos_item_modifier" role="button">
+								<small class="btn btn-secondary btn-sm hover-btn pos_item_update_activator" role="button">
 									Modify
 								</small>
 							</div>
@@ -90,14 +91,29 @@
 	<footer>
 	</footer>
 <script type="text/javascript">
-	$(document).on('click', '.pos_item_modifier', function (e) {
+    // const value = "ABC123456"; // your characters here
+
+    // JsBarcode("#barcode", value, {
+    //     format: "CODE128", // supports letters + numbers
+    //     width: 2,
+    //     height: 80,
+    //     displayValue: true
+    // });
+
+	$(document).on('click', '.pos_item_update_activator', function (e) {
 		e.preventDefault();
 
 		const item_id = $(this).data('id');
-
 		const modal_el = document.getElementById('update_pos_item_modal');
 		const modal_instance = bootstrap.Modal.getOrCreateInstance(modal_el);
+		modal_instance.show();
+	});
+	$(document).on('click', '.pos_item_barcodes_activator', function (e) {
+		e.preventDefault();
 
+		const item_id = $(this).data('id');
+		const modal_el = document.getElementById('pos_item_barcodes_modal');
+		const modal_instance = bootstrap.Modal.getOrCreateInstance(modal_el);
 		modal_instance.show();
 	});
 
@@ -146,13 +162,15 @@
 		                                     alt="${item.pos_item_name}" 
 		                                     style="aspect-ratio:5/3;object-fit:contain;background-color:#edf1f4;">
 
-		                                <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center pos_item_modifier">
-		                                    <small class="btn btn-secondary btn-sm hover-btn" role="button">
-		                                        Modify
-		                                    </small>
-											<small class="btn btn-secondary btn-sm hover-btn" role="button">
-		                                        Barcodes
-		                                    </small>
+		                                <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center">
+											<div class="btn-group-vertical" role="group" aria-label="Vertical button group">
+			                                    <button type=button class="btn btn-success btn-sm hover-btn pos_item_update_activator" role="button">
+			                                        Modify
+			                                    </button type=button>
+												<button type=button class="btn btn-primary btn-sm hover-btn pos_item_barcodes_activator" role="button">
+			                                        Barcodes
+			                                    </button type=button>
+											</div>
 		                                </div>
 		                            </div>
 		                            <small class="card-body">

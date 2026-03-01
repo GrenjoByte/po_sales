@@ -8,27 +8,103 @@
    }
 </style>
 <div class="modal fade" id="pos_restocking_report_modal" tabindex="-1" aria-labelledby="pos_restocking_report_title" aria-hidden="true">
-   <div class="modal-dialog modal-lg modal-dialog-scrollable">
+   <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
          <div class="modal-header">
             <h1 class="modal-title fs-5" id="pos_restocking_report_title">Restocking Report</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
          <div class="modal-body">
-            ...
+            <div class="table-responsive">
+               <table class="table table-sm align-middle mb-0">
+                  <thead class="table-light text-center">
+                     <tr>
+                        <th>#</th>
+                        <th>Restock Code</th>
+                        <th>Item Code</th>
+                        <th class="text-start">Item Name</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Unit</th>
+                        <th>Total</th>
+                        <th>Date</th>
+                     </tr>
+                  </thead>
+                  <tbody class="text-center small">
+                     <tr>
+                        <td>1</td>
+                        <td>RS-0001</td>
+                        <td>ITM-1001</td>
+                        <td class="text-start">Premium Rice</td>
+                        <td>₱45.00</td>
+                        <td>100</td>
+                        <td>kg</td>
+                        <td class="fw-semibold text-success">₱4,500.00</td>
+                        <td>2026-02-28 09:45 AM</td>
+                     </tr>
+                  </tbody>
+                  <tfoot class="table-light small">
+                     <tr class="fw-semibold text-center">
+                        <td colspan="7" class="text-end">Grand Total:</td>
+                        <td class="text-success">₱4,500.00</td>
+                        <td></td>
+                     </tr>
+                  </tfoot>
+               </table>
+            </div>
          </div>
       </div>
    </div>
 </div>
 <div class="modal fade" id="pos_sales_report_modal" tabindex="-1" aria-labelledby="pos_sales_report_title" aria-hidden="true">
-   <div class="modal-dialog modal-lg modal-dialog-scrollable">
+   <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
          <div class="modal-header">
             <h1 class="modal-title fs-5" id="pos_sales_report_title">Sales Report</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
          <div class="modal-body">
-            ...
+            <div class="table-responsive">
+               <table class="table table-sm align-middle mb-0">
+                  <thead class="table-light text-center">
+                     <tr>
+                        <th>#</th>
+                        <th>Checkout Code</th>
+                        <th>Item Code</th>
+                        <th class="text-start">Item Name</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Unit</th>
+                        <th>Subtotal</th>
+                        <th>Total</th>
+                        <th>Date</th>
+                     </tr>
+                  </thead>
+
+                  <tbody class="text-center small">
+                     <tr>
+                        <td>1</td>
+                        <td>CO-0001</td>
+                        <td>ITM-1001</td>
+                        <td class="text-start">Premium Rice</td>
+                        <td>₱45.00</td>
+                        <td>5</td>
+                        <td>kg</td>
+                        <td>₱225.00</td>
+                        <td class="fw-semibold text-primary">₱225.00</td>
+                        <td>2026-02-28 10:15 AM</td>
+                     </tr>
+                  </tbody>
+
+                  <tfoot class="table-light small">
+                     <tr class="fw-semibold text-center">
+                        <td colspan="8" class="text-end">Grand Total Sales:</td>
+                        <td class="text-primary">₱225.00</td>
+                        <td></td>
+                     </tr>
+                  </tfoot>
+               </table>
+            </div>
          </div>
       </div>
    </div>
@@ -54,50 +130,74 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
          <div class="modal-body">
-            <table class="table align-middle mb-0">
-               <tbody>
-                  <tr class="text-center">
-                     <td class="text-start">
-                        <div class="d-flex align-items-center">
-                           <img src="<?php echo base_url();?>photos/pos_images/c2_apple_1l.jpg"
-                           alt="Item Image"
-                           class="rounded-circle me-3"
-                           width="40"
-                           height="40">
+            <form id="pos_item_form" enctype="multipart/form-data">
+               <div class="row">
+                  <div class="col-6 mb-2">
+                     <label for="new_pos_item_name" class="form-label">Restock Code</label>
+                     <input type="text" class="form-control form-control-sm" 
+                     id="new_pos_item_name" 
+                     name="new_pos_item_name" 
+                     maxlength="200" 
+                     placeholder="e.g. Coca-Cola 1.5L" 
+                     required>
+                  </div>
+                  <div class="col-6 mb-2">
+                     <label for="new_pos_item_name" class="form-label">Restock Date</label>
+                     <input type="date" class="form-control form-control-sm" 
+                     id="new_pos_item_name" 
+                     name="new_pos_item_name" 
+                     maxlength="200" 
+                     placeholder="e.g. Coca-Cola 1.5L" 
+                     required>
+                  </div>
+               </div>
+            </form>
+            <div class="table-responsive">
+               <table class="table align-middle mb-0">
+                  <tbody>
+                     <tr class="text-center">
+                        <td class="text-start">
+                           <div class="d-flex align-items-center">
+                              <img src="<?php echo base_url();?>photos/pos_images/c2_apple_1l.jpg"
+                              alt="Item Image"
+                              class="rounded-circle me-3"
+                              width="40"
+                              height="40">
 
-                           <div>
-                              <div class="fw-semibold d-block text-truncate overflow-tooltip">Premium Coffee Beans</div>
-                              <small class="text-muted">Code: CFB-001</small>
+                              <div>
+                                 <div class="fw-semibold d-block text-truncate overflow-tooltip">Premium Coffee Beans</div>
+                                 <small class="text-muted">Code: CFB-001</small>
+                              </div>
                            </div>
-                        </div>
-                     </td>
+                        </td>
 
-                     <td>₱350.00</td>
-                     <td>x</td>
-                     <td contenteditable="false">2</td>
-                     <td class="text-start">Packs</td>
-                     <td>=</td>
-                     <td class="fw-semibold">₱700.00</td>
-                     <td class="text-end">
-                        <div class="dropdown dropstart">
-                           <button class="btn btn-sm btn-light"
-                           type="button"
-                           data-bs-toggle="dropdown"
-                           aria-expanded="false">
-                           ⋮
-                        </button>
-                        <ul class="dropdown-menu w-auto">
-                           <li><a class="dropdown-item modify_row" href="#">Modify</a></li>
-                           <li><a class="dropdown-item text-danger remove_row" href="#">Remove</a></li>
-                        </ul>
-                     </div>
-                  </td>
-               </tr>
-            </tbody>
-         </table>
+                        <td>₱350.00</td>
+                        <td>x</td>
+                        <td contenteditable="false">2</td>
+                        <td class="text-start">Packs</td>
+                        <td>=</td>
+                        <td class="fw-semibold">₱700.00</td>
+                        <td class="text-end">
+                           <div class="dropdown dropstart">
+                              <button class="btn btn-sm btn-light"
+                              type="button"
+                              data-bs-toggle="dropdown"
+                              aria-expanded="false">
+                                 ⋮
+                              </button>
+                              <ul class="dropdown-menu w-auto">
+                                 <li><a class="dropdown-item modify_row" href="#">Modify</a></li>
+                                 <li><a class="dropdown-item text-danger remove_row" href="#">Remove</a></li>
+                              </ul>
+                           </div>
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
       </div>
    </div>
-</div>
 </div>
 <div class="modal fade" id="new_pos_item_modal" tabindex="-1" aria-labelledby="new_pos_item_title" aria-hidden="true">
    <div class="modal-dialog modal-dialog-scrollable">
@@ -279,6 +379,90 @@
    </div>
 </div>
 
+<div class="modal fade" id="pos_item_barcodes_modal" tabindex="-1">
+   <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content">
+
+         <div class="modal-header">
+            <h6 class="modal-title mb-0">Item Barcodes</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+         </div>
+
+         <div class="modal-body">
+            <div class="row align-items-center mb-3">
+               <div class="col-6 text-center">
+                  <img src="<?php echo base_url();?>photos/pos_images/c2_apple_1l.jpg"
+                  class="img-fluid rounded-circle border mb-2"
+                  style="aspect-ratio:1/1; object-fit:cover;">
+                  <div class="fw-semibold small text-truncate overflow-tooltip">
+                     Coca-Cola 1.5L
+                  </div>
+                  <div class="text-muted small">
+                     COKE-15L
+                  </div>
+               </div>
+
+               <div class="col-6">
+                  <div class="row">
+                     <div>Price: <span class="fw-semibold">₱85.00</span></div>
+                     <div>Unit: pcs</div>
+                  </div>
+                  <div class="row">
+                     <div>Stock: <span class="fw-semibold">120</span></div>
+                     <div>Low Alert: 20</div>
+                  </div>
+               </div>
+            </div>
+
+            <hr>
+
+            <!-- List Section -->
+               <div>
+                  <table class="table align-middle mb-0">
+                     <tbody>
+                        <tr>
+                           <td class="text-center align-middle">
+                              <svg id="barcode" class="d-inline-block"></svg>
+                           </td>
+                           <td class="text-end">
+                              <div class="dropdown dropstart">
+                                 <button class="btn btn-sm btn-light"
+                                 type="button"
+                                 data-bs-toggle="dropdown"
+                                 aria-expanded="false">
+                                 ⋮
+                              </button>
+                              <ul class="dropdown-menu w-auto">
+                                 <li>
+                                    <a class="dropdown-item regenerate_barcode" href="#">
+                                       Regenerate
+                                    </a>
+                                 </li>
+                                 <li>
+                                    <a class="dropdown-item text-danger remove_barcode" href="#">
+                                       Remove
+                                    </a>
+                                 </li>
+                              </ul>
+                           </div>
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <!-- <div class="modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
+               Close
+            </button>
+            <button type="button" class="btn btn-sm btn-primary">
+               Update Item
+            </button>
+         </div> -->
+      </div>
+   </div>
+</div>
+
 <div class="dropup position-fixed bottom-0 end-0 m-4">
    <button type="button"
       class="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center dropdown-toggle"
@@ -301,6 +485,14 @@
    </ul>
 </div>
 <script type="text/javascript">
+   const value = "ABC123456"; // your characters here
+
+   JsBarcode("#barcode", value, {
+      format: "CODE128", // supports letters + numbers
+      width: 1.8,
+      height: 40,
+      displayValue: true
+   });
    $(document).ready(function(){
       $('#posItemForm').on('submit', function(e){
          e.preventDefault();
