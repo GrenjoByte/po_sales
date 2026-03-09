@@ -49,8 +49,7 @@
 		<div class="container mt-4">
 			<!-- <svg id="barcode"></svg> -->
 			<div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4" id="pos_item_cards_container">
-				<div class="col" id="item_cards">
-					<div class="card h-100">
+					<!-- <div class="card h-100 p2">
 						<div class="position-relative img-hover-wrapper">
 							<img src="<?php echo base_url();?>photos/pos_images/c2_apple_1l.jpg"
 							class="card-img-top"
@@ -83,7 +82,7 @@
 								<button class="bi bi-cart-plus ms-auto fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
 							</div>
 						</div>
-					</div>
+					</div> -->
 				</div>
 			</div>
 		</div>
@@ -99,6 +98,73 @@
     //     height: 80,
     //     displayValue: true
     // });
+
+	$('.pos_count_minus, .pos_count_plus').on('click', function() {
+		let container = $(this).siblings('.pos_count_container');
+		let item_count = Number(container.attr('data-text'));
+		let max_limit = Number(container.attr('data-max_limit'));
+					// let max_limit = pos_item_stock;
+		let card = $(this).closest('.card');
+		let stock_el = card.find('.pos_item_stock').first();
+		let current_stock = Number(stock_el.text());
+
+		let unit_el = card.find('.pos_item_unit').first();
+		let current_unit = unit_el.text();
+		let add_button = card.find('.add_to_pos_cart');
+
+		if ($(this).hasClass('pos_count_plus')) {
+			if (item_count < max_limit && current_stock > 0) {
+				item_count++;
+				current_stock--;
+			}
+		} else {
+			if (item_count > 0) {
+				item_count--;
+				current_stock++;
+			}
+		}
+
+		container.attr('data-text', item_count);
+		stock_el.text(current_stock);
+		item_count > 0 ? add_button.removeClass('invisible') : add_button.addClass('invisible');
+
+		if (current_unit.endsWith('es')) {
+			if (/(sh|ch|x|z|s)es$/.test(current_unit)) {
+				current_unit = current_unit.slice(0, -2);
+			} else if (!current_unit.endsWith('ses')) {
+				current_unit = current_unit.slice(0, -1);
+			}
+		} else if (current_unit.endsWith('s')) {
+			if (!current_unit.endsWith('ss')) {
+				current_unit = current_unit.slice(0, -1);
+			}
+		}
+
+		if (current_stock != 1) {
+			unit_last = current_unit[current_unit.length - 1].toLowerCase();
+			if (
+			    unit_last == 's' ||
+			    unit_last == 'h' && current_unit.endsWith('sh') ||
+			    unit_last == 'h' && current_unit.endsWith('ch') ||
+			    unit_last == 'x' ||
+			    unit_last == 'z'
+			    ) {
+					current_unit = current_unit + 'es';
+			} 
+			else {
+				current_unit = current_unit + 's';
+			}
+		} 
+		else {
+			if (current_unit.endsWith('es')) {
+				current_unit = current_unit.slice(0, -2);
+			} 
+			else if (current_unit.endsWith('s')) {
+				current_unit = current_unit.slice(0, -1);
+			}
+		}
+		unit_el.text(current_unit);
+	});
 
 	$(document).on('click', '.pos_item_update_activator', function (e) {
 		e.preventDefault();
@@ -116,6 +182,8 @@
 		const modal_instance = bootstrap.Modal.getOrCreateInstance(modal_el);
 		modal_instance.show();
 	});
+	
+	const pos_items = {};
 
 	$(function() {
 		let current_page = 1;
@@ -128,16 +196,19 @@
 				data: { page: page, limit: items_per_page },
 				dataType: 'json',
 				success: function(response) {
-					const $container = $('#item_cards');
+					const $container = $('#pos_item_cards_container');
 					$container.empty();
 
 					if (response.items && response.items.length) {
 						response.items.forEach(item => {
+							pos_items[item.pos_item_id] = item;
+
 							pos_item_id = item.pos_item_id;
 							pos_item_name = item.pos_item_name;
 							pos_item_price = item.pos_item_price;
 							pos_item_stock = item.pos_item_stock;
 							pos_item_unit = item.pos_item_unit;
+
 
 							if (pos_item_stock > 1) {
 								unit_last = pos_item_unit[pos_item_unit.length - 1].toLowerCase();
@@ -154,45 +225,48 @@
 									pos_item_unit = pos_item_unit + 's';
 								}
 							}
-							const card_html = `
-		                        <div class="card h-100">
-		                            <div class="position-relative img-hover-wrapper">
-		                                <img src="<?php echo base_url();?>photos/pos_images/${item.pos_item_image}" 
-		                                     class="card-img-top" 
-		                                     alt="${item.pos_item_name}" 
-		                                     style="aspect-ratio:5/3;object-fit:contain;background-color:#edf1f4;">
 
-		                                <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center">
-											<div class="btn-group-vertical" role="group" aria-label="Vertical button group">
-			                                    <button type=button class="btn btn-success btn-sm hover-btn pos_item_update_activator" role="button">
-			                                        Modify
-			                                    </button type=button>
-												<button type=button class="btn btn-primary btn-sm hover-btn pos_item_barcodes_activator" role="button">
-			                                        Barcodes
-			                                    </button type=button>
-											</div>
-		                                </div>
-		                            </div>
-		                            <small class="card-body">
-		                                <div class="card-title fs-6 text-truncate overflow-tooltip" role="button">
-		                                    ${item.pos_item_name}
-		                                </div>
-										<small class="card-subtitle text-muted d-block text-truncate">
-		                                    ${item.pos_item_code}
-		                                </small>
-		                                <div class="d-flex fs-6 mt-1 fw-semibold align-items-center gap-1">
-		                                    <span>${item.pos_item_stock}</span>
-		                                    <span>${item.pos_item_unit}</span>
-		                                </div>
-		                            </small>
-		                            <div class="card-footer">
-		                                <div class="d-flex justify-content-start align-items-center">
-		                                    <button class="bi bi-dash mx-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
-		                                    <small contenteditable class="px-2">0</small>
-		                                    <button class="bi bi-plus ms-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>    
-		                                    <button class="bi bi-cart-plus ms-auto fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
-		                                </div>
-		                            </div>
+							const card_html = `
+								<div class="col" id="item_cards">
+			                        <div class="card h-100" data-pos_item_id=""> 
+			                            <div class="position-relative img-hover-wrapper">
+			                                <img src="<?php echo base_url();?>photos/pos_images/${item.pos_item_image}" 
+			                                     class="card-img-top" 
+			                                     alt="${item.pos_item_name}" 
+			                                     style="aspect-ratio:5/3;object-fit:contain;background-color:white;">
+
+			                                <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center">
+												<div class="btn-group-vertical" role="group" aria-label="Vertical button group">
+				                                    <button type=button class="btn btn-success btn-sm hover-btn pos_item_update_activator" role="button">
+				                                        Modify
+				                                    </button type=button>
+													<button type=button class="btn btn-primary btn-sm hover-btn pos_item_barcodes_activator" role="button">
+				                                        Barcodes
+				                                    </button type=button>
+												</div>
+			                                </div>
+			                            </div>
+			                            <small class="card-body">
+			                                <div class="card-title fs-6 text-truncate overflow-tooltip" role="button">
+			                                    ${item.pos_item_name}
+			                                </div>
+											<small class="card-subtitle text-muted d-block text-truncate">
+			                                    ${item.pos_item_code}
+			                                </small>
+			                                <div class="d-flex fs-6 mt-1 fw-semibold align-items-center gap-1">
+			                                    <span>${item.pos_item_stock}</span>
+			                                    <span>${item.pos_item_unit}</span>
+			                                </div>
+			                            </small>
+			                            <div class="card-footer">
+			                                <div class="d-flex justify-content-start align-items-center">
+			                                    <button class="pos_count_minus bi bi-dash mx-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
+			                                    <small contenteditable class="px-2">0</small>
+			                                    <button class="pos_count_plus bi bi-plus ms-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>    
+			                                    <button class="bi bi-cart-plus ms-auto fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
+			                                </div>
+			                            </div>
+									</div>
 								</div>`
 							;
 							$container.append(card_html);
@@ -213,6 +287,8 @@
 					$('#item_cards').html('<p class="text-center text-danger">Failed to load items.</p>');
 				}
 			});
+
+			alert(ret_pos_item(4))
 		}
 
 		load_items(current_page);
@@ -229,6 +305,49 @@
 			load_items(current_page);
 		});
 	});
+
+function ret_pos_item(pos_item_id, update = false) {
+    const item = pos_items[pos_item_id];
+    if (!item) return console.warn(`Item ${pos_item_id} not found.`), null;
+
+    if (update) {
+        const $card = $(`#pos_item_cards_container .card[data-pos_item_id='${pos_item_id}']`);
+        if ($card.length) {
+            const $spans = $card.find('.card-body span');
+
+            $spans.eq(0).text(item.pos_item_stock);
+
+            let unit = item.pos_item_unit;
+            if (item.pos_item_stock > 1) {
+                const last = unit.slice(-1).toLowerCase();
+                if (['s','x','z'].includes(last) || unit.endsWith('sh') || unit.endsWith('ch')) {
+                    unit += 'es';
+                } else {
+                    unit += 's';
+                }
+            }
+            $spans.eq(1).text(unit);
+
+            $card.find('small[contenteditable]').text(item.pos_item_qty || 0);
+
+            if (item.pos_item_stock <= item.pos_item_low) {
+                $card.addClass('border-danger');
+            } else {
+                $card.removeClass('border-danger');
+            }
+
+            if (item.pos_item_status != 1) {
+                $card.addClass('opacity-50').find('button, [contenteditable]').prop('disabled', true);
+            } else {
+                $card.removeClass('opacity-50').find('button, [contenteditable]').prop('disabled', false);
+            }
+        }
+    }
+    return item;
+}
+
+
+
 </script>
 </body>
 </html>
