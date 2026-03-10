@@ -98,94 +98,95 @@
     //     height: 80,
     //     displayValue: true
     // });
+	$(function() {
 
-	$('.pos_count_minus, .pos_count_plus').on('click', function() {
-		let container = $(this).siblings('.pos_count_container');
-		let item_count = Number(container.attr('data-text'));
-		let max_limit = Number(container.attr('data-max_limit'));
-					// let max_limit = pos_item_stock;
-		let card = $(this).closest('.card');
-		let stock_el = card.find('.pos_item_stock').first();
-		let current_stock = Number(stock_el.text());
 
-		let unit_el = card.find('.pos_item_unit').first();
-		let current_unit = unit_el.text();
-		let add_button = card.find('.add_to_pos_cart');
+		$('.pos_count_minus, .pos_count_plus').on('click', function() {
+			let container = $(this).siblings('.pos_count_container');
+			let item_count = Number(container.attr('data-text'));
+			let max_limit = Number(container.attr('data-max_limit'));
+						// let max_limit = pos_item_stock;
+			let card = $(this).closest('.card');
+			let stock_el = card.find('.pos_item_stock').first();
+			let current_stock = Number(stock_el.text());
 
-		if ($(this).hasClass('pos_count_plus')) {
-			if (item_count < max_limit && current_stock > 0) {
-				item_count++;
-				current_stock--;
+			let unit_el = card.find('.pos_item_unit').first();
+			let current_unit = unit_el.text();
+			let add_button = card.find('.add_to_pos_cart');
+
+			if ($(this).hasClass('pos_count_plus')) {
+				if (item_count < max_limit && current_stock > 0) {
+					item_count++;
+					current_stock--;
+				}
+			} else {
+				if (item_count > 0) {
+					item_count--;
+					current_stock++;
+				}
 			}
-		} else {
-			if (item_count > 0) {
-				item_count--;
-				current_stock++;
-			}
-		}
 
-		container.attr('data-text', item_count);
-		stock_el.text(current_stock);
-		item_count > 0 ? add_button.removeClass('invisible') : add_button.addClass('invisible');
+			container.attr('data-text', item_count);
+			stock_el.text(current_stock);
+			item_count > 0 ? add_button.removeClass('invisible') : add_button.addClass('invisible');
 
-		if (current_unit.endsWith('es')) {
-			if (/(sh|ch|x|z|s)es$/.test(current_unit)) {
-				current_unit = current_unit.slice(0, -2);
-			} else if (!current_unit.endsWith('ses')) {
-				current_unit = current_unit.slice(0, -1);
+			if (current_unit.endsWith('es')) {
+				if (/(sh|ch|x|z|s)es$/.test(current_unit)) {
+					current_unit = current_unit.slice(0, -2);
+				} else if (!current_unit.endsWith('ses')) {
+					current_unit = current_unit.slice(0, -1);
+				}
+			} else if (current_unit.endsWith('s')) {
+				if (!current_unit.endsWith('ss')) {
+					current_unit = current_unit.slice(0, -1);
+				}
 			}
-		} else if (current_unit.endsWith('s')) {
-			if (!current_unit.endsWith('ss')) {
-				current_unit = current_unit.slice(0, -1);
-			}
-		}
 
-		if (current_stock != 1) {
-			unit_last = current_unit[current_unit.length - 1].toLowerCase();
-			if (
-			    unit_last == 's' ||
-			    unit_last == 'h' && current_unit.endsWith('sh') ||
-			    unit_last == 'h' && current_unit.endsWith('ch') ||
-			    unit_last == 'x' ||
-			    unit_last == 'z'
-			    ) {
-					current_unit = current_unit + 'es';
+			if (current_stock != 1) {
+				unit_last = current_unit[current_unit.length - 1].toLowerCase();
+				if (
+				    unit_last == 's' ||
+				    unit_last == 'h' && current_unit.endsWith('sh') ||
+				    unit_last == 'h' && current_unit.endsWith('ch') ||
+				    unit_last == 'x' ||
+				    unit_last == 'z'
+				    ) {
+						current_unit = current_unit + 'es';
+				} 
+				else {
+					current_unit = current_unit + 's';
+				}
 			} 
 			else {
-				current_unit = current_unit + 's';
+				if (current_unit.endsWith('es')) {
+					current_unit = current_unit.slice(0, -2);
+				} 
+				else if (current_unit.endsWith('s')) {
+					current_unit = current_unit.slice(0, -1);
+				}
 			}
-		} 
-		else {
-			if (current_unit.endsWith('es')) {
-				current_unit = current_unit.slice(0, -2);
-			} 
-			else if (current_unit.endsWith('s')) {
-				current_unit = current_unit.slice(0, -1);
-			}
-		}
-		unit_el.text(current_unit);
-	});
+			unit_el.text(current_unit);
+		});
 
-	$(document).on('click', '.pos_item_update_activator', function (e) {
-		e.preventDefault();
+		$(document).on('click', '.pos_item_update_activator', function (e) {
+			e.preventDefault();
 
-		const item_id = $(this).data('id');
-		const modal_el = document.getElementById('update_pos_item_modal');
-		const modal_instance = bootstrap.Modal.getOrCreateInstance(modal_el);
-		modal_instance.show();
-	});
-	$(document).on('click', '.pos_item_barcodes_activator', function (e) {
-		e.preventDefault();
+			let pos_item_id = $(this)
+	        	.closest('.card')
+	        	.data('pos_item_id');
+			load_pos_item_form(pos_item_id);
+		});
+		$(document).on('click', '.pos_item_barcodes_activator', function (e) {
+			e.preventDefault();
 
-		const item_id = $(this).data('id');
-		const modal_el = document.getElementById('pos_item_barcodes_modal');
-		const modal_instance = bootstrap.Modal.getOrCreateInstance(modal_el);
-		modal_instance.show();
-	});
-	
-	const pos_items = {};
+			const item_id = $(this).data('id');
+			const modal_el = document.getElementById('pos_item_barcodes_modal');
+			const modal_instance = bootstrap.Modal.getOrCreateInstance(modal_el);
+			modal_instance.show();
+		});
+		
+		const pos_items = {};
 
-	$(function() {
 		let current_page = 1;
 		const items_per_page = 15;
 
@@ -228,7 +229,7 @@
 
 							const card_html = `
 								<div class="col" id="item_cards">
-			                        <div class="card h-100" data-pos_item_id=""> 
+			                        <div class="card h-100" data-pos_item_id="${[pos_item_id]}"> 
 			                            <div class="position-relative img-hover-wrapper">
 			                                <img src="<?php echo base_url();?>photos/pos_images/${item.pos_item_image}" 
 			                                     class="card-img-top" 
@@ -287,8 +288,6 @@
 					$('#item_cards').html('<p class="text-center text-danger">Failed to load items.</p>');
 				}
 			});
-
-			alert(ret_pos_item(4))
 		}
 
 		load_items(current_page);
@@ -304,49 +303,168 @@
 			current_page++;
 			load_items(current_page);
 		});
+
+		function ret_pos_item(pos_item_id, update = false) {
+			const item = pos_items[pos_item_id];
+			if (!item) return console.warn(`Item ${pos_item_id} not found.`), null;
+
+			if (update) {
+				const $card = $(`#pos_item_cards_container .card[data-pos_item_id='${pos_item_id}']`);
+				if ($card.length) {
+					const $spans = $card.find('.card-body span');
+
+					$spans.eq(0).text(item.pos_item_stock);
+
+					let unit = item.pos_item_unit;
+					if (item.pos_item_stock > 1) {
+						const last = unit.slice(-1).toLowerCase();
+						if (['s','x','z'].includes(last) || unit.endsWith('sh') || unit.endsWith('ch')) {
+							unit += 'es';
+						} else {
+							unit += 's';
+						}
+					}
+					$spans.eq(1).text(unit);
+
+					$card.find('small[contenteditable]').text(item.pos_item_qty || 0);
+
+					if (item.pos_item_stock <= item.pos_item_low) {
+						$card.addClass('border-danger');
+					} else {
+						$card.removeClass('border-danger');
+					}
+
+					if (item.pos_item_status != 1) {
+						$card.addClass('opacity-50').find('button, [contenteditable]').prop('disabled', true);
+					} else {
+						$card.removeClass('opacity-50').find('button, [contenteditable]').prop('disabled', false);
+					}
+				}
+			}
+			return item;
+		}
+
+		function load_pos_item_form(pos_item_id) {
+			const item = pos_items[pos_item_id];
+			if (!item) return console.warn(`Item ${pos_item_id} not found.`);
+
+			$('#update_pos_item_name').val(item.pos_item_name);
+			$('#update_pos_item_code').val(item.pos_item_code);
+			// $('#update_pos_item_image').val(item.pos_item_image);
+			$('#update_pos_item_price').val(item.pos_item_price);
+			$('#update_pos_item_stock').val(item.pos_item_stock);
+			$('#update_pos_item_unit').val(item.pos_item_unit);
+			$('#update_pos_item_low').val(item.pos_item_low);
+
+			if (item.pos_item_image !== "") {
+				image_url = "<?php echo base_url();?>photos/pos_images/"+item.pos_item_image;
+				$("#update_pos_item_image_preview").attr("src", image_url);
+				$('#update_pos_item_image_preview').removeClass('d-none');
+			}
+			else {
+				$("#update_pos_item_image_preview").attr("src", "");
+				$('#update_pos_item_image_preview').removeClass('d-none');
+			}
+
+			$('#update_pos_item_modal').modal('show');
+		}
+
+		$('#update_pos_item_image').on('change', function () {
+			const file = this.files[0];
+			const preview = $('#update_pos_item_image_preview');
+
+			if (file) {
+				const reader = new FileReader();
+				reader.onload = function (e) {
+					preview.attr('src', e.target.result).removeClass('d-none');
+				};
+				reader.readAsDataURL(file);
+			}
+			else {
+				preview.attr('src','').addClass('d-none');
+			}
+		});
+
+		let camera_stream = null;
+
+		// File selection
+		$('#update_pos_item_image').on('change', function() {
+		    const file = this.files[0];
+		    const preview = $('#update_pos_item_image_preview');
+		    const video = $('#camera_stream');
+		    const placeholder = $('#update_pos_item_image_placeholder');
+
+		    if (file) {
+		        const reader = new FileReader();
+		        reader.onload = function(e) {
+		            preview.attr('src', e.target.result).removeClass('d-none');
+		            video.addClass('d-none');
+		            $('#take_photo_btn').addClass('d-none');
+		            placeholder.hide();
+		            stop_camera();
+		        };
+		        reader.readAsDataURL(file);
+		    } else {
+		        preview.attr('src', '').addClass('d-none');
+		        placeholder.show();
+		    }
+		});
+
+		// Open camera
+		$('#capture_image_btn').on('click', async function() {
+		    try {
+		        stop_camera();
+
+		        camera_stream = await navigator.mediaDevices.getUserMedia({
+		            video: { facingMode: "user" },
+		            audio: false
+		        });
+
+		        const video = $('#camera_stream').get(0);
+		        video.srcObject = camera_stream;
+		        video.play();
+
+		        $('#camera_stream').removeClass('d-none');
+		        $('#take_photo_btn').removeClass('d-none');
+		        $('#update_pos_item_image_preview').addClass('d-none');
+		        $('#update_pos_item_image_placeholder').hide();
+
+		    } catch (err) {
+		        console.error(err);
+		        alert("Camera not available or permission denied.");
+		    }
+		});
+
+		// Take photo
+		$('#take_photo_btn').on('click', function() {
+		    const video = $('#camera_stream').get(0);
+		    const canvas = document.createElement('canvas'); // temporary canvas
+		    const preview = $('#update_pos_item_image_preview');
+
+		    canvas.width = video.videoWidth;
+		    canvas.height = video.videoHeight;
+
+		    const ctx = canvas.getContext('2d');
+		    ctx.drawImage(video, 0, 0);
+
+		    const data = canvas.toDataURL('image/png');
+
+		    preview.attr('src', data).removeClass('d-none');
+
+		    $('#camera_stream').addClass('d-none');
+		    $('#take_photo_btn').addClass('d-none');
+
+		    stop_camera();
+		});
+
+		// Stop camera helper
+		function stop_camera() {
+		    if (camera_stream) {
+		        camera_stream.getTracks().forEach(track => track.stop());
+		        camera_stream = null;
+		    }
+		}
 	});
-
-function ret_pos_item(pos_item_id, update = false) {
-    const item = pos_items[pos_item_id];
-    if (!item) return console.warn(`Item ${pos_item_id} not found.`), null;
-
-    if (update) {
-        const $card = $(`#pos_item_cards_container .card[data-pos_item_id='${pos_item_id}']`);
-        if ($card.length) {
-            const $spans = $card.find('.card-body span');
-
-            $spans.eq(0).text(item.pos_item_stock);
-
-            let unit = item.pos_item_unit;
-            if (item.pos_item_stock > 1) {
-                const last = unit.slice(-1).toLowerCase();
-                if (['s','x','z'].includes(last) || unit.endsWith('sh') || unit.endsWith('ch')) {
-                    unit += 'es';
-                } else {
-                    unit += 's';
-                }
-            }
-            $spans.eq(1).text(unit);
-
-            $card.find('small[contenteditable]').text(item.pos_item_qty || 0);
-
-            if (item.pos_item_stock <= item.pos_item_low) {
-                $card.addClass('border-danger');
-            } else {
-                $card.removeClass('border-danger');
-            }
-
-            if (item.pos_item_status != 1) {
-                $card.addClass('opacity-50').find('button, [contenteditable]').prop('disabled', true);
-            } else {
-                $card.removeClass('opacity-50').find('button, [contenteditable]').prop('disabled', false);
-            }
-        }
-    }
-    return item;
-}
-
-
 
 </script>
 </body>

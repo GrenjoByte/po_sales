@@ -76,7 +76,6 @@ class Sys_model extends CI_Model {
 		$limit = isset($_POST['limit']) ? (int)$_POST['limit'] : 15;
 		$offset = ($page - 1) * $limit;
 
-    // Get total count
 		$total_sql = "SELECT COUNT(*) AS total FROM pos_inventory WHERE pos_item_status = 1";
 		$total_query = $this->db->query($total_sql);
 		$total = 0;
@@ -84,8 +83,7 @@ class Sys_model extends CI_Model {
 			$total = $row->total;
 		}
 
-    // Get paginated items
-		$sql = "SELECT pos_item_id, pos_item_name, pos_item_code, pos_item_price, pos_item_image, pos_item_unit, pos_item_stock
+		$sql = "SELECT pos_item_id, pos_item_name, pos_item_code, pos_item_image, pos_item_price, pos_item_stock, pos_item_unit, pos_item_low
 		FROM pos_inventory
 		WHERE pos_item_status = 1
 		ORDER BY pos_item_name ASC
@@ -98,10 +96,11 @@ class Sys_model extends CI_Model {
 				'pos_item_id'    => $row->pos_item_id,
 				'pos_item_name'  => $row->pos_item_name,
 				'pos_item_code'  => $row->pos_item_code,
-				'pos_item_price' => $row->pos_item_price,
 				'pos_item_image' => $row->pos_item_image,
+				'pos_item_price' => $row->pos_item_price,
+				'pos_item_stock' => $row->pos_item_stock,
 				'pos_item_unit'  => $row->pos_item_unit,
-				'pos_item_stock' => $row->pos_item_stock
+				'pos_item_low'  => $row->pos_item_low
 			];
 		}
 

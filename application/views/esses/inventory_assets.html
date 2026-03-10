@@ -655,19 +655,19 @@
             <form id="pos_item_form" enctype="multipart/form-data">
                <div class="row">
                   <div class="col-6 mb-2">
-                     <label for="new_pos_item_name" class="form-label">Restock Code</label>
+                     <label for="pos_restocking_code" class="form-label">Restock Code</label>
                      <input type="text" class="form-control form-control-sm" 
-                     id="new_pos_item_name" 
-                     name="new_pos_item_name" 
+                     id="pos_restocking_code" 
+                     name="pos_restocking_code" 
                      maxlength="200" 
                      placeholder="e.g. Coca-Cola 1.5L" 
                      required>
                   </div>
                   <div class="col-6 mb-2">
-                     <label for="new_pos_item_name" class="form-label">Restock Date</label>
+                     <label for="pos_restocking_date" class="form-label">Restock Date</label>
                      <input type="date" class="form-control form-control-sm" 
-                     id="new_pos_item_name" 
-                     name="new_pos_item_name" 
+                     id="pos_restocking_date" 
+                     name="pos_restocking_date" 
                      maxlength="200" 
                      placeholder="e.g. Coca-Cola 1.5L" 
                      required>
@@ -842,14 +842,40 @@
                   </div>
 
                   <div class="mb-2">
-                     <label for="update_pos_item_image" class="form-label">Item Image</label>
-                     <input type="file" 
-                     class="form-control form-control-sm" 
-                     id="update_pos_item_image" 
-                     name="update_pos_item_image" 
-                     accept="image/*">
-                  </div>
+                    <label for="update_pos_item_image" class="form-label">Item Image</label>
 
+                    <div id="update_pos_item_image_container"
+                    style="width:100%; height: 100%; object-fit: contain; aspect-ratio:5/3; background-color:white; border:1px solid #ced4da; overflow:hidden; position:relative; cursor:pointer;">
+
+                       <input type="file"
+                       id="update_pos_item_image"
+                       accept="image/*"
+                       style="opacity:0; position:absolute; top:0; left:0; width:100%; height:100%; object-fit: contain; cursor:pointer; z-index:2;">
+
+                       <img id="update_pos_item_image_preview"
+                       src=""
+                       class="d-none"
+                       style="width:100%; height:100%; object-fit:contain; display:block; background-color:white;">
+
+                       <video id="camera_stream"
+                       autoplay
+                       playsinline
+                       class="d-none"
+                       style="width: 100%; height: 100%; object-fit:contain; display:block; background-color:white; position:absolute; top:0; left:0; z-index:1;">
+                       </video>
+
+                       <span id="update_pos_item_image_placeholder"
+                       style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#6c757d;">
+                          Click or capture an image
+                       </span>
+                    </div>
+
+                     <div class="text-center mt-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="capture_image_btn">Capture Image</button>
+                        <button type="button" class="btn btn-success btn-sm d-none" id="take_photo_btn">Take Photo</button>
+                     </div>
+                  </div>
+                  
                   <div class="mb-2">
                      <label for="update_pos_item_price" class="form-label">Price</label>
                      <input type="number" 
@@ -895,7 +921,7 @@
             </div>
          </div>
          <div class="modal-footer">
-            <button type="submit" form="pos_item_form" class="btn btn-primary">Create Item</button>
+            <button type="submit" form="pos_item_form" class="btn btn-primary">Update Item</button>
          </div>
       </div>
    </div>
@@ -1067,20 +1093,6 @@
          `);
       });
    });
-   function load_pos_item_form(pos_item_id) {
-      const item = pos_items[pos_item_id];
-      if (!item) return console.warn(`Item ${pos_item_id} not found.`);
-
-      $('#update_pos_item_name').val(item.pos_item_name);
-      $('#update_pos_item_code').val(item.pos_item_code);
-      $('#update_pos_item_image').val('');
-      $('#update_pos_item_price').val(item.pos_item_price);
-      $('#update_pos_item_stock').val(item.pos_item_stock);
-      $('#update_pos_item_unit').val(item.pos_item_unit);
-      $('#update_pos_item_low').val(item.pos_item_low);
-
-      $('#update_pos_item_modal').modal('show');
-   }
 
    $(document).ready(function(){
       $('#posItemForm').on('submit', function(e){
