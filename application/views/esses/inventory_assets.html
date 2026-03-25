@@ -730,7 +730,7 @@
          </div>
          <div class="modal-body">
             <div class="container-sm">
-               <form id="pos_item_form" enctype="multipart/form-data">
+               <form id="new_pos_item_form" enctype="multipart/form-data">
                   <div class="mb-2">
                      <label for="new_pos_item_name" class="form-label">Item Name</label>
                      <input type="text" class="form-control form-control-sm" 
@@ -805,7 +805,7 @@
             </div>
          </div>
          <div class="modal-footer">
-            <button type="submit" form="pos_item_form" class="btn btn-primary">Create Item</button>
+            <button type="submit" form="new_pos_item_form" class="btn btn-primary">Create Item</button>
          </div>
       </div>
    </div>
@@ -820,7 +820,7 @@
          </div>
          <div class="modal-body">
             <div class="container-sm">
-               <form id="pos_item_form" enctype="multipart/form-data">
+               <form id="update_pos_item_form" enctype="multipart/form-data">
                   <div class="mb-2">
                      <label for="update_pos_item_name" class="form-label">Item Name</label>
                      <input type="text" class="form-control form-control-sm" 
@@ -921,7 +921,7 @@
             </div>
          </div>
          <div class="modal-footer">
-            <button type="submit" form="pos_item_form" class="btn btn-primary">Update Item</button>
+            <button type="submit" form="update_pos_item_form" class="btn btn-primary">Update Item</button>
          </div>
       </div>
    </div>
@@ -1040,6 +1040,336 @@
       width: 1.8,
       height: 40,
       displayValue: true
+   });
+
+   const pos_items = {};
+
+   let current_page = 1;
+   const items_per_page = 15;
+
+   function load_items(page = 1) {
+      $.ajax({
+         url: '<?php echo base_url();?>i.php/sys_control/load_pos_inventory',
+         method: 'POST',
+         data: { page: page, limit: items_per_page },
+         dataType: 'json',
+         success: function(response) {
+            const $container = $('#pos_item_cards_container');
+            $container.empty();
+
+            if (response.items && response.items.length) {
+               response.items.forEach(item => {
+                  pos_items[item.pos_item_id] = item;
+
+                  pos_item_id = item.pos_item_id;
+                  pos_item_name = item.pos_item_name;
+                  pos_item_price = item.pos_item_price;
+                  pos_item_stock = item.pos_item_stock;
+                  pos_item_unit = item.pos_item_unit;
+
+
+                  if (pos_item_stock > 1) {
+                     unit_last = pos_item_unit[pos_item_unit.length - 1].toLowerCase();
+
+                     if (
+                        unit_last == 's' ||
+                        unit_last == 'h' && pos_item_unit.endsWith('sh') ||
+                        unit_last == 'h' && pos_item_unit.endsWith('ch') ||
+                        unit_last == 'x' ||
+                        unit_last == 'z'
+                        ) {
+                        pos_item_unit = pos_item_unit + 'es';
+                     } else {
+                        pos_item_unit = pos_item_unit + 's';
+                     }
+                  }
+
+                  const card_html = `
+                     <div class="col" id="item_cards">
+                              <div class="card h-100" data-pos_item_id="${[pos_item_id]}"> 
+                                  <div class="position-relative img-hover-wrapper">
+                                      <img src="<?php echo base_url();?>photos/pos_images/${item.pos_item_image}" 
+                                           class="card-img-top" 
+                                           alt="${item.pos_item_name}" 
+                                           style="aspect-ratio:5/3;object-fit:contain;background-color:white;">
+
+                                      <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center">
+                                 <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
+                                             <button type=button class="btn btn-success btn-sm hover-btn pos_item_update_activator" role="button">
+                                                 Modify
+                                             </button type=button>
+                                    <button type=button class="btn btn-primary btn-sm hover-btn pos_item_barcodes_activator" role="button">
+                                                 Barcodes
+                                             </button type=button>
+                                 </div>
+                                      </div>
+                                  </div>
+                                  <small class="card-body">
+                                      <div class="card-title fs-6 text-truncate overflow-tooltip" role="button">
+                                          ${item.pos_item_name}
+                                      </div>
+                              <small class="card-subtitle text-muted d-block text-truncate">
+                                          ${item.pos_item_code}
+                                      </small>
+                                      <div class="d-flex fs-6 mt-1 fw-semibold align-items-center gap-1">
+                                          <span>${item.pos_item_stock}</span>
+                                          <span>${item.pos_item_unit}</span>
+                                      </div>
+                                  </small>
+                                  <div class="card-footer">
+                                      <div class="d-flex justify-content-start align-items-center">
+                                          <button class="pos_count_minus bi bi-dash mx-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
+                                          <small contenteditable class="px-2">0</small>
+                                          <button class="pos_count_plus bi bi-plus ms-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>    
+                                          <button class="bi bi-cart-plus ms-auto fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
+                                      </div>
+                                  </div>
+                        </div>
+                     </div>`
+                  ;
+                  $container.append(card_html);
+               });
+            } else {
+               $container.html('<p class="text-center">No items found.</p>');
+            }
+
+         // Update page info
+            const total_pages = Math.ceil(response.total / items_per_page);
+            $('#page_info').text(`Page ${page} of ${total_pages}`);
+
+         // Disable buttons if needed
+            $('#prev_page').prop('disabled', page <= 1);
+            $('#next_page').prop('disabled', page >= total_pages);
+         },
+         error: function() {
+            $('#item_cards').html('<p class="text-center text-danger">Failed to load items.</p>');
+         }
+      });
+   }
+
+   load_items(current_page);
+
+   $('#prev_page').click(function() {
+      if (current_page > 1) {
+         current_page--;
+         load_items(current_page);
+      }
+   });
+
+   $('#next_page').click(function() {
+      current_page++;
+      load_items(current_page);
+   });
+
+   function ret_pos_item(pos_item_id, update = false) {
+      const item = pos_items[pos_item_id];
+      if (!item) return console.warn(`Item ${pos_item_id} not found.`), null;
+
+      if (update) {
+         const $card = $(`#pos_item_cards_container .card[data-pos_item_id='${pos_item_id}']`);
+         if ($card.length) {
+            const $spans = $card.find('.card-body span');
+
+            $spans.eq(0).text(item.pos_item_stock);
+
+            let unit = item.pos_item_unit;
+            if (item.pos_item_stock > 1) {
+               const last = unit.slice(-1).toLowerCase();
+               if (['s','x','z'].includes(last) || unit.endsWith('sh') || unit.endsWith('ch')) {
+                  unit += 'es';
+               } else {
+                  unit += 's';
+               }
+            }
+            $spans.eq(1).text(unit);
+
+            $card.find('small[contenteditable]').text(item.pos_item_qty || 0);
+
+            if (item.pos_item_stock <= item.pos_item_low) {
+               $card.addClass('border-danger');
+            } else {
+               $card.removeClass('border-danger');
+            }
+
+            if (item.pos_item_status != 1) {
+               $card.addClass('opacity-50').find('button, [contenteditable]').prop('disabled', true);
+            } else {
+               $card.removeClass('opacity-50').find('button, [contenteditable]').prop('disabled', false);
+            }
+         }
+      }
+      return item;
+   }
+
+   function load_pos_item_form(pos_item_id) {
+
+      const item = pos_items[pos_item_id];
+      $('#update_pos_item_image').val('');
+      if (!item) return console.warn(`Item ${pos_item_id} not found.`);
+
+      $('#update_pos_item_modal').data('pos_item_id', pos_item_id);
+
+      $('#update_pos_item_name').val(item.pos_item_name);
+      $('#update_pos_item_code').val(item.pos_item_code);
+      $('#update_pos_item_price').val(item.pos_item_price);
+      $('#update_pos_item_stock').val(item.pos_item_stock);
+      $('#update_pos_item_unit').val(item.pos_item_unit);
+      $('#update_pos_item_low').val(item.pos_item_low);
+
+      if (item.pos_item_image !== "") {
+         const image_url = "<?php echo base_url();?>photos/pos_images/" + item.pos_item_image;
+         $("#update_pos_item_image_preview").attr("src", image_url);
+         $('#update_pos_item_image_preview').removeClass('d-none');
+         $('#update_pos_item_image_placeholder').addClass('d-none');
+      }
+      else {
+         $("#update_pos_item_image_preview").attr("src", "");
+         $('#update_pos_item_image_preview').addClass('d-none');
+         $('#update_pos_item_image_placeholder').removeClass('d-none');
+      }
+      $('#update_pos_item_modal').modal('show');
+   }
+
+   $('#update_pos_item_image').on('change', function () {
+      const file = this.files[0];
+      const preview = $('#update_pos_item_image_preview');
+
+      if (file) {
+         const reader = new FileReader();
+         reader.onload = function (e) {
+            preview.attr('src', e.target.result).removeClass('d-none');
+         };
+         reader.readAsDataURL(file);
+      }
+      else {
+         preview.attr('src','').addClass('d-none');
+      }
+   });
+
+   let camera_stream = null;
+
+   // File selection
+   $('#update_pos_item_image').on('change', function() {
+       const file = this.files[0];
+       const preview = $('#update_pos_item_image_preview');
+       const video = $('#camera_stream');
+       const placeholder = $('#update_pos_item_image_placeholder');
+
+       if (file) {
+           const reader = new FileReader();
+           reader.onload = function(e) {
+               preview.attr('src', e.target.result).removeClass('d-none');
+               video.addClass('d-none');
+               $('#take_photo_btn').addClass('d-none');
+               placeholder.hide();
+               stop_camera();
+           };
+           reader.readAsDataURL(file);
+       } else {
+           preview.attr('src', '').addClass('d-none');
+           placeholder.show();
+       }
+   });
+
+   // Open camera
+   $('#capture_image_btn').on('click', async function() {
+       try {
+           stop_camera();
+
+           camera_stream = await navigator.mediaDevices.getUserMedia({
+               video: { facingMode: "user" },
+               audio: false
+           });
+
+           const video = $('#camera_stream').get(0);
+           video.srcObject = camera_stream;
+           video.play();
+
+           $('#camera_stream').removeClass('d-none');
+           $('#take_photo_btn').removeClass('d-none');
+           $('#update_pos_item_image_preview').addClass('d-none');
+           $('#update_pos_item_image_placeholder').hide();
+
+       } catch (err) {
+           console.error(err);
+           alert("Camera not available or permission denied.");
+       }
+   });
+
+   // Take photo
+   $('#take_photo_btn').on('click', function() {
+       const video = $('#camera_stream').get(0);
+       const canvas = document.createElement('canvas'); // temporary canvas
+       const preview = $('#update_pos_item_image_preview');
+
+       canvas.width = video.videoWidth;
+       canvas.height = video.videoHeight;
+
+       const ctx = canvas.getContext('2d');
+       ctx.drawImage(video, 0, 0);
+
+       const data = canvas.toDataURL('image/png');
+
+       preview.attr('src', data).removeClass('d-none');
+
+       $('#camera_stream').addClass('d-none');
+       $('#take_photo_btn').addClass('d-none');
+
+       stop_camera();
+   });
+
+   // Stop camera helper
+   function stop_camera() {
+       if (camera_stream) {
+           camera_stream.getTracks().forEach(track => track.stop());
+           camera_stream = null;
+       }
+   }
+
+   function update_pos_item() {
+      const form = $('#update_pos_item_form')[0];
+      const form_data = new FormData(form);
+
+      const pos_item_id = $('#update_pos_item_modal').data('pos_item_id');
+      form_data.append('update_pos_item_id', pos_item_id);
+
+      $.ajax({
+         url: '<?php echo base_url();?>i.php/sys_control/update_pos_item',
+         method: 'POST',
+         data: form_data,
+         dataType: 'json',
+         processData: false,
+         contentType: false,
+
+         success: function(response) {
+            if(response.status === 'success'){
+               document.activeElement.blur();
+
+               $('#update_pos_item_modal').modal('hide');
+               title = "Updated Successfully";
+               message = "Item details were updated successfully. Item list will reload to reflect the changes.";
+               status = "success";
+               load_notification(title, message, status)
+               load_items(current_page);
+            }
+            else{
+               title = "Update Failed";
+               message = "Item details updating failed. Please try again.";
+               status = "error";
+               load_notification(title, message, status) 
+            }
+         },
+         error: function(xhr, status, error){
+            console.error(error);
+            alert('Server error while updating item.');
+         }
+
+      });
+   }
+
+   $('#update_pos_item_form').on('submit', function(e){
+      e.preventDefault();
+      update_pos_item();
    });
 
    $(document).ready(function() {

@@ -969,8 +969,11 @@ class Sys_model extends CI_Model {
 	    $pos_item_unit      = $_POST['update_pos_item_unit'];
 	    $pos_item_stock     = $_POST['update_pos_item_stock'];
 	    $pos_item_low       = $_POST['update_pos_item_low'];
-	    $pos_item_image_b64 = $_POST['update_pos_item_image'];
-	    $pos_item_image_name = $_POST['update_pos_item_image_name'];
+
+	    if (isset($_POST['update_pos_item_image'])) {
+	    	$pos_item_image_b64 = $_POST['update_pos_item_image'];
+	    	$pos_item_image_name = $_POST['update_pos_item_image_name'];	
+	    }
 
 	    // Fetch current record for comparison
 	    $sql = "SELECT * FROM pos_inventory WHERE pos_item_id = ?";
@@ -1019,18 +1022,29 @@ class Sys_model extends CI_Model {
 	    if ($file_path && $current['pos_item_image'] != $pos_item_image_name) $changed[] = 'Item Image';
 
 	    // Respond and log
+	    header('Content-Type: application/json');
 	    if ($update_query) {
-	        echo "success";
-	        if (!empty($changed)) {
-	        	$activity_type = "Item Updating";
-	        	$pos_code = "Item ID: ". $pos_item_id;
-	            $activity = "<strong>Updated:</strong><br>" . implode(', ', $changed);
-	            $sql = "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)";
-	        	$this->db->query($sql, [$activity_type, $pos_code, $activity]);
-	        }
-	    } else {
-	        echo "error";
+	    	if (!empty($changed)) {
+	    		$activity_type = "Item Updating";
+	    		$pos_code = "Item ID: " . $pos_item_id;
+	    		$activity = "<strong>Updated:</strong><br>" . implode(', ', $changed);
+
+	    		$sql = "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)";
+	    		$this->db->query($sql, [$activity_type, $pos_code, $activity]);
+	    	}
+
+	    	echo json_encode([
+	    		'status' => 'success',
+	    		'message' => 'Item updated successfully'
+	    	]);
+	    } 
+	    else {
+	    	echo json_encode([
+	    		'status' => 'error',
+	    		'message' => 'Failed to update item'
+	    	]);
 	    }
+	    exit;
 	}
 
 	public function pos_checkout(){

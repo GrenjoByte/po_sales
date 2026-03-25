@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 01, 2026 at 03:27 PM
+-- Generation Time: Mar 10, 2026 at 04:18 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.0.28
 
@@ -66,7 +66,9 @@ CREATE TABLE `pos_inventory` (
 --
 
 INSERT INTO `pos_inventory` (`pos_item_id`, `pos_item_name`, `pos_item_code`, `pos_item_image`, `pos_item_price`, `pos_item_stock`, `pos_item_unit`, `pos_item_low`, `pos_item_status`) VALUES
-(1, 'C2 Apple', 'c2_apple_450ml', 'c2_apple_1l.jpg', 45.00, 23, 'piece', 5, 1);
+(1, 'C2 Apple', 'c2_apple_450ml', 'c2_apple_1l.jpg', 45.00, 23, 'piece', 5, 1),
+(2, 'C2 Greentea', 'c2_greentea_450ml', 'c2_greentea.webp', 43.00, 18, 'piece', 5, 1),
+(3, 'C2 Lemon', 'c2_lemon_450ml', 'c2_lemon.webp', 46.00, 12, 'piece', 5, 1);
 
 -- --------------------------------------------------------
 
@@ -296,7 +298,7 @@ ALTER TABLE `pos_checkouts`
 -- AUTO_INCREMENT for table `pos_inventory`
 --
 ALTER TABLE `pos_inventory`
-  MODIFY `pos_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `pos_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `pos_logs`
