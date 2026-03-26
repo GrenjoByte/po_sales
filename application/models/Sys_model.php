@@ -83,7 +83,7 @@ class Sys_model extends CI_Model {
 			$total = $row->total;
 		}
 
-		$sql = "SELECT pos_item_id, pos_item_name, pos_item_code, pos_item_image, pos_item_price, pos_item_stock, pos_item_unit, pos_item_low
+		$sql = "SELECT pos_item_id, pos_item_name, pos_item_code, pos_item_price, pos_item_stock, pos_item_unit, pos_item_low
 		FROM pos_inventory
 		WHERE pos_item_status = 1
 		ORDER BY pos_item_name ASC
@@ -96,7 +96,6 @@ class Sys_model extends CI_Model {
 				'pos_item_id'    => $row->pos_item_id,
 				'pos_item_name'  => $row->pos_item_name,
 				'pos_item_code'  => $row->pos_item_code,
-				'pos_item_image' => $row->pos_item_image,
 				'pos_item_price' => $row->pos_item_price,
 				'pos_item_stock' => $row->pos_item_stock,
 				'pos_item_unit'  => $row->pos_item_unit,
@@ -109,6 +108,133 @@ class Sys_model extends CI_Model {
 			'total' => $total
 		]);
 	}
+
+	public function create_pos_item()
+	{
+	    $pos_item_name  = $_POST['new_pos_item_name'];
+	    $pos_item_code  = $_POST['new_pos_item_code'];
+	    $pos_item_price = $_POST['new_pos_item_price'];
+	    $pos_item_unit  = $_POST['new_pos_item_unit'];
+	    $pos_item_stock = $_POST['new_pos_item_stock'];
+	    $pos_item_low   = $_POST['new_pos_item_low'];
+
+	    $sql = "INSERT INTO pos_inventory 
+	            (pos_item_name, pos_item_code, pos_item_price, pos_item_unit, pos_item_stock, pos_item_low) 
+	            VALUES (?, ?, ?, ?, ?, ?)";
+	    $insert_query = $this->db->query($sql, array(
+	        $pos_item_name,
+	        $pos_item_code,
+	        $pos_item_price,
+	        $pos_item_unit,
+	        $pos_item_stock,
+	        $pos_item_low
+	    ));
+
+	    $pos_item_id = $this->db->insert_id();
+
+	    header('Content-Type: application/json');
+	    if ($insert_query) {
+
+	        $activity_type = "Item Creation";
+	        $pos_code = "Item ID: " . $pos_item_id;
+
+	        $activity = "<strong>Created:</strong><br>"
+	                  . "Item Name, Item Code, Item Price, Item Unit, Current Stock, Low Stock Level";
+
+	        $sql = "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)";
+	        $this->db->query($sql, [$activity_type, $pos_code, $activity]);
+
+	        echo json_encode([
+	            'status' => 'success',
+	            'message' => 'Item created successfully'
+	        ]);
+	    } 
+	    else {
+	        echo json_encode([
+	            'status' => 'error',
+	            'message' => 'Failed to create item'
+	        ]);
+	    }
+	    exit;
+	}
+	public function update_pos_item()
+	{
+	    $pos_item_id        = $_POST['update_pos_item_id'];
+	    $pos_item_name      = $_POST['update_pos_item_name'];
+	    $pos_item_price     = $_POST['update_pos_item_price'];
+	    $pos_item_unit      = $_POST['update_pos_item_unit'];
+	    $pos_item_stock     = $_POST['update_pos_item_stock'];
+	    $pos_item_low       = $_POST['update_pos_item_low'];
+
+	    $sql = "SELECT * FROM pos_inventory WHERE pos_item_id = ?";
+	    $query = $this->db->query($sql, array($pos_item_id));
+	    $current = $query->row_array();
+
+	    $sql = "UPDATE pos_inventory 
+	    SET pos_item_name=?, pos_item_price=?, pos_item_unit=?, pos_item_stock=?, pos_item_low=? 
+	    WHERE pos_item_id=?";
+	    $update_query = $this->db->query($sql, array($pos_item_name, $pos_item_price, $pos_item_unit, $pos_item_stock, $pos_item_low, $pos_item_id));
+
+	    $changed = array();
+	    if ($current['pos_item_name'] != $pos_item_name) $changed[] = 'Item Name';
+	    if ($current['pos_item_price'] != $pos_item_price) $changed[] = 'Item Price';
+	    if ($current['pos_item_unit'] != $pos_item_unit) $changed[] = 'Item Unit';
+	    if ($current['pos_item_stock'] != $pos_item_stock) $changed[] = 'Current Stock';
+	    if ($current['pos_item_low'] != $pos_item_low) $changed[] = 'Low Stock Level';
+	    if ($file_path && $current['pos_item_image'] != $pos_item_image_name) $changed[] = 'Item Image';
+
+	    header('Content-Type: application/json');
+	    if ($update_query) {
+	    	if (!empty($changed)) {
+	    		$activity_type = "Item Updating";
+	    		$pos_code = "Item ID: " . $pos_item_id;
+	    		$activity = "<strong>Updated:</strong><br>" . implode(', ', $changed);
+
+	    		$sql = "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)";
+	    		$this->db->query($sql, [$activity_type, $pos_code, $activity]);
+	    	}
+
+	    	echo json_encode([
+	    		'status' => 'success',
+	    		'message' => 'Item updated successfully'
+	    	]);
+	    } 
+	    else {
+	    	echo json_encode([
+	    		'status' => 'error',
+	    		'message' => 'Failed to update item'
+	    	]);
+	    }
+	    exit;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	public function save_child_profile()
 	{
 	    $guardian_name      = $_POST['guardian_name'];
@@ -961,91 +1087,6 @@ class Sys_model extends CI_Model {
 	    }
 	}
 
-	public function update_pos_item()
-	{
-	    $pos_item_id        = $_POST['update_pos_item_id'];
-	    $pos_item_name      = $_POST['update_pos_item_name'];
-	    $pos_item_price     = $_POST['update_pos_item_price'];
-	    $pos_item_unit      = $_POST['update_pos_item_unit'];
-	    $pos_item_stock     = $_POST['update_pos_item_stock'];
-	    $pos_item_low       = $_POST['update_pos_item_low'];
-
-	    if (isset($_POST['update_pos_item_image'])) {
-	    	$pos_item_image_b64 = $_POST['update_pos_item_image'];
-	    	$pos_item_image_name = $_POST['update_pos_item_image_name'];	
-	    }
-
-	    // Fetch current record for comparison
-	    $sql = "SELECT * FROM pos_inventory WHERE pos_item_id = ?";
-	    $query = $this->db->query($sql, array($pos_item_id));
-	    $current = $query->row_array();
-
-	    // Handle image update (if new image is provided)
-	    $file_path = null;
-	    if (!empty($pos_item_image_b64)) {
-	        $image_parts = explode(";base64,", $pos_item_image_b64);
-	        if (count($image_parts) == 2) {
-	            $image_base64 = base64_decode($image_parts[1]);
-	            $file_name = $pos_item_image_name;
-	            $upload_path = FCPATH . 'photos/pos_images/';
-
-	            if (!is_dir($upload_path)) {
-	                mkdir($upload_path, 0755, true);
-	            }
-
-	            file_put_contents($upload_path . $file_name, $image_base64);
-	            $pos_item_image_name = $file_name;
-	            $file_path = 'photos/pos_images/' . $file_name;
-	        }
-	    }
-
-	    // Prepare update query (with or without image)
-	    if ($file_path) {
-	        $sql = "UPDATE pos_inventory 
-	                   SET pos_item_name=?, pos_item_price=?, pos_item_unit=?, pos_item_stock=?, pos_item_low=?, pos_item_image=? 
-	                 WHERE pos_item_id=?";
-	        $update_query = $this->db->query($sql, array($pos_item_name, $pos_item_price, $pos_item_unit, $pos_item_stock, $pos_item_low, $pos_item_image_name, $pos_item_id));
-	    } else {
-	        $sql = "UPDATE pos_inventory 
-	                   SET pos_item_name=?, pos_item_price=?, pos_item_unit=?, pos_item_stock=?, pos_item_low=? 
-	                 WHERE pos_item_id=?";
-	        $update_query = $this->db->query($sql, array($pos_item_name, $pos_item_price, $pos_item_unit, $pos_item_stock, $pos_item_low, $pos_item_id));
-	    }
-
-	    // Track what changed
-	    $changed = array();
-	    if ($current['pos_item_name'] != $pos_item_name) $changed[] = 'Item Name';
-	    if ($current['pos_item_price'] != $pos_item_price) $changed[] = 'Item Price';
-	    if ($current['pos_item_unit'] != $pos_item_unit) $changed[] = 'Item Unit';
-	    if ($current['pos_item_stock'] != $pos_item_stock) $changed[] = 'Current Stock';
-	    if ($current['pos_item_low'] != $pos_item_low) $changed[] = 'Low Stock Level';
-	    if ($file_path && $current['pos_item_image'] != $pos_item_image_name) $changed[] = 'Item Image';
-
-	    // Respond and log
-	    header('Content-Type: application/json');
-	    if ($update_query) {
-	    	if (!empty($changed)) {
-	    		$activity_type = "Item Updating";
-	    		$pos_code = "Item ID: " . $pos_item_id;
-	    		$activity = "<strong>Updated:</strong><br>" . implode(', ', $changed);
-
-	    		$sql = "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)";
-	    		$this->db->query($sql, [$activity_type, $pos_code, $activity]);
-	    	}
-
-	    	echo json_encode([
-	    		'status' => 'success',
-	    		'message' => 'Item updated successfully'
-	    	]);
-	    } 
-	    else {
-	    	echo json_encode([
-	    		'status' => 'error',
-	    		'message' => 'Failed to update item'
-	    	]);
-	    }
-	    exit;
-	}
 
 	public function pos_checkout(){
 	    date_default_timezone_set('Asia/Manila');

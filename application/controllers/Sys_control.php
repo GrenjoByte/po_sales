@@ -43,6 +43,17 @@ class Sys_control extends CI_Controller
 	{
 		$this->load->view('inventory');	
 	}
+	public function create_pos_item()
+	{
+		$this->load->model('sys_model');	
+		$this->sys_model->create_pos_item();
+	}
+	public function update_pos_item()
+	{
+		$this->load->model('sys_model');	
+		$this->sys_model->update_pos_item();
+	}
+
 	public function sales()
 	{
 		$this->load->view('sales');	
@@ -131,16 +142,6 @@ class Sys_control extends CI_Controller
 	{
 		$this->load->model('sys_model');	
 		$this->sys_model->load_pos_inventory();
-	}
-	public function new_pos_item()
-	{
-		$this->load->model('sys_model');	
-		$this->sys_model->new_pos_item();
-	}
-	public function update_pos_item()
-	{
-		$this->load->model('sys_model');	
-		$this->sys_model->update_pos_item();
 	}
 	public function pos_checkout()
 	{

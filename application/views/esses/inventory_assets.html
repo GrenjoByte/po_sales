@@ -680,12 +680,6 @@
                      <tr class="text-center">
                         <td class="text-start">
                            <div class="d-flex align-items-center">
-                              <img src="<?php echo base_url();?>photos/pos_images/c2_apple_1l.jpg"
-                              alt="Item Image"
-                              class="rounded-circle me-3"
-                              width="40"
-                              height="40">
-
                               <div>
                                  <div class="fw-semibold d-block text-truncate overflow-tooltip">Premium Coffee Beans</div>
                                  <small class="text-muted">Code: CFB-001</small>
@@ -749,15 +743,6 @@
                      maxlength="50" 
                      placeholder="e.g. COKE-15L" 
                      required>
-                  </div>
-
-                  <div class="mb-2">
-                     <label for="new_pos_item_image" class="form-label">Item Image</label>
-                     <input type="file" 
-                     class="form-control form-control-sm" 
-                     id="new_pos_item_image" 
-                     name="new_pos_item_image" 
-                     accept="image/*">
                   </div>
 
                   <div class="mb-2">
@@ -840,41 +825,6 @@
                      placeholder="e.g. COKE-15L" 
                      required>
                   </div>
-
-                  <div class="mb-2">
-                    <label for="update_pos_item_image" class="form-label">Item Image</label>
-
-                    <div id="update_pos_item_image_container"
-                    style="width:100%; height: 100%; object-fit: contain; aspect-ratio:5/3; background-color:white; border:1px solid #ced4da; overflow:hidden; position:relative; cursor:pointer;">
-
-                       <input type="file"
-                       id="update_pos_item_image"
-                       accept="image/*"
-                       style="opacity:0; position:absolute; top:0; left:0; width:100%; height:100%; object-fit: contain; cursor:pointer; z-index:2;">
-
-                       <img id="update_pos_item_image_preview"
-                       src=""
-                       class="d-none"
-                       style="width:100%; height:100%; object-fit:contain; display:block; background-color:white;">
-
-                       <video id="camera_stream"
-                       autoplay
-                       playsinline
-                       class="d-none"
-                       style="width: 100%; height: 100%; object-fit:contain; display:block; background-color:white; position:absolute; top:0; left:0; z-index:1;">
-                       </video>
-
-                       <span id="update_pos_item_image_placeholder"
-                       style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#6c757d;">
-                          Click or capture an image
-                       </span>
-                    </div>
-
-                     <div class="text-center mt-2">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" id="capture_image_btn">Capture Image</button>
-                        <button type="button" class="btn btn-success btn-sm d-none" id="take_photo_btn">Take Photo</button>
-                     </div>
-                  </div>
                   
                   <div class="mb-2">
                      <label for="update_pos_item_price" class="form-label">Price</label>
@@ -938,10 +888,7 @@
 
          <div class="modal-body">
             <div class="row align-items-center mb-3">
-               <div class="col-6 text-center">
-                  <img src="<?php echo base_url();?>photos/pos_images/c2_apple_1l.jpg"
-                  class="img-fluid rounded-circle border mb-2"
-                  style="aspect-ratio:1/1; object-fit:cover;">
+               <div class="col-12 text-center">
                   <div class="fw-semibold small text-truncate overflow-tooltip">
                      Coca-Cola 1.5L
                   </div>
@@ -1087,11 +1034,8 @@
                   const card_html = `
                      <div class="col" id="item_cards">
                               <div class="card h-100" data-pos_item_id="${[pos_item_id]}"> 
-                                  <div class="position-relative img-hover-wrapper">
-                                      <img src="<?php echo base_url();?>photos/pos_images/${item.pos_item_image}" 
-                                           class="card-img-top" 
-                                           alt="${item.pos_item_name}" 
-                                           style="aspect-ratio:5/3;object-fit:contain;background-color:white;">
+                                  <div class="position-relative img-hover-wrapper d-flex justify-content-center align-items-center"style="aspect-ratio:5/3; background-color:white;">
+                                       <i class="bi bi-box2" style="font-size: 3rem;"></i>
 
                                       <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center">
                                  <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
@@ -1161,6 +1105,92 @@
       load_items(current_page);
    });
 
+   $(function() {
+      $('.pos_count_minus, .pos_count_plus').on('click', function() {
+         let container = $(this).siblings('.pos_count_container');
+         let item_count = Number(container.attr('data-text'));
+         let max_limit = Number(container.attr('data-max_limit'));
+                  // let max_limit = pos_item_stock;
+         let card = $(this).closest('.card');
+         let stock_el = card.find('.pos_item_stock').first();
+         let current_stock = Number(stock_el.text());
+
+         let unit_el = card.find('.pos_item_unit').first();
+         let current_unit = unit_el.text();
+         let add_button = card.find('.add_to_pos_cart');
+
+         if ($(this).hasClass('pos_count_plus')) {
+            if (item_count < max_limit && current_stock > 0) {
+               item_count++;
+               current_stock--;
+            }
+         } else {
+            if (item_count > 0) {
+               item_count--;
+               current_stock++;
+            }
+         }
+
+         container.attr('data-text', item_count);
+         stock_el.text(current_stock);
+         item_count > 0 ? add_button.removeClass('invisible') : add_button.addClass('invisible');
+
+         if (current_unit.endsWith('es')) {
+            if (/(sh|ch|x|z|s)es$/.test(current_unit)) {
+               current_unit = current_unit.slice(0, -2);
+            } else if (!current_unit.endsWith('ses')) {
+               current_unit = current_unit.slice(0, -1);
+            }
+         } else if (current_unit.endsWith('s')) {
+            if (!current_unit.endsWith('ss')) {
+               current_unit = current_unit.slice(0, -1);
+            }
+         }
+
+         if (current_stock != 1) {
+            unit_last = current_unit[current_unit.length - 1].toLowerCase();
+            if (
+                unit_last == 's' ||
+                unit_last == 'h' && current_unit.endsWith('sh') ||
+                unit_last == 'h' && current_unit.endsWith('ch') ||
+                unit_last == 'x' ||
+                unit_last == 'z'
+                ) {
+                  current_unit = current_unit + 'es';
+            } 
+            else {
+               current_unit = current_unit + 's';
+            }
+         } 
+         else {
+            if (current_unit.endsWith('es')) {
+               current_unit = current_unit.slice(0, -2);
+            } 
+            else if (current_unit.endsWith('s')) {
+               current_unit = current_unit.slice(0, -1);
+            }
+         }
+         unit_el.text(current_unit);
+      });
+
+      $(document).on('click', '.pos_item_update_activator', function (e) {
+         e.preventDefault();
+
+         let pos_item_id = $(this)
+            .closest('.card')
+            .data('pos_item_id');
+         load_pos_item_form(pos_item_id);
+      });
+      $(document).on('click', '.pos_item_barcodes_activator', function (e) {
+         e.preventDefault();
+
+         const item_id = $(this).data('id');
+         const modal_el = document.getElementById('pos_item_barcodes_modal');
+         const modal_instance = bootstrap.Modal.getOrCreateInstance(modal_el);
+         modal_instance.show();
+      });
+   });
+
    function ret_pos_item(pos_item_id, update = false) {
       const item = pos_items[pos_item_id];
       if (!item) return console.warn(`Item ${pos_item_id} not found.`), null;
@@ -1204,7 +1234,6 @@
    function load_pos_item_form(pos_item_id) {
 
       const item = pos_items[pos_item_id];
-      $('#update_pos_item_image').val('');
       if (!item) return console.warn(`Item ${pos_item_id} not found.`);
 
       $('#update_pos_item_modal').data('pos_item_id', pos_item_id);
@@ -1216,115 +1245,56 @@
       $('#update_pos_item_unit').val(item.pos_item_unit);
       $('#update_pos_item_low').val(item.pos_item_low);
 
-      if (item.pos_item_image !== "") {
-         const image_url = "<?php echo base_url();?>photos/pos_images/" + item.pos_item_image;
-         $("#update_pos_item_image_preview").attr("src", image_url);
-         $('#update_pos_item_image_preview').removeClass('d-none');
-         $('#update_pos_item_image_placeholder').addClass('d-none');
-      }
-      else {
-         $("#update_pos_item_image_preview").attr("src", "");
-         $('#update_pos_item_image_preview').addClass('d-none');
-         $('#update_pos_item_image_placeholder').removeClass('d-none');
-      }
       $('#update_pos_item_modal').modal('show');
    }
 
-   $('#update_pos_item_image').on('change', function () {
-      const file = this.files[0];
-      const preview = $('#update_pos_item_image_preview');
+   function create_pos_item() {
+      const form = $('#new_pos_item_form')[0];
+      const form_data = new FormData(form);
 
-      if (file) {
-         const reader = new FileReader();
-         reader.onload = function (e) {
-            preview.attr('src', e.target.result).removeClass('d-none');
-         };
-         reader.readAsDataURL(file);
-      }
-      else {
-         preview.attr('src','').addClass('d-none');
-      }
-   });
+      $.ajax({
+         url: '<?php echo base_url();?>i.php/sys_control/create_pos_item',
+         method: 'POST',
+         data: form_data,
+         dataType: 'json',
+         processData: false,
+         contentType: false,
 
-   let camera_stream = null;
+         success: function(response) {
+            if(response.status === 'success'){
+               document.activeElement.blur();
 
-   // File selection
-   $('#update_pos_item_image').on('change', function() {
-       const file = this.files[0];
-       const preview = $('#update_pos_item_image_preview');
-       const video = $('#camera_stream');
-       const placeholder = $('#update_pos_item_image_placeholder');
+               $('#new_pos_item_modal').modal('hide');
 
-       if (file) {
-           const reader = new FileReader();
-           reader.onload = function(e) {
-               preview.attr('src', e.target.result).removeClass('d-none');
-               video.addClass('d-none');
-               $('#take_photo_btn').addClass('d-none');
-               placeholder.hide();
-               stop_camera();
-           };
-           reader.readAsDataURL(file);
-       } else {
-           preview.attr('src', '').addClass('d-none');
-           placeholder.show();
-       }
-   });
+            // reset form after success
+               $('#new_pos_item_form')[0].reset();
 
-   // Open camera
-   $('#capture_image_btn').on('click', async function() {
-       try {
-           stop_camera();
+               title = "Created Successfully";
+               message = "New item was added successfully. Item list will reload to reflect the changes.";
+               status = "success";
+               load_notification(title, message, status);
 
-           camera_stream = await navigator.mediaDevices.getUserMedia({
-               video: { facingMode: "user" },
-               audio: false
-           });
+               load_items(current_page);
+            }
+            else{
+               title = "Creation Failed";
+               message = response.message || "Item creation failed. Please try again.";
+               status = "error";
+               load_notification(title, message, status);
+            }
+         },
 
-           const video = $('#camera_stream').get(0);
-           video.srcObject = camera_stream;
-           video.play();
-
-           $('#camera_stream').removeClass('d-none');
-           $('#take_photo_btn').removeClass('d-none');
-           $('#update_pos_item_image_preview').addClass('d-none');
-           $('#update_pos_item_image_placeholder').hide();
-
-       } catch (err) {
-           console.error(err);
-           alert("Camera not available or permission denied.");
-       }
-   });
-
-   // Take photo
-   $('#take_photo_btn').on('click', function() {
-       const video = $('#camera_stream').get(0);
-       const canvas = document.createElement('canvas'); // temporary canvas
-       const preview = $('#update_pos_item_image_preview');
-
-       canvas.width = video.videoWidth;
-       canvas.height = video.videoHeight;
-
-       const ctx = canvas.getContext('2d');
-       ctx.drawImage(video, 0, 0);
-
-       const data = canvas.toDataURL('image/png');
-
-       preview.attr('src', data).removeClass('d-none');
-
-       $('#camera_stream').addClass('d-none');
-       $('#take_photo_btn').addClass('d-none');
-
-       stop_camera();
-   });
-
-   // Stop camera helper
-   function stop_camera() {
-       if (camera_stream) {
-           camera_stream.getTracks().forEach(track => track.stop());
-           camera_stream = null;
-       }
+         error: function(xhr, status, error){
+            console.error(error);
+            alert('Server error while creating item.');
+         }
+      });
    }
+
+   $('#new_pos_item_form').on('submit', function(e){
+      e.preventDefault();
+      create_pos_item();
+   });
 
    function update_pos_item() {
       const form = $('#update_pos_item_form')[0];
