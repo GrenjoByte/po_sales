@@ -994,7 +994,7 @@
    let current_page = 1;
    const items_per_page = 15;
 
-   function load_items(page = 1) {
+   function load_pos_inventory(page = 1) {
       $.ajax({
          url: '<?php echo base_url();?>i.php/sys_control/load_pos_inventory',
          method: 'POST',
@@ -1010,6 +1010,7 @@
 
                   pos_item_id = item.pos_item_id;
                   pos_item_name = item.pos_item_name;
+                  pos_item_code = item.pos_item_code;
                   pos_item_price = item.pos_item_price;
                   pos_item_stock = item.pos_item_stock;
                   pos_item_unit = item.pos_item_unit;
@@ -1033,8 +1034,8 @@
 
                   const card_html = `
                      <div class="col" id="item_cards">
-                              <div class="card h-100" data-pos_item_id="${[pos_item_id]}"> 
-                                  <div class="position-relative img-hover-wrapper d-flex justify-content-center align-items-center"style="aspect-ratio:5/3; background-color:white;">
+                              <div class="card h-100" data-pos_item_id="${pos_item_id}"> 
+                                  <div class="position-relative img-hover-wrapper d-flex justify-content-center align-items-center"style="aspect-ratio:5/2; background-color:white;">
                                        <i class="bi bi-box2" style="font-size: 3rem;"></i>
 
                                       <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center">
@@ -1050,22 +1051,22 @@
                                   </div>
                                   <small class="card-body">
                                       <div class="card-title fs-6 text-truncate overflow-tooltip" role="button">
-                                          ${item.pos_item_name}
+                                          ${pos_item_name}
                                       </div>
-                              <small class="card-subtitle text-muted d-block text-truncate">
-                                          ${item.pos_item_code}
+                                    <small class="card-subtitle text-muted d-block text-truncate">
+                                          ${pos_item_code}
                                       </small>
                                       <div class="d-flex fs-6 mt-1 fw-semibold align-items-center gap-1">
-                                          <span>${item.pos_item_stock}</span>
-                                          <span>${item.pos_item_unit}</span>
+                                          <span>${pos_item_stock}</span>
+                                          <span>${pos_item_unit}</span>
                                       </div>
                                   </small>
                                   <div class="card-footer">
                                       <div class="d-flex justify-content-start align-items-center">
                                           <button class="pos_count_minus bi bi-dash mx-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
-                                          <small contenteditable class="px-2">0</small>
+                                          <div contenteditable class="pos_count_container px-2" data-text="0">0</div>
                                           <button class="pos_count_plus bi bi-plus ms-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>    
-                                          <button class="bi bi-cart-plus ms-auto fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
+                                          <button class="pos_add_cart bi bi-cart-plus ms-auto fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
                                       </div>
                                   </div>
                         </div>
@@ -1073,7 +1074,69 @@
                   ;
                   $container.append(card_html);
                });
-            } else {
+               $('.pos_count_minus, .pos_count_plus')
+               .off('click')
+               .on('click', function () {
+
+                  let card = $(this).closest('.card');
+                  let pos_item_id = card.data('pos_item_id');
+
+                  let item = pos_items[pos_item_id];
+                  if (!item) return;
+
+                  let container = card.find('.pos_count_container');
+                  let item_count = Number(container.attr('data-text'));
+
+                  let base_unit = item.pos_item_unit;
+
+                  let add_button = card.find('.add_to_pos_cart');
+
+                  if ($(this).hasClass('pos_count_plus')) {
+                     item_count++;
+                  } 
+                  else {
+                     if (item_count > 0) {
+                        item_count--;
+                     }
+                  }
+
+                  item.restock_quantity = item_count;
+
+                  container.attr('data-text', item_count);
+                  container.text(item_count);
+
+                  item_count > 0 
+                    ? add_button.removeClass('invisible') 
+                    : add_button.addClass('invisible');
+               });
+               $('.pos_count_container')
+               .off('input')
+               .on('input', function () {
+
+                  let container = $(this);
+                  let card = container.closest('.card');
+                  let pos_item_id = card.data('pos_item_id');
+
+                  let item = pos_items[pos_item_id];
+                  if (!item) return;
+
+                  let add_button = card.find('.add_to_pos_cart');
+
+                  let value = container.text().replace(/[^0-9]/g, '');
+                  let item_count = Number(value) || 0;
+
+                  if (item_count < 0) item_count = 0;
+
+                  container.attr('data-text', item_count);
+
+                  item.restock_quantity = item_count;
+
+                  item_count > 0
+                    ? add_button.removeClass('invisible')
+                    : add_button.addClass('invisible');
+               });
+            } 
+            else {
                $container.html('<p class="text-center">No items found.</p>');
             }
 
@@ -1091,88 +1154,22 @@
       });
    }
 
-   load_items(current_page);
+   load_pos_inventory(current_page);
 
    $('#prev_page').click(function() {
       if (current_page > 1) {
          current_page--;
-         load_items(current_page);
+         load_pos_inventory(current_page);
       }
    });
 
    $('#next_page').click(function() {
       current_page++;
-      load_items(current_page);
+      load_pos_inventory(current_page);
    });
 
+
    $(function() {
-      $('.pos_count_minus, .pos_count_plus').on('click', function() {
-         let container = $(this).siblings('.pos_count_container');
-         let item_count = Number(container.attr('data-text'));
-         let max_limit = Number(container.attr('data-max_limit'));
-                  // let max_limit = pos_item_stock;
-         let card = $(this).closest('.card');
-         let stock_el = card.find('.pos_item_stock').first();
-         let current_stock = Number(stock_el.text());
-
-         let unit_el = card.find('.pos_item_unit').first();
-         let current_unit = unit_el.text();
-         let add_button = card.find('.add_to_pos_cart');
-
-         if ($(this).hasClass('pos_count_plus')) {
-            if (item_count < max_limit && current_stock > 0) {
-               item_count++;
-               current_stock--;
-            }
-         } else {
-            if (item_count > 0) {
-               item_count--;
-               current_stock++;
-            }
-         }
-
-         container.attr('data-text', item_count);
-         stock_el.text(current_stock);
-         item_count > 0 ? add_button.removeClass('invisible') : add_button.addClass('invisible');
-
-         if (current_unit.endsWith('es')) {
-            if (/(sh|ch|x|z|s)es$/.test(current_unit)) {
-               current_unit = current_unit.slice(0, -2);
-            } else if (!current_unit.endsWith('ses')) {
-               current_unit = current_unit.slice(0, -1);
-            }
-         } else if (current_unit.endsWith('s')) {
-            if (!current_unit.endsWith('ss')) {
-               current_unit = current_unit.slice(0, -1);
-            }
-         }
-
-         if (current_stock != 1) {
-            unit_last = current_unit[current_unit.length - 1].toLowerCase();
-            if (
-                unit_last == 's' ||
-                unit_last == 'h' && current_unit.endsWith('sh') ||
-                unit_last == 'h' && current_unit.endsWith('ch') ||
-                unit_last == 'x' ||
-                unit_last == 'z'
-                ) {
-                  current_unit = current_unit + 'es';
-            } 
-            else {
-               current_unit = current_unit + 's';
-            }
-         } 
-         else {
-            if (current_unit.endsWith('es')) {
-               current_unit = current_unit.slice(0, -2);
-            } 
-            else if (current_unit.endsWith('s')) {
-               current_unit = current_unit.slice(0, -1);
-            }
-         }
-         unit_el.text(current_unit);
-      });
-
       $(document).on('click', '.pos_item_update_activator', function (e) {
          e.preventDefault();
 
@@ -1274,7 +1271,7 @@
                status = "success";
                load_notification(title, message, status);
 
-               load_items(current_page);
+               load_pos_inventory(current_page);
             }
             else{
                title = "Creation Failed";
@@ -1320,7 +1317,7 @@
                message = "Item details were updated successfully. Item list will reload to reflect the changes.";
                status = "success";
                load_notification(title, message, status)
-               load_items(current_page);
+               load_pos_inventory(current_page);
             }
             else{
                title = "Update Failed";
