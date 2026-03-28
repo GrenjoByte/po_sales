@@ -1033,44 +1033,44 @@
                   }
 
                   const card_html = `
-                     <div class="col" id="item_cards">
-                              <div class="card h-100" data-pos_item_id="${pos_item_id}"> 
-                                  <div class="position-relative img-hover-wrapper d-flex justify-content-center align-items-center"style="aspect-ratio:5/2; background-color:white;">
-                                       <i class="bi bi-box2" style="font-size: 3rem;"></i>
+                  <div class="col" id="item_cards">
+                     <div class="card h-100" data-pos_item_id="${pos_item_id}"> 
+                        <div class="position-relative img-hover-wrapper d-flex justify-content-center align-items-center"style="aspect-ratio:5/2; background-color:white;">
+                           <i class="bi bi-box2" style="font-size: 3rem;"></i>
 
-                                      <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center">
-                                 <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
-                                             <button type=button class="btn btn-success btn-sm hover-btn pos_item_update_activator" role="button">
-                                                 Modify
-                                             </button type=button>
-                                    <button type=button class="btn btn-primary btn-sm hover-btn pos_item_barcodes_activator" role="button">
-                                                 Barcodes
-                                             </button type=button>
-                                 </div>
-                                      </div>
-                                  </div>
-                                  <small class="card-body">
-                                      <div class="card-title fs-6 text-truncate overflow-tooltip" role="button">
-                                          ${pos_item_name}
-                                      </div>
-                                    <small class="card-subtitle text-muted d-block text-truncate">
-                                          ${pos_item_code}
-                                      </small>
-                                      <div class="d-flex fs-6 mt-1 fw-semibold align-items-center gap-1">
-                                          <span>${pos_item_stock}</span>
-                                          <span>${pos_item_unit}</span>
-                                      </div>
-                                  </small>
-                                  <div class="card-footer">
-                                      <div class="d-flex justify-content-start align-items-center">
-                                          <button class="pos_count_minus bi bi-dash mx-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
-                                          <div contenteditable class="pos_count_container px-2" data-text="0">0</div>
-                                          <button class="pos_count_plus bi bi-plus ms-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>    
-                                          <button class="pos_add_cart bi bi-cart-plus ms-auto fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
-                                      </div>
-                                  </div>
+                           <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center">
+                              <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
+                                 <button type=button class="btn btn-success btn-sm hover-btn pos_item_update_activator" role="button">
+                                    Modify
+                                 </button type=button>
+                                 <button type=button class="btn btn-primary btn-sm hover-btn pos_item_barcodes_activator" role="button">
+                                    Barcodes
+                                 </button type=button>
+                              </div>
+                           </div>
                         </div>
-                     </div>`
+                        <small class="card-body">
+                           <div class="card-title fs-6 text-truncate overflow-tooltip" role="button">
+                              ${pos_item_name}
+                           </div>
+                           <small class="card-subtitle text-muted d-block text-truncate">
+                              ${pos_item_code}
+                           </small>
+                           <div class="d-flex fs-6 mt-1 fw-semibold align-items-center gap-1">
+                              <span>${pos_item_stock}</span>
+                              <span>${pos_item_unit}</span>
+                           </div>
+                        </small>
+                        <div class="card-footer">
+                           <div class="d-flex justify-content-start align-items-center">
+                              <button class="pos_count_minus bi bi-dash mx-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
+                              <div contenteditable class="pos_count_container px-2" data-text="0">0</div>
+                              <button class="pos_count_plus bi bi-plus ms-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>    
+                              <button class="pos_add_cart bi bi-cart-plus ms-auto fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>`
                   ;
                   $container.append(card_html);
                });
