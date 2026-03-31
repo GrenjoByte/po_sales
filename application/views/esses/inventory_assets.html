@@ -676,7 +676,7 @@
             </form>
             <div class="table-responsive">
                <table class="table align-middle mb-0">
-                  <tbody>
+                  <tbody id="pos_restocking_cart">
                      <tr class="text-center">
                         <td class="text-start">
                            <div class="d-flex align-items-center">
@@ -1135,6 +1135,34 @@
                     ? add_button.removeClass('invisible')
                     : add_button.addClass('invisible');
                });
+               $('.pos_add_cart')
+               .off('click')
+               .on('click', function () {
+
+                  let card = $(this).closest('.card');
+                  let pos_item_id = card.data('pos_item_id');
+
+                  let item = pos_items[pos_item_id];
+                  if (!item) return;
+
+                  let quantity = Number(item.restock_quantity) || 0;
+
+                  if (quantity <= 0) return;
+
+                  if (!item.cart_quantity) {
+                     item.cart_quantity = 0;
+                  }
+
+                  item.cart_quantity += quantity;
+
+                  render_pos_restocking_cart();
+
+                  card.find('.pos_count_container')
+                  .attr('data-text', 0)
+                  .text(0);
+
+                  item.restock_quantity = 0;
+               });
             } 
             else {
                $container.html('<p class="text-center">No items found.</p>');
@@ -1168,6 +1196,61 @@
       load_pos_inventory(current_page);
    });
 
+   $(function() {
+      
+   });
+
+   function render_pos_restocking_cart() {
+      let $cart = $('#pos_restocking_cart');
+      $cart.empty();
+
+      let grand_total = 0;
+
+      Object.values(pos_items).forEach(item => {
+
+         if (!item.cart_quantity || item.cart_quantity <= 0) return;
+
+         let price = Number(item.pos_item_price);
+         let quantity = item.cart_quantity;
+         let total = price * quantity;
+
+         grand_total += total;
+
+         let row = `
+         <tr class="text-center" data-id="${item.pos_item_id}">
+            <td class="text-start">
+               <div class="d-flex align-items-center">
+                  <div>
+                     <div class="fw-semibold d-block text-truncate overflow-tooltip">
+                        ${item.pos_item_name}
+                     </div>
+                     <small class="text-muted">Code: ${item.pos_item_code}</small>
+                  </div>
+               </div>
+            </td>
+
+            <td>₱${price.toFixed(2)}</td>
+            <td>x</td>
+            <td contenteditable="false">${quantity}</td>
+            <td class="text-start">${item.pos_item_unit}</td>
+            <td>=</td>
+            <td class="fw-semibold">₱${total.toFixed(2)}</td>
+            <td class="text-end">
+               <div class="dropdown dropstart">
+                  <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">⋮</button>
+                  <ul class="dropdown-menu w-auto">
+                     <li><a class="dropdown-item modify_row" href="#">Modify</a></li>
+                     <li><a class="dropdown-item text-danger remove_row" href="#">Remove</a></li>
+                  </ul>
+               </div>
+            </td>
+         </tr>`;
+
+         $cart.append(row);
+      });
+
+      $('#cart_total').text(`₱${grand_total.toFixed(2)}`);
+   }
 
    $(function() {
       $(document).on('click', '.pos_item_update_activator', function (e) {
