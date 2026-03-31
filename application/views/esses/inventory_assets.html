@@ -645,14 +645,14 @@
 </div>
 
 <div class="modal fade" id="pos_restocking_cart_modal" tabindex="-1" aria-labelledby="pos_logs_title" aria-hidden="true">
-   <div class="modal-dialog modal-lg">
+   <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <div class="modal-content">
          <div class="modal-header">
             <h1 class="modal-title fs-5" id="pos_logs_title">Restocking Cart</h1> 
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
          <div class="modal-body">
-            <form id="pos_item_form" enctype="multipart/form-data">
+            <form id="pos_restocking_form" enctype="multipart/form-data">
                <div class="row">
                   <div class="col-6 mb-2">
                      <label for="pos_restocking_code" class="form-label">Restock Code</label>
@@ -674,10 +674,10 @@
                   </div>
                </div>
             </form>
-            <div class="table-responsive">
+            <diV>
                <table class="table align-middle mb-0">
                   <tbody id="pos_restocking_cart">
-                     <tr class="text-center">
+                     <!-- <tr class="text-center">
                         <td class="text-start">
                            <div class="d-flex align-items-center">
                               <div>
@@ -707,10 +707,13 @@
                               </ul>
                            </div>
                         </td>
-                     </tr>
+                     </tr> -->
                   </tbody>
                </table>
             </div>
+         </div>
+         <div class="modal-footer">
+            <button type="submit" form="pos_restocking_form" class="btn btn-primary">Restock</button>
          </div>
       </div>
    </div>
@@ -886,35 +889,22 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
          </div>
 
-         <div class="modal-body">
+         <div class="modal-body" id="barcodes_pos_item_id" data-pos_item_id="">
             <div class="row align-items-center mb-3">
                <div class="col-12 text-center">
-                  <div class="fw-semibold small text-truncate overflow-tooltip">
+                  <div class="fw-semibold fs-5 text-truncate overflow-tooltip" id="barcodes_item_name">
                      Coca-Cola 1.5L
                   </div>
-                  <div class="text-muted small">
+                  <div class="text-muted small" id="barcodes_item_code">
                      COKE-15L
                   </div>
                </div>
-
-               <div class="col-6">
-                  <div class="row">
-                     <div>Price: <span class="fw-semibold">₱85.00</span></div>
-                     <div>Unit: pcs</div>
-                  </div>
-                  <div class="row">
-                     <div>Stock: <span class="fw-semibold">120</span></div>
-                     <div>Low Alert: 20</div>
-                  </div>
-               </div>
             </div>
-
             <hr>
 
-            <!-- List Section -->
                <div>
                   <table class="table align-middle mb-0">
-                     <tbody>
+                     <tbody id="barcodes_container">
                         <tr>
                            <td class="text-center align-middle">
                               <svg id="barcode" class="d-inline-block"></svg>
@@ -928,11 +918,11 @@
                                  ⋮
                               </button>
                               <ul class="dropdown-menu w-auto">
-                                 <li>
+                                 <!-- <li>
                                     <a class="dropdown-item regenerate_barcode" href="#">
                                        Regenerate
                                     </a>
-                                 </li>
+                                 </li> -->
                                  <li>
                                     <a class="dropdown-item text-danger remove_barcode" href="#">
                                        Remove
@@ -946,14 +936,11 @@
                </table>
             </div>
          </div>
-         <!-- <div class="modal-footer">
-            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
-               Close
+         <div class="modal-footer">
+            <button type="button" class="btn btn-sm btn-primary" id="add_new_barcode_button">
+               Add a Barcode
             </button>
-            <button type="button" class="btn btn-sm btn-primary">
-               Update Item
-            </button>
-         </div> -->
+         </div>
       </div>
    </div>
 </div>
@@ -978,6 +965,19 @@
          </button>
       </li>
    </ul>
+</div>
+
+<div class="toast-container position-fixed top- end-0 p-3">
+
+   <div id="cart_toast" class="toast align-items-center text-bg-success border-0" role="alert">
+      <div class="d-flex">
+         <div class="toast-body" id="cart_toast_body">
+            Item added to cart
+         </div>
+         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+   </div>
+
 </div>
 <script type="text/javascript">
    const value = "ABC123456"; // your characters here
@@ -1156,6 +1156,7 @@
                   item.cart_quantity += quantity;
 
                   render_pos_restocking_cart();
+                  show_cart_toast(`${item.pos_item_name} (x${quantity}) added to cart`);
 
                   card.find('.pos_count_container')
                   .attr('data-text', 0)
@@ -1252,6 +1253,19 @@
       $('#cart_total').text(`₱${grand_total.toFixed(2)}`);
    }
 
+   function show_cart_toast(message) {
+      const toastEl = document.getElementById('cart_toast');
+      const toastBody = document.getElementById('cart_toast_body');
+
+      toastBody.textContent = message;
+
+      const toast = new bootstrap.Toast(toastEl, {
+         delay: 5000
+      });
+
+      toast.show();
+   }
+
    $(function() {
       $(document).on('click', '.pos_item_update_activator', function (e) {
          e.preventDefault();
@@ -1264,12 +1278,179 @@
       $(document).on('click', '.pos_item_barcodes_activator', function (e) {
          e.preventDefault();
 
-         const item_id = $(this).data('id');
+         let card = $(this).closest('.card');
+         let pos_item_id = card.data('pos_item_id');
+
+         populate_barcodes_item(pos_item_id);
+         load_barcodes();
          const modal_el = document.getElementById('pos_item_barcodes_modal');
          const modal_instance = bootstrap.Modal.getOrCreateInstance(modal_el);
          modal_instance.show();
       });
    });
+   function load_barcodes() {
+      let pos_item_id = $('#pos_item_barcodes_modal .modal-body')
+         .data('pos_item_id');
+
+      if (!pos_item_id) return;
+
+      $.ajax({
+         url: '<?php echo base_url();?>i.php/sys_control/load_barcodes',
+         method: 'POST',
+         data: { pos_item_id: pos_item_id },
+         dataType: 'json',
+         success: function (response) {
+
+            let $container = $('#barcodes_container');
+            $container.empty();
+
+            if (!response.barcodes || !response.barcodes.length) {
+               $container.append(`
+                  <tr>
+                     <td colspan="2" class="text-center text-muted">
+                        No barcodes found
+                     </td>
+                  </tr>
+               `);
+               return;
+            }
+
+            response.barcodes.forEach((code, index) => {
+
+               let row = `
+               <tr>
+                  <td class="text-center align-middle">
+                     <svg class="barcode-svg" id="barcode_${index}"></svg>
+                  </td>
+                  <td class="text-end">
+                     <div class="dropdown dropstart">
+                        <button class="btn btn-sm btn-light"
+                           type="button"
+                           data-bs-toggle="dropdown">
+                           ⋮
+                        </button>
+                        <ul class="dropdown-menu w-auto">
+                           <li>
+                              <a class="dropdown-item text-danger remove_barcode" 
+                                 data-code="${code}" href="#">
+                                 Remove
+                              </a>
+                           </li>
+                        </ul>
+                     </div>
+                  </td>
+               </tr>`;
+
+               $container.append(row);
+
+               // Generate barcode AFTER appending
+               JsBarcode(`#barcode_${index}`, code, {
+                  format: "CODE128",
+                  width: 1.6,
+                  height: 40,
+                  displayValue: true
+               });
+            });
+         },
+         error: function () {
+            $('#barcodes_container').html(`
+               <tr>
+                  <td colspan="2" class="text-center text-danger">
+                     Failed to load barcodes
+                  </td>
+               </tr>
+            `);
+         }
+      });
+   }
+   function populate_barcodes_item(pos_item_id) {
+
+      let item = pos_items[pos_item_id];
+      if (!item) return;
+
+      $('#barcodes_item_name').text(item.pos_item_name);
+      $('#barcodes_item_code').text(item.pos_item_code);
+      $('#barcodes_pos_item_id').data('pos_item_id', item.pos_item_id);
+   }
+
+   let barcode_buffer = '';
+   let barcode_listening = false;
+   let barcode_timeout = null;
+
+   $('#add_new_barcode_button')
+   .off('click')
+   .on('click', function () {
+
+      barcode_buffer = '';
+      barcode_listening = true;
+
+      show_cart_toast('Scan barcode now...'); // reuse your toast
+
+      // auto cancel after 10 seconds (important)
+      clearTimeout(barcode_timeout);
+      barcode_timeout = setTimeout(() => {
+         barcode_listening = false;
+         barcode_buffer = '';
+      }, 10000);
+   });
+
+   $(document)
+   .off('keydown.barcode')
+   .on('keydown.barcode', function (e) {
+
+      if (!barcode_listening) return;
+
+      if (e.key === 'Enter') {
+
+         e.preventDefault();
+
+         barcode_listening = false;
+         clearTimeout(barcode_timeout);
+
+         let barcode = barcode_buffer.trim();
+
+         if (!barcode) return;
+
+         handle_scanned_barcode(barcode);
+
+         barcode_buffer = '';
+         return;
+      }
+
+      if (e.key.length === 1) {
+         barcode_buffer += e.key;
+      }
+   });
+
+   function handle_scanned_barcode(barcode) {
+      let modal = $('#pos_item_barcodes_modal .modal-body');
+      let pos_item_id = modal.data('pos_item_id');
+
+      if (!pos_item_id) return;
+
+      $.ajax({
+         url: '<?php echo base_url();?>i.php/sys_control/add_new_barcode',
+         method: 'POST',
+         data: {
+            pos_item_id: pos_item_id,
+            pos_barcode_value: barcode
+         },
+         dataType: 'json',
+         success: function (response) {
+
+            if (response.status === 'success') {
+               show_cart_toast(`Barcode added: ${barcode}`);
+               load_barcodes();
+
+            } else {
+               show_cart_toast(response.message);
+            }
+         },
+         error: function () {
+            show_cart_toast('Failed to add barcode');
+         }
+      });
+   }
 
    function ret_pos_item(pos_item_id, update = false) {
       const item = pos_items[pos_item_id];

@@ -207,6 +207,102 @@ class Sys_model extends CI_Model {
 	    }
 	    exit;
 	}
+	public function add_new_barcode()
+	{
+	    $pos_item_id        = $_POST['pos_item_id'];
+	    $pos_barcode_value  = $_POST['pos_barcode_value'];
+
+	    header('Content-Type: application/json');
+
+	    if (empty($pos_item_id) || empty($pos_barcode_value)) {
+	        echo json_encode([
+	            'status' => 'error',
+	            'message' => 'Missing required fields'
+	        ]);
+	        exit;
+	    }
+
+	    $check = $this->db->query(
+	        "SELECT pos_item_id 
+	         FROM pos_item_codes 
+	         WHERE pos_barcode_value = ? 
+	         LIMIT 1",
+	        [$pos_barcode_value]
+	    );
+
+	    if ($check && $check->num_rows() > 0) {
+
+	        $existing = $check->row();
+
+	        if ($existing->pos_item_id == $pos_item_id) {
+	            echo json_encode([
+	                'status' => 'error',
+	                'message' => 'Barcode already exists for this item'
+	            ]);
+	        } 
+	        else {
+	            echo json_encode([
+	                'status' => 'error',
+	                'message' => 'Barcode already assigned to another item'
+	            ]);
+	        }
+
+	        exit;
+	    }
+
+	    $sql = "INSERT INTO pos_item_codes 
+	            (pos_item_id, pos_barcode_value) 
+	            VALUES (?, ?)";
+
+	    $insert_query = $this->db->query($sql, [
+	        $pos_item_id,
+	        $pos_barcode_value
+	    ]);
+
+	    if ($insert_query) {
+
+	        $activity_type = "Barcode Creation";
+	        $pos_code = "Item ID: " . $pos_item_id;
+
+	        $activity = "<strong>Added Barcode:</strong><br>"
+	                  . $pos_barcode_value;
+
+	        $sql = "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) 
+	                VALUES (?, ?, ?)";
+	        $this->db->query($sql, [$activity_type, $pos_code, $activity]);
+
+	        echo json_encode([
+	            'status' => 'success',
+	            'message' => 'Barcode added successfully'
+	        ]);
+	    } 
+	    else {
+	        echo json_encode([
+	            'status' => 'error',
+	            'message' => 'Failed to add barcode'
+	        ]);
+	    }
+
+	    exit;
+	}
+	public function load_barcodes($pos_item_id)
+	{
+	    $sql = "SELECT pos_barcode_value 
+	            FROM pos_item_codes 
+	            WHERE pos_item_id = ?";
+
+	    $query = $this->db->query($sql, [$pos_item_id]);
+
+	    $barcodes = [];
+
+	    if ($query && $query->num_rows() > 0) {
+	        foreach ($query->result() as $row) {
+	            $barcodes[] = $row->pos_barcode_value;
+	        }
+	    }
+
+	    return $barcodes;
+	}
 
 
 

@@ -53,6 +53,42 @@ class Sys_control extends CI_Controller
 		$this->load->model('sys_model');	
 		$this->sys_model->update_pos_item();
 	}
+	public function add_new_barcode()
+	{
+		$this->load->model('sys_model');	
+		$this->sys_model->add_new_barcode();
+	}
+	public function load_barcodes()
+	{
+	    $pos_item_id = $_POST['pos_item_id'];
+
+	    $this->load->model('sys_model');
+	    $barcodes = $this->sys_model->load_barcodes($pos_item_id);
+	    header('Content-Type: application/json');
+	    echo json_encode([
+	        'status' => 'success',
+	        'barcodes' => $barcodes
+	    ]);
+	    exit;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	public function sales()
 	{
