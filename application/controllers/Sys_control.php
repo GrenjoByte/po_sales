@@ -71,6 +71,26 @@ class Sys_control extends CI_Controller
 	    ]);
 	    exit;
 	}
+	public function remove_barcode()
+	{
+	    $this->load->model('sys_model');    
+	    $this->sys_model->remove_barcode();
+	}
+	public function process_restocking()
+	{
+	    $this->load->model('sys_model');    
+	    $this->sys_model->process_restocking();
+	}
+	public function load_pos_restocking_report()
+	{
+	    $this->load->model('sys_model');    
+	    $this->sys_model->load_pos_restocking_report();
+	}
+	public function load_pos_logs()
+	{
+	    $this->load->model('sys_model');
+	    $this->sys_model->load_pos_logs();
+	}
 
 
 
@@ -213,11 +233,6 @@ class Sys_control extends CI_Controller
 	{
 		$this->load->model('sys_model');	
 		$this->sys_model->load_pos_reports();
-	}
-	public function load_pos_logs()
-	{
-		$this->load->model('sys_model');	
-		$this->sys_model->load_pos_logs();
 	}
 	public function load_pos_restocking_codes()
 	{

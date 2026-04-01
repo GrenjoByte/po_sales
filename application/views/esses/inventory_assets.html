@@ -30,114 +30,7 @@
                         <th>Date</th>
                      </tr>
                   </thead>
-                  <tbody class="text-center small">
-                     <tr>
-                        <td>1</td>
-                        <td>RS-0001</td>
-                        <td>ITM-1001</td>
-                        <td class="text-start">Premium Rice</td>
-                        <td>₱45.00</td>
-                        <td>100</td>
-                        <td>kg</td>
-                        <td class="fw-semibold text-success">₱4,500.00</td>
-                        <td>2026-02-28 09:45 AM</td>
-                     </tr>
-                     <tr>
-                       <td>2</td>
-                       <td>RS-0002</td>
-                       <td>ITM-1002</td>
-                       <td class="text-start">White Sugar</td>
-                       <td>₱72.00</td>
-                       <td>50</td>
-                       <td>kg</td>
-                       <td class="fw-semibold text-success">₱3,600.00</td>
-                       <td>2026-03-01 10:20 AM</td>
-                    </tr>
-
-                    <tr>
-                       <td>3</td>
-                       <td>RS-0003</td>
-                       <td>ITM-1003</td>
-                       <td class="text-start">All Purpose Flour</td>
-                       <td>₱55.00</td>
-                       <td>80</td>
-                       <td>kg</td>
-                       <td class="fw-semibold text-success">₱4,400.00</td>
-                       <td>2026-03-01 11:10 AM</td>
-                    </tr>
-
-                    <tr>
-                       <td>4</td>
-                       <td>RS-0004</td>
-                       <td>ITM-1004</td>
-                       <td class="text-start">Cooking Oil</td>
-                       <td>₱160.00</td>
-                       <td>30</td>
-                       <td>liters</td>
-                       <td class="fw-semibold text-success">₱4,800.00</td>
-                       <td>2026-03-02 08:35 AM</td>
-                    </tr>
-
-                    <tr>
-                       <td>5</td>
-                       <td>RS-0005</td>
-                       <td>ITM-1005</td>
-                       <td class="text-start">Evaporated Milk</td>
-                       <td>₱38.00</td>
-                       <td>120</td>
-                       <td>cans</td>
-                       <td class="fw-semibold text-success">₱4,560.00</td>
-                       <td>2026-03-02 01:15 PM</td>
-                    </tr>
-
-                    <tr>
-                       <td>6</td>
-                       <td>RS-0006</td>
-                       <td>ITM-1006</td>
-                       <td class="text-start">Instant Coffee</td>
-                       <td>₱220.00</td>
-                       <td>25</td>
-                       <td>boxes</td>
-                       <td class="fw-semibold text-success">₱5,500.00</td>
-                       <td>2026-03-03 09:05 AM</td>
-                    </tr>
-
-                    <tr>
-                       <td>7</td>
-                       <td>RS-0007</td>
-                       <td>ITM-1007</td>
-                       <td class="text-start">Soy Sauce</td>
-                       <td>₱65.00</td>
-                       <td>60</td>
-                       <td>bottles</td>
-                       <td class="fw-semibold text-success">₱3,900.00</td>
-                       <td>2026-03-03 02:40 PM</td>
-                    </tr>
-
-                    <tr>
-                       <td>8</td>
-                       <td>RS-0008</td>
-                       <td>ITM-1008</td>
-                       <td class="text-start">Vinegar</td>
-                       <td>₱55.00</td>
-                       <td>70</td>
-                       <td>bottles</td>
-                       <td class="fw-semibold text-success">₱3,850.00</td>
-                       <td>2026-03-04 10:50 AM</td>
-                    </tr>
-
-                    <tr>
-                       <td>9</td>
-                       <td>RS-0009</td>
-                       <td>ITM-1009</td>
-                       <td class="text-start">Powdered Milk</td>
-                       <td>₱145.00</td>
-                       <td>40</td>
-                       <td>packs</td>
-                       <td class="fw-semibold text-success">₱5,800.00</td>
-                       <td>2026-03-05 09:30 AM</td>
-                    </tr>
-
+                  <tbody class="text-center small" id="pos_restocking_report_container">
                     <tr>
                        <td>10</td>
                        <td>RS-0010</td>
@@ -153,7 +46,7 @@
                   <tfoot class="table-light small">
                      <tr class="fw-semibold text-center">
                         <td colspan="7" class="text-end">Grand Total:</td>
-                        <td class="text-success">₱42,910.00</td>
+                        <td class="text-success" id="pos_restocking_report_total"></td>
                         <td></td>
                      </tr>
                   </tfoot>
@@ -176,175 +69,6 @@
                   <thead class="table-light text-center">
                      <tr>
                         <th>#</th>
-                        <th>Checkout Code</th>
-                        <th>Item Code</th>
-                        <th class="text-start">Item Name</th>
-                        <th>Price</th>
-                        <th>Qty</th>
-                        <th>Unit</th>
-                        <th>Subtotal</th>
-                        <th>Total</th>
-                        <th>Date</th>
-                     </tr>
-                  </thead>
-
-                  <tbody class="text-center small">
-                     <tr>
-                        <td>1</td>
-                        <td>CO-0001</td>
-                        <td>ITM-1001</td>
-                        <td class="text-start">Premium Rice</td>
-                        <td>₱45.00</td>
-                        <td>5</td>
-                        <td>kg</td>
-                        <td>₱225.00</td>
-                        <td class="fw-semibold text-primary">₱225.00</td>
-                        <td>2026-02-28 10:15 AM</td>
-                     </tr>
-                     <tr>
-                       <td>2</td>
-                       <td>CO-0002</td>
-                       <td>ITM-1002</td>
-                       <td class="text-start">White Sugar</td>
-                       <td>₱72.00</td>
-                       <td>3</td>
-                       <td>kg</td>
-                       <td>₱216.00</td>
-                       <td class="fw-semibold text-primary">₱216.00</td>
-                       <td>2026-03-01 09:10 AM</td>
-                    </tr>
-
-                    <tr>
-                       <td>3</td>
-                       <td>CO-0003</td>
-                       <td>ITM-1003</td>
-                       <td class="text-start">All Purpose Flour</td>
-                       <td>₱55.00</td>
-                       <td>4</td>
-                       <td>kg</td>
-                       <td>₱220.00</td>
-                       <td class="fw-semibold text-primary">₱220.00</td>
-                       <td>2026-03-01 10:35 AM</td>
-                    </tr>
-
-                    <tr>
-                       <td>4</td>
-                       <td>CO-0004</td>
-                       <td>ITM-1004</td>
-                       <td class="text-start">Cooking Oil</td>
-                       <td>₱160.00</td>
-                       <td>2</td>
-                       <td>liters</td>
-                       <td>₱320.00</td>
-                       <td class="fw-semibold text-primary">₱320.00</td>
-                       <td>2026-03-02 11:20 AM</td>
-                    </tr>
-
-                    <tr>
-                       <td>5</td>
-                       <td>CO-0005</td>
-                       <td>ITM-1005</td>
-                       <td class="text-start">Evaporated Milk</td>
-                       <td>₱38.00</td>
-                       <td>6</td>
-                       <td>cans</td>
-                       <td>₱228.00</td>
-                       <td class="fw-semibold text-primary">₱228.00</td>
-                       <td>2026-03-02 01:05 PM</td>
-                    </tr>
-
-                    <tr>
-                       <td>6</td>
-                       <td>CO-0006</td>
-                       <td>ITM-1006</td>
-                       <td class="text-start">Instant Coffee</td>
-                       <td>₱220.00</td>
-                       <td>1</td>
-                       <td>box</td>
-                       <td>₱220.00</td>
-                       <td class="fw-semibold text-primary">₱220.00</td>
-                       <td>2026-03-03 09:45 AM</td>
-                    </tr>
-
-                    <tr>
-                      <td>7</td>
-                      <td>CO-0007</td>
-                      <td>ITM-1007</td>
-                      <td class="text-start">Soy Sauce</td>
-                      <td>₱65.00</td>
-                      <td>3</td>
-                      <td>bottles</td>
-                      <td>₱195.00</td>
-                      <td class="fw-semibold text-primary">₱195.00</td>
-                      <td>2026-03-03 02:10 PM</td>
-                   </tr>
-
-                   <tr>
-                      <td>8</td>
-                      <td>CO-0008</td>
-                      <td>ITM-1008</td>
-                      <td class="text-start">Vinegar</td>
-                      <td>₱55.00</td>
-                      <td>2</td>
-                      <td>bottles</td>
-                      <td>₱110.00</td>
-                      <td class="fw-semibold text-primary">₱110.00</td>
-                      <td>2026-03-04 10:05 AM</td>
-                   </tr>
-
-                   <tr>
-                      <td>9</td>
-                      <td>CO-0009</td>
-                      <td>ITM-1009</td>
-                      <td class="text-start">Powdered Milk</td>
-                      <td>₱145.00</td>
-                      <td>2</td>
-                      <td>packs</td>
-                      <td>₱290.00</td>
-                      <td class="fw-semibold text-primary">₱290.00</td>
-                      <td>2026-03-05 08:50 AM</td>
-                   </tr>
-
-                   <tr>
-                      <td>10</td>
-                      <td>CO-0010</td>
-                      <td>ITM-1010</td>
-                      <td class="text-start">Salt</td>
-                      <td>₱20.00</td>
-                      <td>5</td>
-                      <td>packs</td>
-                      <td>₱100.00</td>
-                      <td class="fw-semibold text-primary">₱100.00</td>
-                      <td>2026-03-05 03:00 PM</td>
-                   </tr>
-                </tbody>
-
-                <tfoot class="table-light small">
-                  <tr class="fw-semibold text-center">
-                     <td colspan="8" class="text-end">Grand Total Sales:</td>
-                     <td class="text-primary">₱2,124.00</td>
-                     <td></td>
-                  </tr>
-               </tfoot>
-            </table>
-         </div>
-      </div>
-   </div>
-</div>
-</div>
-<div class="modal fade" id="pos_logs_modal" tabindex="-1" aria-labelledby="pos_logs_title" aria-hidden="true">
-   <div class="modal-dialog modal-xl modal-dialog-scrollable">
-      <div class="modal-content">
-         <div class="modal-header">
-            <h1 class="modal-title fs-5" id="pos_logs_title">Sales Logs</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-         </div>
-         <div class="modal-body">
-            <div class="table-responsive">
-               <table class="table table-sm align-middle mb-0">
-                  <thead class="table-light text-center">
-                     <tr>
-                        <th>#</th>
                         <th>Sale Code</th>
                         <th>Items</th>
                         <th>Total Qty</th>
@@ -354,201 +78,10 @@
                         <th>Cashier</th>
                         <th>Status</th>
                         <th>Date</th>
-                        <th>Actions</th>
+                        <th>...</th>
                      </tr>
                   </thead>
-
-                  <tbody class="text-center small">
-
-                     <tr>
-                        <td>1</td>
-                        <td>CO-0001</td>
-                        <td>10</td>
-                        <td>33</td>
-                        <td>₱0.00</td>
-                        <td class="fw-semibold text-success">₱2,124.00</td>
-                        <td>Cash</td>
-                        <td>Juan Dela Cruz</td>
-                        <td><span class="badge bg-success">Completed</span></td>
-                        <td>2026-02-28 10:15 AM</td>
-                        <td>
-                           <button type="button" class="btn btn-sm btn-outline-primary view_receipt_activator" data-bs-toggle="modal" data-bs-target="#receipt_modal" data-sale-code="CO-0001">
-                              <i class="bi bi-eye"></i>
-                           </button>
-                           <button class="btn btn-sm btn-outline-secondary">
-                              <i class="bi bi-printer"></i>
-                           </button>
-                      </td>
-                     </tr>
-
-                     <tr>
-                        <td>2</td>
-                        <td>CO-0002</td>
-                        <td>10</td>
-                        <td>33</td>
-                        <td>₱50.00</td>
-                        <td class="fw-semibold text-success">₱2,074.00</td>
-                        <td>GCash</td>
-                        <td>Maria Santos</td>
-                        <td><span class="badge bg-success">Completed</span></td>
-                        <td>2026-03-01 09:10 AM</td>
-                        <td>
-                           <button type="button" class="btn btn-sm btn-outline-primary view_receipt_activator" data-bs-toggle="modal" data-bs-target="#receipt_modal" data-sale-code="CO-0001">
-                              <i class="bi bi-eye"></i>
-                           </button>
-                           <button class="btn btn-sm btn-outline-secondary">
-                              <i class="bi bi-printer"></i>
-                           </button>
-                        </td>
-                     </tr>
-
-                     <tr>
-                        <td>3</td>
-                        <td>CO-0003</td>
-                        <td>10</td>
-                        <td>33</td>
-                        <td>₱0.00</td>
-                        <td class="fw-semibold text-success">₱2,124.00</td>
-                        <td>Cash</td>
-                        <td>Pedro Reyes</td>
-                        <td><span class="badge bg-success">Completed</span></td>
-                        <td>2026-03-01 11:35 AM</td>
-                        <td>
-                           <button type="button" class="btn btn-sm btn-outline-primary view_receipt_activator" data-bs-toggle="modal" data-bs-target="#receipt_modal" data-sale-code="CO-0001">
-                              <i class="bi bi-eye"></i>
-                           </button>
-                           <button class="btn btn-sm btn-outline-secondary">
-                              <i class="bi bi-printer"></i>
-                           </button>
-                        </td>
-                     </tr>
-
-                     <tr>
-                        <td>4</td>
-                        <td>CO-0004</td>
-                        <td>10</td>
-                        <td>33</td>
-                        <td>₱100.00</td>
-                        <td class="fw-semibold text-success">₱2,024.00</td>
-                        <td>Card</td>
-                        <td>Juan Dela Cruz</td>
-                        <td><span class="badge bg-success">Completed</span></td>
-                        <td>2026-03-02 08:40 AM</td>
-                        <td>
-                           <button type="button" class="btn btn-sm btn-outline-primary view_receipt_activator" data-bs-toggle="modal" data-bs-target="#receipt_modal" data-sale-code="CO-0001">
-                              <i class="bi bi-eye"></i>
-                           </button>
-                           <button class="btn btn-sm btn-outline-secondary">
-                              <i class="bi bi-printer"></i>
-                           </button>
-                        </td>
-                     </tr>
-
-                     <tr>
-                        <td>5</td>
-                        <td>CO-0005</td>
-                        <td>10</td>
-                        <td>33</td>
-                        <td>₱0.00</td>
-                        <td class="fw-semibold text-success">₱2,124.00</td>
-                        <td>Cash</td>
-                        <td>Maria Santos</td>
-                        <td><span class="badge bg-success">Completed</span></td>
-                        <td>2026-03-02 01:15 PM</td>
-                        <td>
-                           <button type="button" class="btn btn-sm btn-outline-primary view_receipt_activator" data-bs-toggle="modal" data-bs-target="#receipt_modal" data-sale-code="CO-0001">
-                              <i class="bi bi-eye"></i>
-                           </button>
-                           <button class="btn btn-sm btn-outline-secondary">
-                              <i class="bi bi-printer"></i>
-                           </button>
-                        </td>
-                     </tr>
-
-                     <tr>
-                        <td>6</td>
-                        <td>CO-0006</td>
-                        <td>10</td>
-                        <td>33</td>
-                        <td>₱20.00</td>
-                        <td class="fw-semibold text-success">₱2,104.00</td>
-                        <td>GCash</td>
-                        <td>Pedro Reyes</td>
-                        <td><span class="badge bg-success">Completed</span></td>
-                        <td>2026-03-03 09:05 AM</td>
-                        <td>
-                           <button type="button" class="btn btn-sm btn-outline-primary view_receipt_activator" data-bs-toggle="modal" data-bs-target="#receipt_modal" data-sale-code="CO-0001">
-                              <i class="bi bi-eye"></i>
-                           </button>
-                           <button class="btn btn-sm btn-outline-secondary">
-                              <i class="bi bi-printer"></i>
-                           </button>
-                        </td>
-                     </tr>
-
-                     <tr>
-                        <td>7</td>
-                        <td>CO-0007</td>
-                        <td>10</td>
-                        <td>33</td>
-                        <td>₱0.00</td>
-                        <td class="fw-semibold text-success">₱2,124.00</td>
-                        <td>Cash</td>
-                        <td>Juan Dela Cruz</td>
-                        <td><span class="badge bg-warning text-dark">Refunded</span></td>
-                        <td>2026-03-03 02:45 PM</td>
-                        <td>
-                           <button type="button" class="btn btn-sm btn-outline-primary view_receipt_activator" data-bs-toggle="modal" data-bs-target="#receipt_modal" data-sale-code="CO-0001">
-                              <i class="bi bi-eye"></i>
-                           </button>
-                           <button class="btn btn-sm btn-outline-secondary">
-                              <i class="bi bi-printer"></i>
-                           </button>
-                        </td>
-                     </tr>
-
-                     <tr>
-                        <td>8</td>
-                        <td>CO-0008</td>
-                        <td>10</td>
-                        <td>33</td>
-                        <td>₱0.00</td>
-                        <td class="fw-semibold text-success">₱2,124.00</td>
-                        <td>Cash</td>
-                        <td>Maria Santos</td>
-                        <td><span class="badge bg-success">Completed</span></td>
-                        <td>2026-03-04 10:50 AM</td>
-                        <td>
-                           <button type="button" class="btn btn-sm btn-outline-primary view_receipt_activator" data-bs-toggle="modal" data-bs-target="#receipt_modal" data-sale-code="CO-0001">
-                              <i class="bi bi-eye"></i>
-                           </button>
-                           <button class="btn btn-sm btn-outline-secondary">
-                              <i class="bi bi-printer"></i>
-                           </button>
-                        </td>
-                     </tr>
-
-                     <tr>
-                        <td>9</td>
-                        <td>CO-0009</td>
-                        <td>10</td>
-                        <td>33</td>
-                        <td>₱30.00</td>
-                        <td class="fw-semibold text-success">₱2,094.00</td>
-                        <td>Card</td>
-                        <td>Pedro Reyes</td>
-                        <td><span class="badge bg-success">Completed</span></td>
-                        <td>2026-03-05 08:20 AM</td>
-                        <td>
-                           <button type="button" class="btn btn-sm btn-outline-primary view_receipt_activator" data-bs-toggle="modal" data-bs-target="#receipt_modal" data-sale-code="CO-0001">
-                              <i class="bi bi-eye"></i>
-                           </button>
-                           <button class="btn btn-sm btn-outline-secondary">
-                              <i class="bi bi-printer"></i>
-                           </button>
-                        </td>
-                     </tr>
-
+                  <tbody class="text-center small" id="pos_logs_container">
                      <tr>
                         <td>10</td>
                         <td>CO-0010</td>
@@ -564,12 +97,36 @@
                            <button type="button" class="btn btn-sm btn-outline-primary view_receipt_activator" data-bs-toggle="modal" data-bs-target="#receipt_modal" data-sale-code="CO-0001">
                               <i class="bi bi-eye"></i>
                            </button>
-                           <button class="btn btn-sm btn-outline-secondary">
-                              <i class="bi bi-printer"></i>
-                           </button>
                         </td>
                      </tr>
-
+                  </tbody>
+               </table>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+</div>
+<div class="modal fade" id="pos_logs_modal" tabindex="-1" aria-labelledby="pos_logs_title" aria-hidden="true">
+   <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h1 class="modal-title fs-5" id="pos_logs_title">Activity Log</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <div class="table-responsive">
+               <table class="table table-sm align-middle mb-0">
+                  <thead class="table-light text-center">
+                     <tr>
+                        <th>#</th>
+                        <th>Activity Type</th>
+                        <th>POSCode</th>
+                        <th>Activity Details</th>
+                        <th>Timestamp</th>
+                     </tr>
+                  </thead>
+                  <tbody class="text-center small" id="pos_logs_container">
                   </tbody>
                </table>
             </div>
@@ -980,25 +537,31 @@
 
 </div>
 <script type="text/javascript">
-   const value = "ABC123456"; // your characters here
+   // const value = "ABC123456"; // your characters here
 
-   JsBarcode("#barcode", value, {
-      format: "CODE128", // supports letters + numbers
-      width: 1.8,
-      height: 40,
-      displayValue: true
-   });
-
+   // JsBarcode("#barcode", value, {
+   //    format: "CODE128", // supports letters + numbers
+   //    width: 1.8,
+   //    height: 40,
+   //    displayValue: true
+   // });
+   
    const pos_items = {};
 
    let current_page = 1;
    const items_per_page = 15;
 
    function load_pos_inventory(page = 1) {
+      let search = $('#pos_inventory_search').val();
+
       $.ajax({
          url: '<?php echo base_url();?>i.php/sys_control/load_pos_inventory',
          method: 'POST',
-         data: { page: page, limit: items_per_page },
+         data: { 
+            page: page, 
+            limit: items_per_page,
+            search: search
+         },
          dataType: 'json',
          success: function(response) {
             const $container = $('#pos_item_cards_container');
@@ -1032,9 +595,15 @@
                      }
                   }
 
+                  let search = $('#pos_inventory_search').val().toLowerCase();
+                  let is_match = search && (
+                     item.pos_item_name.toLowerCase().includes(search) ||
+                     item.pos_item_code.toLowerCase().includes(search)
+                  );
+
                   const card_html = `
                   <div class="col" id="item_cards">
-                     <div class="card h-100" data-pos_item_id="${pos_item_id}"> 
+                     <div class="card h-100 ${is_match ? 'border border-warning shadow-sm' : ''}" data-pos_item_id="${pos_item_id}">
                         <div class="position-relative img-hover-wrapper d-flex justify-content-center align-items-center"style="aspect-ratio:5/2; background-color:white;">
                            <i class="bi bi-box2" style="font-size: 3rem;"></i>
 
@@ -1185,6 +754,34 @@
 
    load_pos_inventory(current_page);
 
+   setTimeout(() => {
+      let firstMatch = $('#pos_item_cards_container .border-warning').first();
+
+      if (firstMatch.length) {
+         firstMatch[0].scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+         });
+      }
+   }, 100);
+
+   $('form[role="search"]').on('submit', function(e){
+      e.preventDefault();
+      current_page = 1;
+      load_pos_inventory(current_page);
+   });
+
+   $('#pos_inventory_search').on('input', function () {
+      current_page = 1;
+      load_pos_inventory(current_page);
+   });
+   $('#pos_inventory_search').on('keydown', function(e){
+      if (e.key === 'Escape') {
+         $(this).val('');
+         load_pos_inventory(1);
+      }
+   });
+
    $('#prev_page').click(function() {
       if (current_page > 1) {
          current_page--;
@@ -1318,7 +915,7 @@
             response.barcodes.forEach((code, index) => {
 
                let row = `
-               <tr>
+               <tr data-pos_item_id="5" data-barcode_value="ABC123456">
                   <td class="text-center align-middle">
                      <svg class="barcode-svg" id="barcode_${index}"></svg>
                   </td>
@@ -1411,7 +1008,7 @@
 
          if (!barcode) return;
 
-         handle_scanned_barcode(barcode);
+         add_new_barcode(barcode);
 
          barcode_buffer = '';
          return;
@@ -1422,7 +1019,7 @@
       }
    });
 
-   function handle_scanned_barcode(barcode) {
+   function add_new_barcode(barcode) {
       let modal = $('#pos_item_barcodes_modal .modal-body');
       let pos_item_id = modal.data('pos_item_id');
 
@@ -1450,6 +1047,222 @@
             show_cart_toast('Failed to add barcode');
          }
       });
+   }
+
+   $(document).on('click', '.remove_barcode', function (e) {
+      e.preventDefault();
+
+      let row = $(this).closest('tr');
+
+      let pos_item_id = row.data('pos_item_id');
+      let pos_barcode_value = row.data('barcode_value');
+
+      if (!pos_item_id || !pos_barcode_value) return;
+
+      if (!confirm('Remove this barcode?')) return;
+
+      $.ajax({
+         url: '<?php echo base_url();?>i.php/sys_control/remove_barcode',
+         type: 'POST',
+         data: {
+            pos_item_id: pos_item_id,
+            pos_barcode_value: pos_barcode_value
+         },
+         dataType: 'json',
+         success: function (res) {
+
+            if (res.status === 'success') {
+               row.remove();
+            } 
+            else {
+               alert(res.message);
+            }
+         },
+         error: function () {
+            alert('Server error');
+         }
+      });
+   });
+
+   $('#pos_restocking_form').on('submit', function (e) {
+      e.preventDefault();
+
+      let restock_code = $('#pos_restocking_code').val();
+      let restock_date = $('#pos_restocking_date').val();
+
+      let items = [];
+
+      Object.values(pos_items).forEach(item => {
+         if (item.cart_quantity && item.cart_quantity > 0) {
+            items.push({
+               pos_item_id: item.pos_item_id,
+               pos_item_code: item.pos_item_code,
+               pos_item_name: item.pos_item_name,
+               pos_item_price: item.pos_item_price,
+               pos_item_quantity: item.cart_quantity,
+               pos_item_unit: item.pos_item_unit
+            });
+         }
+      });
+
+      if (items.length === 0) {
+         alert('Cart is empty');
+         return;
+      }
+
+      $.ajax({
+         url: '<?php echo base_url();?>i.php/sys_control/process_restocking',
+         method: 'POST',
+         data: {
+            pos_restocking_code: restock_code,
+            pos_restocking_date: restock_date,
+            items: JSON.stringify(items)
+         },
+         dataType: 'json',
+         success: function (res) {
+
+            if (res.status === 'success') {
+
+               // reset cart
+               Object.values(pos_items).forEach(item => {
+                  item.cart_quantity = 0;
+               });
+
+               render_pos_restocking_cart();
+               load_pos_inventory(current_page);
+
+               $('#pos_restocking_form')[0].reset();
+               $('#pos_restocking_cart_modal').modal('hide');
+
+               alert('Restocking successful');
+
+            } else {
+               alert(res.message);
+            }
+         },
+         error: function () {
+            alert('Server error');
+         }
+      });
+   });
+
+   function load_pos_restocking_report() {
+      $.ajax({
+         url: '<?php echo base_url();?>i.php/sys_control/load_pos_restocking_report',
+         method: 'POST',
+         dataType: 'json',
+         success: function (res) {
+
+            let $container = $('#pos_restocking_report_container');
+            $container.empty();
+
+            let count = 1;
+            let grand_total = 0;
+
+            if (res.data.length) {
+
+               res.data.forEach(row => {
+
+                  let row_total = parseFloat(row.pos_restocking_total);
+                  grand_total += row_total;
+
+                  let tr = `
+                  <tr>
+                     <td>${count++}</td>
+                     <td>${row.pos_restocking_code}</td>
+                     <td>${row.pos_item_code}</td>
+                     <td class="text-start">${row.pos_item_name}</td>
+                     <td>₱${parseFloat(row.pos_item_price).toFixed(2)}</td>
+                     <td>${row.pos_item_quantity}</td>
+                     <td>${row.pos_item_unit}</td>
+                     <td class="fw-semibold text-success pos_restocking_row_total" data-value="${row_total}">
+                        ₱${row_total.toFixed(2)}
+                     </td>
+                     <td>${format_date_time(row.pos_restocking_date)}</td>
+                  </tr>
+                  `;
+
+                  $container.append(tr);
+               });
+
+            } else {
+               $container.html(`
+                  <tr>
+                     <td colspan="9" class="text-center text-muted">
+                        No records found
+                     </td>
+                  </tr>
+               `);
+            }
+
+            // set computed grand total
+            $('#pos_restocking_report_total').text(
+               '₱' + grand_total.toLocaleString(undefined, { minimumFractionDigits: 2 })
+            );
+
+         },
+         error: function () {
+            alert('Failed to load report');
+         }
+      });
+   }
+   function format_date_time(datetime) {
+      let d = new Date(datetime);
+
+      let options = {
+         year: 'numeric',
+         month: '2-digit',
+         day: '2-digit',
+         hour: '2-digit',
+         minute: '2-digit',
+         hour12: true
+      };
+
+      return d.toLocaleString('en-PH', options);
+   }
+
+   $('#pos_restocking_report_modal').on('shown.bs.modal', function () {
+      load_pos_restocking_report();
+   });
+
+   $('#pos_logs_modal').on('shown.bs.modal', function () {
+       load_pos_logs();
+   });
+
+   function load_pos_logs() {
+       $.ajax({
+           url: '<?php echo base_url();?>i.php/sys_control/load_pos_logs',
+           method: 'POST',
+           dataType: 'json',
+           success: function(res) {
+               const $tbody = $('#pos_logs_modal tbody');
+               $tbody.empty();
+
+               if (res.data.length) {
+                   res.data.forEach((row, index) => {
+                       const tr = `
+                           <tr>
+                               <td>${index + 1}</td>
+                               <td>${row.pos_activity_type}</td>
+                               <td class="text-start">${row.pos_code}</td>
+                               <td class="text-start">${row.pos_activity}</td>
+                               <td>${format_date_time(row.timestamp)}</td>
+                           </tr>
+                       `;
+                       $tbody.append(tr);
+                   });
+               } else {
+                   $tbody.html(`
+                       <tr>
+                           <td colspan="5" class="text-center text-muted">No logs found</td>
+                       </tr>
+                   `);
+               }
+           },
+           error: function() {
+               alert('Failed to load logs.');
+           }
+       });
    }
 
    function ret_pos_item(pos_item_id, update = false) {
