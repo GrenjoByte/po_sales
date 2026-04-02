@@ -519,6 +519,82 @@ class Sys_model extends CI_Model {
 
 	    echo json_encode(['data' => $data]);
 	}
+	public function search_barcode($barcode)
+	{
+	    $sql = "SELECT pos_item_id FROM pos_item_codes WHERE pos_barcode_value = ?";
+	    $query = $this->db->query($sql, array($barcode));
+
+	    if ($query->num_rows() > 0) {
+	        return $query->row()->pos_item_id;
+	    }
+
+	    return false;
+	}
+	public function process_sales() {
+	    $items = json_decode($_POST['items'], true);
+
+	    header('Content-Type: application/json');
+
+	    if (empty($items)) {
+	        echo json_encode(['status'=>'error','message'=>'No items to sell']);
+	        exit;
+	    }
+
+	    $this->db->trans_start();
+
+	    // generate sale code procedurally
+	    $sql = "SELECT CONCAT('CO-', LPAD(IFNULL(MAX(SUBSTRING(pos_checkout_code,4)),0)+1,4,'0')) AS new_code
+	            FROM pos_checkouts";
+	    $sale_code = $this->db->query($sql)->row()->new_code;
+
+	    foreach ($items as $item) {
+	        $subtotal = $item['pos_item_price'] * $item['pos_item_quantity'];
+
+	        // insert into pos_checkouts
+	        $sql = "INSERT INTO pos_checkouts 
+	                (pos_checkout_code, pos_item_id, pos_item_code, pos_item_name, 
+	                 pos_item_price, pos_item_quantity, pos_item_unit, pos_checkout_subtotal,
+	                 pos_checkout_total, pos_checkout_date)
+	                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+
+	        $this->db->query($sql, [
+	            $sale_code,
+	            $item['pos_item_id'],
+	            $item['pos_item_code'],
+	            $item['pos_item_name'],
+	            $item['pos_item_price'],
+	            $item['pos_item_quantity'],
+	            $item['pos_item_unit'],
+	            $subtotal,
+	            $subtotal // cash only, no discount
+	        ]);
+
+	        // decrement stock
+	        $this->db->query(
+	            "UPDATE pos_inventory SET pos_item_stock = pos_item_stock - ? WHERE pos_item_id=?",
+	            [$item['pos_item_quantity'], $item['pos_item_id']]
+	        );
+
+	        // log activity
+	        $activity_type = "Sale";
+	        $pos_code = "Item ID: " . $item['pos_item_id'];
+	        $activity = "<strong>Sold:</strong><br>" . $item['pos_item_name'] . " (x" . $item['pos_item_quantity'] . " " . $item['pos_item_unit'] . ")";
+	        $this->db->query(
+	            "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)",
+	            [$activity_type, $pos_code, $activity]
+	        );
+	    }
+
+	    $this->db->trans_complete();
+
+	    if ($this->db->trans_status() === FALSE) {
+	        echo json_encode(['status'=>'error','message'=>'Sale failed (rolled back)']);
+	    } else {
+	        echo json_encode(['status'=>'success','message'=>'Sale completed successfully']);
+	    }
+
+	    exit;
+	}
 
 
 

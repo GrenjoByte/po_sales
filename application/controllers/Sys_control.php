@@ -43,6 +43,10 @@ class Sys_control extends CI_Controller
 	{
 		$this->load->view('inventory');	
 	}
+	public function sales()
+	{
+		$this->load->view('sales');	
+	}
 	public function create_pos_item()
 	{
 		$this->load->model('sys_model');	
@@ -91,29 +95,46 @@ class Sys_control extends CI_Controller
 	    $this->load->model('sys_model');
 	    $this->sys_model->load_pos_logs();
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	public function sales()
+	public function search_barcode()
 	{
-		$this->load->view('sales');	
+	    $this->load->model('sys_model');
+
+	    $barcode = $this->input->post('pos_barcode_value', true);
+	    $item_id = $this->sys_model->search_barcode($barcode);
+
+	    header('Content-Type: application/json');
+	    if ($item_id) {
+	        echo json_encode(['status' => 'success', 'pos_item_id' => $item_id]);
+	    } else {
+	        echo json_encode(['status' => 'error', 'message' => 'Item not found']);
+	    }
+	    exit;
 	}
+	public function process_sales()
+	{
+	    $this->load->model('sys_model');    
+	    $this->sys_model->process_sales();
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
 	public function save_child_profile()
 	{
 		$this->load->model('sys_model');	
