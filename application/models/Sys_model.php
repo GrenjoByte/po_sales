@@ -592,6 +592,36 @@ class Sys_model extends CI_Model {
 	    } else {
 	        echo json_encode(['status'=>'success','message'=>'Sale completed successfully']);
 	    }
+	    exit;
+	}
+	public function load_pos_sales_report()
+	{
+	    $report_date = $_POST['report_date'];
+
+	    header('Content-Type: application/json');
+
+	    if (!empty($report_date)) {
+	        $sql = "SELECT * FROM pos_checkouts 
+	                WHERE DATE(pos_checkout_date) = ?
+	                ORDER BY pos_checkout_date DESC";
+	        $query = $this->db->query($sql, [$report_date]);
+	    } else {
+	        $sql = "SELECT * FROM pos_checkouts 
+	                ORDER BY pos_checkout_date DESC";
+	        $query = $this->db->query($sql);
+	    }
+
+	    if ($query->num_rows() > 0) {
+	        echo json_encode([
+	            'status' => 'success',
+	            'data' => $query->result_array()
+	        ]);
+	    } else {
+	        echo json_encode([
+	            'status' => 'success',
+	            'data' => []
+	        ]);
+	    }
 
 	    exit;
 	}
