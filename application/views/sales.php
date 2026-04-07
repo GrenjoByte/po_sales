@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Inventory Management</title>
+	<title>PO Sales</title>
 	<style>
 		.img-hover-wrapper .hover-dimmer {
 			background-color: rgba(0,0,0,0); /* fully transparent initially */

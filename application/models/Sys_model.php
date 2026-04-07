@@ -600,30 +600,81 @@ class Sys_model extends CI_Model {
 
 	    header('Content-Type: application/json');
 
+	    $params = [];
+
+	    $sql = "
+	        SELECT 
+	            pc.pos_checkout_code,
+
+	            COUNT(DISTINCT pc.pos_item_id) AS total_items,
+	            SUM(pc.pos_item_quantity) AS total_quantity,
+
+	            IFNULL(MAX(pc.pos_discount_value), 0) AS pos_discount_value,
+
+	            SUM(pc.pos_item_price * pc.pos_item_quantity) AS pos_checkout_total,
+
+	            MAX(pc.pos_checkout_status) AS pos_checkout_status,
+	            MAX(pc.pos_checkout_date) AS pos_checkout_date,
+
+	            -- Proper name formatting
+	            CONCAT(
+	                ui.first_name, ' ',
+	                IFNULL(CONCAT(LEFT(ui.middle_name, 1), '. '), ''),
+	                ui.last_name
+	            ) AS cashier_name
+
+	        FROM pos_checkouts pc
+	        LEFT JOIN user_info ui ON ui.user_id = pc.user_id
+	    ";
+
 	    if (!empty($report_date)) {
-	        $sql = "SELECT * FROM pos_checkouts 
-	                WHERE DATE(pos_checkout_date) = ?
-	                ORDER BY pos_checkout_date DESC";
-	        $query = $this->db->query($sql, [$report_date]);
-	    } else {
-	        $sql = "SELECT * FROM pos_checkouts 
-	                ORDER BY pos_checkout_date DESC";
-	        $query = $this->db->query($sql);
+	        $sql .= " WHERE DATE(pc.pos_checkout_date) = ? ";
+	        $params[] = $report_date;
 	    }
 
-	    if ($query->num_rows() > 0) {
-	        echo json_encode([
-	            'status' => 'success',
-	            'data' => $query->result_array()
-	        ]);
-	    } else {
-	        echo json_encode([
-	            'status' => 'success',
-	            'data' => []
-	        ]);
-	    }
+	    $sql .= "
+	        GROUP BY pc.pos_checkout_code
+	        ORDER BY pos_checkout_date DESC
+	    ";
+
+	    $query = $this->db->query($sql, $params);
+
+	    echo json_encode([
+	        'status' => 'success',
+	        'data' => $query->result_array()
+	    ]);
 
 	    exit;
+	}
+	public function load_pos_checkout_receipt()
+	{
+		$sale_code = $_POST['sale_code'];
+
+		header('Content-Type: application/json');
+
+		$sql = "
+		SELECT 
+		pc.*,
+
+		CONCAT(
+			ui.first_name, ' ',
+			IFNULL(CONCAT(LEFT(ui.middle_name, 1), '. '), ''),
+			ui.last_name
+			) AS cashier_name
+
+		FROM pos_checkouts pc
+		LEFT JOIN user_info ui ON ui.user_id = pc.user_id
+		WHERE pc.pos_checkout_code = ?
+		";
+
+		$query = $this->db->query($sql, [$sale_code]);
+
+		echo json_encode([
+			'status' => 'success',
+			'data' => $query->result_array()
+		]);
+
+		exit;
 	}
 
 

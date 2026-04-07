@@ -81,7 +81,7 @@
                         <th>...</th>
                      </tr>
                   </thead>
-                  <tbody class="text-center small" id="pos_logs_container">
+                  <tbody class="text-center small" id="pos_sales_report_container">
                      <tr>
                         <td>10</td>
                         <td>CO-0010</td>
@@ -915,7 +915,7 @@
             response.barcodes.forEach((code, index) => {
 
                let row = `
-               <tr data-pos_item_id="5" data-barcode_value="ABC123456">
+               <tr data-pos_item_id="${pos_item_id}" data-barcode_value="${code}">
                   <td class="text-center align-middle">
                      <svg class="barcode-svg" id="barcode_${index}"></svg>
                   </td>
@@ -1060,6 +1060,7 @@
       if (!pos_item_id || !pos_barcode_value) return;
 
       if (!confirm('Remove this barcode?')) return;
+
 
       $.ajax({
          url: '<?php echo base_url();?>i.php/sys_control/remove_barcode',

@@ -7,24 +7,20 @@
       display: none !important;
    }
 </style>
-<div class="modal fade" id="pos_sales_report_modal" tabindex="-1" aria-labelledby="pos_sales_report_title" aria-hidden="true">
+<div class="modal fade" id="pos_restocking_report_modal" tabindex="-1" aria-labelledby="pos_restocking_report_title" aria-hidden="true">
    <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="pos_sales_report_title">Sales Report</h1>
+            <h1 class="modal-title fs-5" id="pos_restocking_report_title">Restocking Report</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
          <div class="modal-body">
-            <div class="input-group input-group-sm" style="width: 220px;">
-               <span class="input-group-text">Date</span>
-               <input type="date" id="pos_sales_report_date" class="form-control">
-            </div>
             <div class="table-responsive">
                <table class="table table-sm align-middle mb-0">
                   <thead class="table-light text-center">
                      <tr>
                         <th>#</th>
-                        <th>Checkout Code</th>
+                        <th>Restock Code</th>
                         <th>Item Code</th>
                         <th class="text-start">Item Name</th>
                         <th>Price</th>
@@ -34,8 +30,8 @@
                         <th>Date</th>
                      </tr>
                   </thead>
-                  <tbody class="text-center small" id="pos_sales_report_container">
-                    <!-- <tr>
+                  <tbody class="text-center small" id="pos_restocking_report_container">
+                    <tr>
                        <td>10</td>
                        <td>RS-0010</td>
                        <td>ITM-1010</td>
@@ -45,12 +41,12 @@
                        <td>packs</td>
                        <td class="fw-semibold text-success">₱2,000.00</td>
                        <td>2026-03-05 03:15 PM</td>
-                    </tr> -->
+                    </tr>
                   </tbody>
                   <tfoot class="table-light small">
                      <tr class="fw-semibold text-center">
                         <td colspan="7" class="text-end">Grand Total:</td>
-                        <td class="text-success" id="pos_sales_report_total"></td>
+                        <td class="text-success" id="pos_restocking_report_total"></td>
                         <td></td>
                      </tr>
                   </tfoot>
@@ -68,6 +64,10 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
          <div class="modal-body">
+            <div class="input-group input-group-sm" style="width: 220px;">
+               <span class="input-group-text">Date</span>
+               <input type="date" id="pos_sales_report_date" class="form-control">
+            </div>
             <div class="table-responsive">
                <table class="table table-sm align-middle mb-0">
                   <thead class="table-light text-center">
@@ -85,31 +85,31 @@
                         <th>...</th>
                      </tr>
                   </thead>
-                  <tbody class="text-center small" id="pos_logs_container">
-                     <tr>
-                        <td>10</td>
-                        <td>CO-0010</td>
-                        <td>10</td>
-                        <td>33</td>
-                        <td>₱0.00</td>
-                        <td class="fw-semibold text-success">₱2,124.00</td>
-                        <td>Cash</td>
-                        <td>Juan Dela Cruz</td>
-                        <td><span class="badge bg-success">Completed</span></td>
-                        <td>2026-03-05 03:15 PM</td>
-                        <td>
-                           <button type="button" class="btn btn-sm btn-outline-primary view_receipt_activator" data-bs-toggle="modal" data-bs-target="#receipt_modal" data-sale-code="CO-0001">
-                              <i class="bi bi-eye"></i>
-                           </button>
-                        </td>
-                     </tr>
+                  <tbody class="text-center small" id="pos_sales_report_container">
+                    <!-- <tr>
+                       <td>10</td>
+                       <td>RS-0010</td>
+                       <td>ITM-1010</td>
+                       <td class="text-start">Salt</td>
+                       <td>₱20.00</td>
+                       <td>100</td>
+                       <td>packs</td>
+                       <td class="fw-semibold text-success">₱2,000.00</td>
+                       <td>2026-03-05 03:15 PM</td>
+                    </tr> -->
                   </tbody>
+                  <tfoot class="table-light small">
+                     <tr class="fw-semibold text-center">
+                        <td colspan="5" class="text-end">Grand Total:</td>
+                        <td class="text-success" id="pos_sales_report_total"></td>
+                        <td colspan="5"></td>
+                     </tr>
+                  </tfoot>
                </table>
             </div>
          </div>
       </div>
    </div>
-</div>
 </div>
 <div class="modal fade" id="pos_logs_modal" tabindex="-1" aria-labelledby="pos_logs_title" aria-hidden="true">
    <div class="modal-dialog modal-lg modal-dialog-scrollable">
@@ -154,19 +154,17 @@
         <div id="receipt_content" class="p-3 border" style="font-family: Arial, sans-serif;">
           <!-- Receipt content will be populated dynamically -->
           <div class="text-center mb-3">
-            <h5 class="fw-bold">My POS Store</h5>
-            <small>123 Main St, Santa Fe</small><br>
+            <h5 class="fw-bold">SAKI MART</h5>
+            <small>Address asdasdasdsad</small><br>
             <small>Tel: 0917-123-4567</small>
           </div>
 
           <hr>
 
           <div id="receipt_info" class="mb-2">
-            <!-- Sale info: Sale Code, Date, Cashier -->
+
           </div>
-
           <hr>
-
           <table class="table table-borderless table-sm mb-0" style="width: 100%; font-size: 0.85rem;">
             <thead>
               <tr>
@@ -198,7 +196,7 @@
 
       <!-- Modal footer -->
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
       
     </div>
@@ -566,17 +564,6 @@
                      <div class="card h-100 ${is_match ? 'border border-warning shadow-sm' : ''}" data-pos_item_id="${pos_item_id}">
                         <div class="position-relative img-hover-wrapper d-flex justify-content-center align-items-center"style="aspect-ratio:5/2; background-color:white;">
                            <i class="bi bi-box2" style="font-size: 3rem;"></i>
-
-                           <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center">
-                              <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
-                                 <button type=button class="btn btn-success btn-sm hover-btn pos_item_update_activator" role="button">
-                                    Modify
-                                 </button type=button>
-                                 <button type=button class="btn btn-primary btn-sm hover-btn pos_item_barcodes_activator" role="button">
-                                    Barcodes
-                                 </button type=button>
-                              </div>
-                           </div>
                         </div>
                         <small class="card-body">
                            <div class="card-title fs-6 text-truncate overflow-tooltip" role="button">
@@ -1091,7 +1078,7 @@
       });
    });
 
-   $('#pos_sales _form').on('submit', function(e) {
+   $('#pos_sales_form').on('submit', function(e) {
       e.preventDefault();
 
       let items = [];
@@ -1137,62 +1124,157 @@
        });
    });
 
+   let pos_sales_report_data = {};
    function load_pos_sales_report(report_date = '') {
-       $.ajax({
-           url: '<?php echo base_url();?>i.php/sys_control/load_pos_sales_report',
-           method: 'POST',
-           data: {
-               report_date: report_date
-           },
-           dataType: 'json',
-           success: function (res) {
+      $.ajax({
+          url: '<?php echo base_url();?>i.php/sys_control/load_pos_sales_report',
+          method: 'POST',
+          data: {
+            report_date: report_date
+         },
+            dataType: 'json',
+            success: function (res) {
 
                let container = $('#pos_sales_report_container');
                container.empty();
 
                if (res.status !== 'success') {
-                   container.append(`<tr><td colspan="9">Failed to load data</td></tr>`);
-                   return;
+                 container.append(`<tr><td colspan="11">Failed to load data</td></tr>`);
+                 return;
+              }
+              pos_sales_report_data = {};
+
+              let grand_total = 0;
+
+              if (res.data.length === 0) {
+                 container.append(`<tr><td colspan="11">No records found</td></tr>`);
+                 $('#pos_sales_report_total').text('₱0.00');
+                 return;
+              }
+
+              res.data.forEach((row, index) => {
+               pos_sales_report_data[row.pos_checkout_code] = row;
+
+               let subtotal = parseFloat(row.pos_checkout_total);
+               let discount = parseFloat(row.pos_discount_value) || 0;
+               let final_total = subtotal - discount;
+
+               grand_total += final_total;
+
+               let status_badge = '';
+               switch (row.pos_checkout_status) {
+               case '1':
+                  status_badge = `<span class="badge bg-success">Completed</span>`;
+                  break;
+               case '2':
+                  status_badge = `<span class="badge bg-danger">Voided</span>`;
+                  break;
+               case '3':
+                  status_badge = `<span class="badge bg-warning text-dark">Pending</span>`;
+                  break;
+               default:
+                  status_badge = `<span class="badge bg-secondary">${row.pos_checkout_status}</span>`;
                }
 
-               let grand_total = 0;
+               container.append(`
+                          <tr>
+                              <td>${index + 1}</td>
+                              <td>${row.pos_checkout_code}</td>
+                              <td>${row.total_items}</td>
+                              <td>${row.total_quantity}</td>
+                              <td>₱${discount.toFixed(2)}</td>
+                              <td class="fw-semibold text-success">₱${final_total.toFixed(2)}</td>
+                              <td>Cash</td>
+                              <td>${row.cashier_name ?? 'Unknown'}</td>
+                              <td>${status_badge}</td>
+                              <td>${row.pos_checkout_date}</td>
+                              <td>
+                                  <button 
+                                      type="button" 
+                                      class="btn btn-sm btn-outline-primary view_receipt_activator" 
+                                      data-bs-toggle="modal" 
+                                      data-bs-target="#receipt_modal" 
+                                      data-sale-code="${row.pos_checkout_code}">
+                                      <i class="bi bi-eye"></i>
+                                  </button>
+                              </td>
+                          </tr>
+               `);
+            });
+              console.log(pos_sales_report_data)
 
-               if (res.data.length === 0) {
-                   container.append(`<tr><td colspan="9">No records found</td></tr>`);
-                   $('#pos_sales_report_total').text('₱0.00');
-                   return;
-               }
-
-               res.data.forEach((row, index) => {
-
-                   let total = parseFloat(row.pos_checkout_total);
-                   grand_total += total;
-
-                   container.append(`
-                       <tr>
-                           <td>${index + 1}</td>
-                           <td>${row.pos_checkout_code}</td>
-                           <td>${row.pos_item_code}</td>
-                           <td class="text-start">${row.pos_item_name}</td>
-                           <td>₱${parseFloat(row.pos_item_price).toFixed(2)}</td>
-                           <td>${row.pos_item_quantity}</td>
-                           <td>${row.pos_item_unit}</td>
-                           <td class="fw-semibold text-success">₱${total.toFixed(2)}</td>
-                           <td>${row.pos_checkout_date}</td>
-                       </tr>
-                   `);
-               });
-
-               $('#pos_sales_report_total').text('₱' + grand_total.toFixed(2));
+              $('#pos_sales_report_total').text('₱' + grand_total.toFixed(2));
            },
            error: function () {
-               $('#pos_sales_report_container').html(`<tr><td colspan="9">Server error</td></tr>`);
-           }
-       });
+            $('#pos_sales_report_container')
+            .html(`<tr><td colspan="11">Server error</td></tr>`);
+         }
+      });
    }
    $('#pos_sales_report_date').on('change', function () {
       load_pos_sales_report($(this).val());
    });
+
+   function load_pos_restocking_report() {
+      $.ajax({
+         url: '<?php echo base_url();?>i.php/sys_control/load_pos_restocking_report',
+         method: 'POST',
+         dataType: 'json',
+         success: function (res) {
+
+            let $container = $('#pos_restocking_report_container');
+            $container.empty();
+
+            let count = 1;
+            let grand_total = 0;
+
+            if (res.data.length) {
+
+               res.data.forEach(row => {
+
+                  let row_total = parseFloat(row.pos_restocking_total);
+                  grand_total += row_total;
+
+                  let tr = `
+                  <tr>
+                     <td>${count++}</td>
+                     <td>${row.pos_restocking_code}</td>
+                     <td>${row.pos_item_code}</td>
+                     <td class="text-start">${row.pos_item_name}</td>
+                     <td>₱${parseFloat(row.pos_item_price).toFixed(2)}</td>
+                     <td>${row.pos_item_quantity}</td>
+                     <td>${row.pos_item_unit}</td>
+                     <td class="fw-semibold text-success pos_restocking_row_total" data-value="${row_total}">
+                        ₱${row_total.toFixed(2)}
+                     </td>
+                     <td>${format_date_time(row.pos_restocking_date)}</td>
+                  </tr>
+                  `;
+
+                  $container.append(tr);
+               });
+
+            } else {
+               $container.html(`
+                  <tr>
+                     <td colspan="9" class="text-center text-muted">
+                        No records found
+                     </td>
+                  </tr>
+               `);
+            }
+
+            // set computed grand total
+            $('#pos_restocking_report_total').text(
+               '₱' + grand_total.toLocaleString(undefined, { minimumFractionDigits: 2 })
+            );
+
+         },
+         error: function () {
+            alert('Failed to load report');
+         }
+      });
+   }
    function format_date_time(datetime) {
       let d = new Date(datetime);
 
@@ -1210,6 +1292,9 @@
 
    $('#pos_sales_report_modal').on('shown.bs.modal', function () {
       load_pos_sales_report();
+   });
+   $('#pos_restocking_report_modal').on('shown.bs.modal', function () {
+      load_pos_restocking_report();
    });
 
    $('#pos_logs_modal').on('shown.bs.modal', function () {
@@ -1404,54 +1489,81 @@
    });
 
    $(document).ready(function() {
-      $('.view_receipt_activator').on('click', function() {
-         var sale_code = $(this).data('sale-code');
+      $(document).on('click', '.view_receipt_activator', function() {
+         let sale_code = $(this).data('sale-code');
 
-         var sale_data = {
-            sale_code: sale_code,
-            date: '2026-03-09 10:15 AM',
-            cashier: 'Juan Dela Cruz',
-            payment: 'Cash',
-            items: [
-               { name: 'Premium Rice', qty: 5, unit: 'kg', subtotal: 225.00 }
-            ],
-            discount: 0.00,
-            total: 225.00
-         };
+         $.ajax({
+            url: '<?php echo base_url();?>i.php/sys_control/load_pos_checkout_receipt',
+            method: 'POST',
+            data: {
+               sale_code: sale_code
+            },
+            dataType: 'json',
+            success: function(res) {
 
-         $('#receipt_info').html(`
-            <small>Sale Code: <strong>${sale_data.sale_code}</strong></small><br>
-            <small>Date: <strong>${sale_data.date}</strong></small><br>
-            <small>Cashier: <strong>${sale_data.cashier}</strong></small>
-         `);
+               if (res.status !== 'success') {
+                  $('#receipt_items').html('<tr><td colspan="4">Failed to load receipt</td></tr>');
+                  return;
+               }
 
-         var items_html = '';
-         $.each(sale_data.items, function(i, item) {
-            items_html += `
-               <tr>
-               <td class="text-start">${item.name}</td>
-               <td>${item.qty}</td>
-               <td>${item.unit}</td>
-               <td class="text-end">₱${item.subtotal.toFixed(2)}</td>
-               </tr>
-            `;
+               let data = res.data;
+
+               if (data.length === 0) {
+                  $('#receipt_items').html('<tr><td colspan="4">No items found</td></tr>');
+                  return;
+               }
+
+               let first = data[0];
+
+               let subtotal = 0;
+               let discount = parseFloat(first.pos_discount_value) || 0;
+
+               $('#receipt_info').html(`
+                  <small>Sale Code: <strong>${first.pos_checkout_code}</strong></small><br>
+                  <small>Date: <strong>${first.pos_checkout_date}</strong></small><br>
+                  <small>Cashier: <strong>${first.cashier_name ?? 'Unknown'}</strong></small>
+               `);
+
+               let items_html = '';
+
+               data.forEach(item => {
+
+                  let item_total = parseFloat(item.pos_item_price) * parseFloat(item.pos_item_quantity);
+                  subtotal += item_total;
+
+                  items_html += `
+                     <tr>
+                        <td class="text-start">${item.pos_item_name}</td>
+                        <td>${item.pos_item_quantity}</td>
+                        <td>${item.pos_item_unit}</td>
+                        <td class="text-end">₱${item_total.toFixed(2)}</td>
+                     </tr>
+                  `;
+               });
+
+               $('#receipt_items').html(items_html);
+
+               let final_total = subtotal - discount;
+
+               $('#receipt_totals').html(`
+                  <div class="d-flex justify-content-between mb-1">
+                     <span>Discount:</span>
+                     <span>₱${discount.toFixed(2)}</span>
+                  </div>
+                  <div class="d-flex justify-content-between mb-1 fw-bold">
+                     <span>Total:</span>
+                     <span>₱${final_total.toFixed(2)}</span>
+                  </div>
+                  <div class="d-flex justify-content-between mb-3">
+                     <span>Payment:</span>
+                     <span>Cash</span>
+                  </div>
+               `);
+            },
+            error: function() {
+               $('#receipt_items').html('<tr><td colspan="4">Server error</td></tr>');
+            }
          });
-         $('#receipt_items').html(items_html);
-
-         $('#receipt_totals').html(`
-            <div class="d-flex justify-content-between mb-1">
-            <span>Discount:</span>
-            <span>₱${sale_data.discount.toFixed(2)}</span>
-            </div>
-            <div class="d-flex justify-content-between mb-1 fw-bold">
-            <span>Total:</span>
-            <span>₱${sale_data.total.toFixed(2)}</span>
-            </div>
-            <div class="d-flex justify-content-between mb-3">
-            <span>Payment:</span>
-            <span>${sale_data.payment}</span>
-            </div>
-         `);
       });
    });
 

@@ -120,8 +120,12 @@ class Sys_control extends CI_Controller
 	    $this->load->model('sys_model');
 	    $this->sys_model->load_pos_sales_report();
 	}
-
-
+	public function load_pos_checkout_receipt()
+	{
+		$this->load->model('sys_model');
+	    $this->sys_model->load_pos_checkout_receipt();
+	}
+	
 
 
 
