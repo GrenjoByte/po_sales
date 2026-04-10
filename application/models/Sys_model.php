@@ -200,7 +200,6 @@ class Sys_model extends CI_Model {
 	    if ($current['pos_item_unit'] != $pos_item_unit) $changed[] = 'Item Unit';
 	    if ($current['pos_item_stock'] != $pos_item_stock) $changed[] = 'Current Stock';
 	    if ($current['pos_item_low'] != $pos_item_low) $changed[] = 'Low Stock Level';
-	    if ($file_path && $current['pos_item_image'] != $pos_item_image_name) $changed[] = 'Item Image';
 
 	    header('Content-Type: application/json');
 	    if ($update_query) {
@@ -453,12 +452,15 @@ class Sys_model extends CI_Model {
 
 	    exit;
 	}
-
 	public function load_pos_restocking_report()
 	{
 	    header('Content-Type: application/json');
 
+	    $report_date = $_POST['report_date'];
+	    $params = [];
+
 	    $sql = "SELECT 
+	                pos_item_id,
 	                pos_restocking_code,
 	                pos_item_code,
 	                pos_item_name,
@@ -468,9 +470,17 @@ class Sys_model extends CI_Model {
 	                pos_restocking_total,
 	                pos_restocking_date
 	            FROM pos_restocking
-	            ORDER BY pos_restocking_date DESC";
+	            WHERE pos_restocking_status = 1
+	    ";
 
-	    $query = $this->db->query($sql);
+	    if (!empty($report_date)) {
+	        $sql .= " WHERE DATE(pos_restocking_date) = ? ";
+	        $params[] = $report_date;
+	    }
+
+	    $sql .= " ORDER BY pos_restocking_date DESC";
+
+	    $query = $this->db->query($sql, $params);
 
 	    $data = [];
 	    $grand_total = 0;
@@ -480,6 +490,7 @@ class Sys_model extends CI_Model {
 	        $grand_total += $row->pos_restocking_total;
 
 	        $data[] = [
+	            'pos_item_id' => $row->pos_item_id,
 	            'pos_restocking_code' => $row->pos_restocking_code,
 	            'pos_item_code'       => $row->pos_item_code,
 	            'pos_item_name'       => $row->pos_item_name,
@@ -492,6 +503,7 @@ class Sys_model extends CI_Model {
 	    }
 
 	    echo json_encode([
+	        'status' => 'success',
 	        'data' => $data,
 	        'grand_total' => $grand_total
 	    ]);
@@ -531,68 +543,83 @@ class Sys_model extends CI_Model {
 	    return false;
 	}
 	public function process_sales() {
-	    $items = json_decode($_POST['items'], true);
+		$items = json_decode($_POST['items'], true);
 
-	    header('Content-Type: application/json');
+		header('Content-Type: application/json');
 
-	    if (empty($items)) {
-	        echo json_encode(['status'=>'error','message'=>'No items to sell']);
-	        exit;
-	    }
+		if (empty($items)) {
+			echo json_encode(['status'=>'error','message'=>'No items to sell']);
+			exit;
+		}
 
-	    $this->db->trans_start();
+		$this->db->trans_start();
 
-	    // generate sale code procedurally
-	    $sql = "SELECT CONCAT('CO-', LPAD(IFNULL(MAX(SUBSTRING(pos_checkout_code,4)),0)+1,4,'0')) AS new_code
-	            FROM pos_checkouts";
-	    $sale_code = $this->db->query($sql)->row()->new_code;
+    // generate sale code
+		$sql = "SELECT CONCAT('CO-', LPAD(IFNULL(MAX(CAST(SUBSTRING(pos_checkout_code,4) AS UNSIGNED)),0)+1,4,'0')) AS new_code
+		FROM pos_checkouts";
+		$sale_code = $this->db->query($sql)->row()->new_code;
 
-	    foreach ($items as $item) {
-	        $subtotal = $item['pos_item_price'] * $item['pos_item_quantity'];
+    // container for log
+		$activity_items = [];
 
-	        // insert into pos_checkouts
-	        $sql = "INSERT INTO pos_checkouts 
-	                (pos_checkout_code, pos_item_id, pos_item_code, pos_item_name, 
-	                 pos_item_price, pos_item_quantity, pos_item_unit, pos_checkout_subtotal,
-	                 pos_checkout_total, pos_checkout_date)
-	                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+		foreach ($items as $item) {
+			$subtotal = $item['pos_item_price'] * $item['pos_item_quantity'];
 
-	        $this->db->query($sql, [
-	            $sale_code,
-	            $item['pos_item_id'],
-	            $item['pos_item_code'],
-	            $item['pos_item_name'],
-	            $item['pos_item_price'],
-	            $item['pos_item_quantity'],
-	            $item['pos_item_unit'],
-	            $subtotal,
-	            $subtotal // cash only, no discount
-	        ]);
+        // insert into pos_checkouts
+			$sql = "INSERT INTO pos_checkouts 
+			(pos_checkout_code, pos_item_id, pos_item_code, pos_item_name, 
+				pos_item_price, pos_item_quantity, pos_item_unit, pos_checkout_subtotal,
+				pos_checkout_total, pos_checkout_date)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
-	        // decrement stock
-	        $this->db->query(
-	            "UPDATE pos_inventory SET pos_item_stock = pos_item_stock - ? WHERE pos_item_id=?",
-	            [$item['pos_item_quantity'], $item['pos_item_id']]
-	        );
+			$this->db->query($sql, [
+				$sale_code,
+				$item['pos_item_id'],
+				$item['pos_item_code'],
+				$item['pos_item_name'],
+				$item['pos_item_price'],
+				$item['pos_item_quantity'],
+				$item['pos_item_unit'],
+				$subtotal,
+				$subtotal
+			]);
 
-	        // log activity
-	        $activity_type = "Sale";
-	        $pos_code = "Item ID: " . $item['pos_item_id'];
-	        $activity = "<strong>Sold:</strong><br>" . $item['pos_item_name'] . " (x" . $item['pos_item_quantity'] . " " . $item['pos_item_unit'] . ")";
-	        $this->db->query(
-	            "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)",
-	            [$activity_type, $pos_code, $activity]
-	        );
-	    }
+        // update stock
+			$this->db->query(
+				"UPDATE pos_inventory 
+				SET pos_item_stock = pos_item_stock - ? 
+				WHERE pos_item_id = ?",
+				[$item['pos_item_quantity'], $item['pos_item_id']]
+			);
 
-	    $this->db->trans_complete();
+        // collect items for single log
+			$activity_items[] = $item['pos_item_name'] . 
+			" (x" . $item['pos_item_quantity'] . " " . $item['pos_item_unit'] . ")";
+		}
 
-	    if ($this->db->trans_status() === FALSE) {
-	        echo json_encode(['status'=>'error','message'=>'Sale failed (rolled back)']);
-	    } else {
-	        echo json_encode(['status'=>'success','message'=>'Sale completed successfully']);
-	    }
-	    exit;
+    // single log entry for the whole sale
+		$activity_type = "Sale";
+		$pos_code = $sale_code;
+		$activity = "<strong>Sold Items:</strong><br>" . implode("<br>", $activity_items);
+
+		$this->db->query(
+			"INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)",
+			[$activity_type, $pos_code, $activity]
+		);
+
+		$this->db->trans_complete();
+
+		if ($this->db->trans_status() === FALSE) {
+			echo json_encode(['status'=>'error','message'=>'Sale failed (rolled back)']);
+		} else {
+			echo json_encode([
+				'status' => 'success',
+				'message' => 'Sale completed successfully',
+				'sale_code' => $sale_code
+			]);
+		}
+
+		exit;
 	}
 	public function load_pos_sales_report()
 	{
@@ -675,6 +702,106 @@ class Sys_model extends CI_Model {
 		]);
 
 		exit;
+	}
+	public function load_low_stock_items() {
+	    $sql = "SELECT pos_item_name, pos_item_code, pos_item_stock, pos_item_low
+	            FROM pos_inventory
+	            WHERE pos_item_stock <= pos_item_low
+	              AND pos_item_status = 1
+	            ORDER BY pos_item_stock ASC
+	            LIMIT 100";
+
+	    $query = $this->db->query($sql);
+	    $data = [];
+
+	    foreach ($query->result() as $row) {
+	        $data[] = [
+	            'pos_item_name' => $row->pos_item_name,
+	            'pos_item_code' => $row->pos_item_code,
+	            'pos_item_stock' => $row->pos_item_stock,
+	            'pos_item_low' => $row->pos_item_low
+	        ];
+	    }
+
+	    echo json_encode(['data' => $data]);
+	}
+	public function void_pos_restocking()
+	{
+		header('Content-Type: application/json');
+
+		$pos_item_id = $this->input->post('pos_item_id', true);
+		$pos_restocking_code = $this->input->post('pos_restocking_code', true);
+
+		if (empty($pos_item_id)) {
+			echo json_encode([
+				'status' => 'error',
+				'message' => 'Invalid restocking code'
+			]);
+			return;
+		}
+
+		$sql = "SELECT pos_restocking_status 
+		FROM pos_restocking 
+		WHERE pos_item_id = ? AND pos_restocking_code = ?";
+		$query = $this->db->query($sql, [$pos_item_id, $pos_restocking_code]);
+
+		if ($query->num_rows() == 0) {
+			echo json_encode([
+				'status' => 'error',
+				'message' => 'Record not found'
+			]);
+			return;
+		}
+
+		$row = $query->row();
+
+		if ($row->pos_restocking_status == 2) {
+			echo json_encode([
+				'status' => 'error',
+				'message' => 'Already voided'
+			]);
+			return;
+		}
+
+		$sql = "SELECT pos_item_id, pos_item_quantity 
+	        	FROM pos_restocking 
+				WHERE pos_item_id = ? AND pos_restocking_code = ?";
+		$query_item = $this->db->query($sql, [$pos_item_id, $pos_restocking_code]);
+
+		if ($query_item->num_rows() == 0) {
+		    echo json_encode([
+		        'status' => 'error',
+		        'message' => 'Restocking item not found'
+		    ]);
+		    return;
+		}
+
+		$item = $query_item->row();
+
+		$sql = "UPDATE pos_inventory 
+		        SET pos_item_stock = pos_item_stock - ? 
+		        WHERE pos_item_id = ?";
+		$this->db->query($sql, [
+		    $item->pos_item_quantity,
+		    $item->pos_item_id
+		]);
+
+		$sql = "UPDATE pos_restocking 
+		SET pos_restocking_status = 2 
+		WHERE pos_item_id = ? AND pos_restocking_code = ?";
+		$this->db->query($sql, [$pos_item_id, $pos_restocking_code]);
+
+		if ($this->db->affected_rows() > 0) {
+			echo json_encode([
+				'status' => 'success',
+				'message' => 'Restocking voided'
+			]);
+		} else {
+			echo json_encode([
+				'status' => 'error',
+				'message' => 'No changes made'
+			]);
+		}
 	}
 
 
@@ -2076,89 +2203,6 @@ class Sys_model extends CI_Model {
 		else {
 			echo json_encode('');
 		}
-	}
-	public function void_pos_restocking_item(){
-	    $pos_restocking_id = $_POST['pos_restocking_id'];
-	
-	    $sql = "SELECT pos_inventory.pos_item_id, pos_item_count, pos_restocking_code, pos_item_name FROM pos_restocking, pos_inventory WHERE pos_restocking.pos_item_id = pos_inventory.pos_item_id AND pos_restocking_id = ?";
-	    $select_query = $this->db->query($sql, [$pos_restocking_id]);
-		foreach ($select_query->result() as $row) {
- 			$pos_item_id = $row->pos_item_id;
- 			$pos_item_count = $row->pos_item_count;
- 			$pos_restocking_code = $row->pos_restocking_code;
- 			$pos_item_name = $row->pos_item_name;
-		}
-        
-        $sql = "UPDATE pos_inventory SET pos_item_stock = pos_item_stock - ? WHERE pos_item_id = ?";
-	    $update_query = $this->db->query($sql, [$pos_item_count, $pos_item_id]);
-
-	    if ($update_query) {
-			$sql = "DELETE FROM pos_restocking WHERE pos_restocking_id = ?";
-		    $delete_query = $this->db->query($sql, [$pos_restocking_id]);	 
-
-		    if ($delete_query) {
-		    	$sql = "SELECT COUNT(*) AS total FROM pos_restocking WHERE pos_restocking_code = ?";
-				$query = $this->db->query($sql, [$pos_restocking_code]);
-				$result = $query->row();
-				$pos_restocking_count = $result->total;
-
-				$activity_type = "Restock Item Voided";
-	        	$pos_code = $pos_restocking_code;
-		        $activity = "
-		            Voided $pos_item_name * $pos_item_count from '$pos_restocking_code'.
-		        ";
-		        $sql = "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)";
-		        $this->db->query($sql, [$activity_type, $pos_code, $activity]);
-
-				if ($pos_restocking_count == 0) {
-		    		echo "success-null";
-				}
-				else {
-		    		echo "success";
-				}
-	       	}
-	       	else {
-	    		echo "error";
-	       	}
-	    }
-	    else {
-    		echo "error";
-	    }
-	}
-	public function void_pos_restocking(){
-	    $pos_restocking_code = $_POST['pos_restocking_code'];
-	
-	    $sql = "SELECT pos_item_id, pos_item_count FROM pos_restocking WHERE pos_restocking_code = ?";
-	    $select_query = $this->db->query($sql, [$pos_restocking_code]);
-		foreach ($select_query->result() as $row) {
- 			$pos_item_id = $row->pos_item_id;
- 			$pos_item_count = $row->pos_item_count;
-		
- 			$sql = "UPDATE pos_inventory SET pos_item_stock = pos_item_stock - ? WHERE pos_item_id = ?";
-	    	$update_query = $this->db->query($sql, [$pos_item_count, $pos_item_id]);
-		}
-
-	    if ($update_query) {
-			$sql = "DELETE FROM pos_restocking WHERE pos_restocking_code = ?";
-		    $delete_query = $this->db->query($sql, [$pos_restocking_code]);	 
-
-		    if ($delete_query) {
-		        $activity_type = "Restock Voided";
-	        	$pos_code = $pos_restocking_code;
-		        $activity = "
-		            Voided the whole restocking with code '$pos_restocking_code'.
-		        ";
-		        $sql = "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)";
-		        $this->db->query($sql, [$activity_type, $pos_code, $activity]);
-	    		echo "success";
-	       	}
-	       	else {
-	    		echo "error";
-	       	}
-	    }
-	    else {
-    		echo "error";
-	    }
 	}
 
 	public function load_supply_inventory()

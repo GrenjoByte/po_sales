@@ -43,7 +43,7 @@
 	<main>
 		<div class="container">
 			<div class="row mt-3 mb-4 text-center">
-				<h4>Inventory Manager</h4>
+				<h4>Sales</h4>
 			</div>
 		</div>
 		<div class="container mt-4">

@@ -6,8 +6,10 @@
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#inventory_nav_collapse" aria-controls="inventory_nav_collapse" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
+		<h1 class="m-0 fw-bold me-4">SAKI MART</h1>
 		<div class="collapse navbar-collapse" id="inventory_nav_collapse">
-			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+			<ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
+			<ul class="navbar-nav ms-auto px-3 mb-2 mb-lg-0">
 				<li class="nav-item dropdown">
 					<a class="nav-link px-3" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 						<i class="bi bi-bar-chart-line"></i>
@@ -24,10 +26,13 @@
 								Sales
 							</a>
 						</li>
+						<li>
+							<a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#pos_stocks_report_modal" role="button">
+								Low Stock Items
+							</a>
+						</li>
 					</ul>
 				</li>
-			</ul>
-			<ul class="navbar-nav ms-auto px-3 mb-2 mb-lg-0">
 				<li class="nav-item">
 					<a class="nav-link" data-bs-toggle="modal" data-bs-target="#pos_sales_cart_modal" role="button">
 						<i class="bi bi-cart"></i>
@@ -37,9 +42,6 @@
 			</ul>
 			<form class="d-flex" role="search">
 				<input id="pos_inventory_search" class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
-				<button type="submit" class="bg-transparent border-0 p-0">
-			        <i class="bi bi-search fs-5"></i>
-			    </button>
 			</form>
 		</div>
 	</div>

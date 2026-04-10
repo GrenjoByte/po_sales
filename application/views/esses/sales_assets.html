@@ -6,6 +6,21 @@
    .dropdown-toggle::after {
       display: none !important;
    }
+   th.sorted.ascending::after {
+      content: " ▲";
+      font-size: 0.7rem;
+   }
+   th.sorted.descending::after {
+      content: " ▼";
+      font-size: 0.7rem;
+   }
+   .pointered {
+      cursor: pointer;
+      -webkit-user-select: none; /* Chrome, Safari */
+      -moz-user-select: none;    /* Firefox */
+      -ms-user-select: none;     /* IE/Edge */
+      user-select: none;         /* Standard */
+   }
 </style>
 <div class="modal fade" id="pos_restocking_report_modal" tabindex="-1" aria-labelledby="pos_restocking_report_title" aria-hidden="true">
    <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -15,9 +30,13 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
          <div class="modal-body">
+            <div class="input-group input-group-sm" style="width: 220px;">
+               <span class="input-group-text">Date</span>
+               <input type="date" id="pos_restocking_report_date" class="form-control">
+            </div>
             <div class="table-responsive">
-               <table class="table table-sm align-middle mb-0">
-                  <thead class="table-light text-center">
+               <table class="table table-sm align-middle mb-0 sortable">
+                  <thead class="pointered table-light text-center">
                      <tr>
                         <th>#</th>
                         <th>Restock Code</th>
@@ -28,10 +47,11 @@
                         <th>Unit</th>
                         <th>Total</th>
                         <th>Date</th>
+                        <th>...</th>
                      </tr>
                   </thead>
                   <tbody class="text-center small" id="pos_restocking_report_container">
-                    <tr>
+                    <!-- <tr>
                        <td>10</td>
                        <td>RS-0010</td>
                        <td>ITM-1010</td>
@@ -41,12 +61,13 @@
                        <td>packs</td>
                        <td class="fw-semibold text-success">₱2,000.00</td>
                        <td>2026-03-05 03:15 PM</td>
-                    </tr>
+                    </tr> -->
                   </tbody>
                   <tfoot class="table-light small">
                      <tr class="fw-semibold text-center">
                         <td colspan="7" class="text-end">Grand Total:</td>
                         <td class="text-success" id="pos_restocking_report_total"></td>
+                        <td></td>
                         <td></td>
                      </tr>
                   </tfoot>
@@ -69,8 +90,8 @@
                <input type="date" id="pos_sales_report_date" class="form-control">
             </div>
             <div class="table-responsive">
-               <table class="table table-sm align-middle mb-0">
-                  <thead class="table-light text-center">
+               <table class="table table-sm sortable align-middle mb-0">
+                  <thead class="pointered table-light text-center">
                      <tr>
                         <th>#</th>
                         <th>Sale Code</th>
@@ -120,8 +141,8 @@
          </div>
          <div class="modal-body">
             <div class="table-responsive">
-               <table class="table table-sm align-middle mb-0">
-                  <thead class="table-light text-center">
+               <table class="table table-sm align-middle mb-0 sortable">
+                  <thead class="pointered table-light text-center">
                      <tr>
                         <th>#</th>
                         <th>Activity Type</th>
@@ -139,30 +160,50 @@
    </div>
 </div>
 
+<div class="modal fade" id="pos_stocks_report_modal" tabindex="-1" aria-labelledby="pos_stocks_report_title" aria-hidden="true">
+   <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h1 class="modal-title fs-5" id="pos_stocks_report_title">Low Stock Items</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <div class="table-responsive">
+               <table class="table table-sm align-middle mb-0 sortable">
+                  <thead class="pointered table-light text-center">
+                     <tr>
+                        <th>#</th>
+                        <th>Item Name</th>
+                        <th>POS Code</th>
+                        <th>Current Stock</th>
+                        <th>Low Stock Level</th>
+                     </tr>
+                  </thead>
+                  <tbody class="text-center small" id="pos_low_stocks_container">
+                  </tbody>
+               </table>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+
 <div class="modal fade" id="receipt_modal" tabindex="-1" aria-labelledby="receiptModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      
-      <!-- Modal header -->
       <div class="modal-header">
         <h5 class="modal-title" id="receipt_modal_label">Receipt</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      
-      <!-- Modal body -->
       <div class="modal-body">
         <div id="receipt_content" class="p-3 border" style="font-family: Arial, sans-serif;">
-          <!-- Receipt content will be populated dynamically -->
           <div class="text-center mb-3">
             <h5 class="fw-bold">SAKI MART</h5>
-            <small>Address asdasdasdsad</small><br>
-            <small>Tel: 0917-123-4567</small>
+            <small>Sitio Sto. Niño, Brgy. San Andres, Catbalogan City</small><br>
+            <small>Tel: 0995-330-6583</small>
           </div>
-
           <hr>
-
           <div id="receipt_info" class="mb-2">
-
           </div>
           <hr>
           <table class="table table-borderless table-sm mb-0" style="width: 100%; font-size: 0.85rem;">
@@ -178,27 +219,23 @@
               <!-- Items will be inserted here dynamically -->
             </tbody>
           </table>
-
           <hr>
-
           <div id="receipt_totals">
             <!-- Totals (Discount, Total, Payment) will be inserted here -->
           </div>
-
           <hr>
-
           <div class="text-center small">
             Thank you for your purchase!<br>
             Visit us again.
           </div>
         </div>
       </div>
-
-      <!-- Modal footer -->
       <div class="modal-footer">
-        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+         <button type="button" class="btn btn-sm btn-danger" id="void_sales">Void Sales</button>
+         <button type="button" class="btn btn-sm btn-success" id="print_receipt_btn">
+            <i class="bi bi-printer"></i> Print
+         </button>
       </div>
-      
     </div>
   </div>
 </div>
@@ -224,11 +261,10 @@
          </div>
          <div class="modal-footer">
             <input type="text" id="pos_scan_input" autocomplete="off" style="position:absolute;opacity:0;pointer-events:none;">
-            <button type="submit" form="pos_sales_form" class="btn btn-primary">
+            <button type="submit" form="pos_sales_form" class="btn btn-sm btn-primary">
                Submit
             </button>
          </div>
-
       </div>
    </div>
 </div>
@@ -1109,13 +1145,15 @@
            dataType: 'json',
            success: function(res) {
                if (res.status === 'success') {
-                   Object.values(pos_items).forEach(item => item.cart_quantity = 0);
-                   render_pos_sales_cart();
-                   load_pos_inventory(current_page);
-                   $('#pos_sales_cart_modal').modal('hide');
-                   alert('Sale completed successfully');
+                  const sale_code = res.sale_code;
+                  Object.values(pos_items).forEach(item => item.cart_quantity = 0);
+                  render_pos_sales_cart();
+                  load_pos_inventory(current_page);
+                  load_pos_checkout_receipt(sale_code);
+
+                  $('#pos_sales_cart_modal').modal('hide');
                } else {
-                   alert(res.message);
+                  alert(res.message);
                }
            },
            error: function() {
@@ -1189,14 +1227,12 @@
                               <td>${status_badge}</td>
                               <td>${row.pos_checkout_date}</td>
                               <td>
-                                  <button 
-                                      type="button" 
-                                      class="btn btn-sm btn-outline-primary view_receipt_activator" 
-                                      data-bs-toggle="modal" 
-                                      data-bs-target="#receipt_modal" 
-                                      data-sale-code="${row.pos_checkout_code}">
-                                      <i class="bi bi-eye"></i>
-                                  </button>
+                                 <button 
+                                    type="button" 
+                                    class="btn btn-sm btn-outline-primary view_receipt_activator"
+                                    data-sale-code="${row.pos_checkout_code}">
+                                    <i class="bi bi-eye"></i>
+                                 </button>
                               </td>
                           </tr>
                `);
@@ -1214,67 +1250,156 @@
    $('#pos_sales_report_date').on('change', function () {
       load_pos_sales_report($(this).val());
    });
+   $('#pos_sales_report_modal').on('shown.bs.modal', function () {
+      load_pos_sales_report();
+   });
 
-   function load_pos_restocking_report() {
+   function load_pos_restocking_report(report_date = '') {
       $.ajax({
          url: '<?php echo base_url();?>i.php/sys_control/load_pos_restocking_report',
          method: 'POST',
+         data: {
+            report_date: report_date
+         },
          dataType: 'json',
          success: function (res) {
 
-            let $container = $('#pos_restocking_report_container');
-            $container.empty();
+            let container = $('#pos_restocking_report_container');
+            container.empty();
 
-            let count = 1;
+            pos_restocking_report_data = {};
+
             let grand_total = 0;
 
-            if (res.data.length) {
+            if (res.data.length === 0) {
+               container.append(`<tr><td colspan="9">No records found</td></tr>`);
+               $('#pos_restocking_report_total').text('₱0.00');
+               return;
+            }
 
-               res.data.forEach(row => {
+            res.data.forEach((row, index) => {
 
-                  let row_total = parseFloat(row.pos_restocking_total);
-                  grand_total += row_total;
+               pos_restocking_report_data[row.pos_restocking_code] = row;
 
-                  let tr = `
+               let price = parseFloat(row.pos_item_price);
+               let quantity = parseFloat(row.pos_item_quantity);
+               let row_total = parseFloat(row.pos_restocking_total);
+
+               grand_total += row_total;
+
+               container.append(`
                   <tr>
-                     <td>${count++}</td>
+                     <td>${index + 1}</td>
                      <td>${row.pos_restocking_code}</td>
                      <td>${row.pos_item_code}</td>
                      <td class="text-start">${row.pos_item_name}</td>
-                     <td>₱${parseFloat(row.pos_item_price).toFixed(2)}</td>
-                     <td>${row.pos_item_quantity}</td>
+                     <td>₱${price.toFixed(2)}</td>
+                     <td>${quantity}</td>
                      <td>${row.pos_item_unit}</td>
-                     <td class="fw-semibold text-success pos_restocking_row_total" data-value="${row_total}">
+                     <td class="fw-semibold text-success">
                         ₱${row_total.toFixed(2)}
                      </td>
-                     <td>${format_date_time(row.pos_restocking_date)}</td>
-                  </tr>
-                  `;
-
-                  $container.append(tr);
-               });
-
-            } else {
-               $container.html(`
-                  <tr>
-                     <td colspan="9" class="text-center text-muted">
-                        No records found
+                     <td>${row.pos_restocking_date}</td>
+                     <td class="text-end">
+                        <button 
+                           type="button"
+                           class="btn btn-sm btn-outline-danger void_restocking"
+                           data-pos_item_id="${row.pos_item_id}"
+                           data-pos_item_name="${row.pos_item_name}"
+                           data-pos_restocking_code="${row.pos_restocking_code}"
+                           title="Void">
+                           <i class="bi bi-x-lg"></i>
+                        </button>
                      </td>
                   </tr>
                `);
-            }
+            });
 
-            // set computed grand total
-            $('#pos_restocking_report_total').text(
-               '₱' + grand_total.toLocaleString(undefined, { minimumFractionDigits: 2 })
-            );
+            console.log(pos_restocking_report_data);
 
+            $('#pos_restocking_report_total').text('₱' + grand_total.toFixed(2));
+            $('.void_restocking')
+            .off('click')
+            .on('click', function () {
+               let pos_item_id = $(this).data('pos_item_id');
+               let pos_item_name = $(this).data('pos_item_name');
+               let pos_restocking_code = $(this).data('pos_restocking_code');
+               if (!confirm(`Void restocking of "${pos_item_name}" from restock #${pos_restocking_code}?`)) return;
+
+               $.ajax({
+                  url: '<?php echo base_url();?>i.php/sys_control/void_pos_restocking',
+                  method: 'POST',
+                  data: { 
+                     pos_item_id: pos_item_id, 
+                     pos_restocking_code: pos_restocking_code 
+                  },
+                  dataType: 'json',
+                  success: function(res) {
+                     if (res.status === 'success') {
+                        alert(`Restocking of "${pos_item_name}" from #${pos_restocking_code} successfully voided.`);
+                        load_pos_restocking_report($('#pos_restocking_report_date').val());
+                     } else {
+                        alert(res.message);
+                     }
+                  },
+                  error: function() {
+                     alert('Server error');
+                  }
+               });
+            });
          },
          error: function () {
-            alert('Failed to load report');
+            $('#pos_restocking_report_container')
+               .html(`<tr><td colspan="9">Server error</td></tr>`);
          }
       });
    }
+
+   $('#pos_restocking_report_date').on('change', function () {
+      load_pos_restocking_report($(this).val());
+   });
+   $('#pos_restocking_report_modal').on('shown.bs.modal', function () {
+      load_pos_restocking_report();
+   });
+
+   $('.pos_count_minus, .pos_count_plus')
+   .off('click')
+   .on('click', function () {
+
+      let card = $(this).closest('.card');
+      let pos_item_id = card.data('pos_item_id');
+
+      let item = pos_items[pos_item_id];
+      if (!item) return;
+
+      let container = card.find('.pos_count_container');
+      let item_count = Number(container.attr('data-text'));
+
+      let base_unit = item.pos_item_unit;
+
+      let add_button = card.find('.add_to_pos_cart');
+
+      if ($(this).hasClass('pos_count_plus')) {
+         item_count++;
+      } 
+      else {
+         if (item_count > 0) {
+            item_count--;
+         }
+      }
+
+      item.restock_quantity = item_count;
+
+      container.attr('data-text', item_count);
+      container.text(item_count);
+
+      item_count > 0 
+        ? add_button.removeClass('invisible') 
+        : add_button.addClass('invisible');
+   });
+
+
+
    function format_date_time(datetime) {
       let d = new Date(datetime);
 
@@ -1290,12 +1415,7 @@
       return d.toLocaleString('en-PH', options);
    }
 
-   $('#pos_sales_report_modal').on('shown.bs.modal', function () {
-      load_pos_sales_report();
-   });
-   $('#pos_restocking_report_modal').on('shown.bs.modal', function () {
-      load_pos_restocking_report();
-   });
+   
 
    $('#pos_logs_modal').on('shown.bs.modal', function () {
        load_pos_logs();
@@ -1376,6 +1496,38 @@
       }
       return item;
    }
+
+   function load_low_stock_items() {
+      $.ajax({
+        url: '<?php echo base_url();?>i.php/sys_control/load_low_stock_items',
+        type: 'POST',
+        dataType: 'json',
+        success: function(response) {
+            let html = '';
+            if(response.data.length > 0) {  // <-- access response.data
+                $.each(response.data, function(index, item) {
+                    html += '<tr>';
+                    html += '<td>' + (index + 1) + '</td>';
+                    html += '<td>' + item.pos_item_name + '</td>';
+                    html += '<td>' + item.pos_item_code + '</td>';
+                    html += '<td>' + item.pos_item_stock + '</td>';
+                    html += '<td>' + item.pos_item_low + '</td>';
+                    html += '</tr>';
+                });
+            } else {
+                html = '<tr><td colspan="5">No low stock items found.</td></tr>';
+            }
+            $('#pos_low_stocks_container').html(html);
+        },
+        error: function(xhr, status, error) {
+            console.error('Error loading low stock items:', error);
+        }
+      });
+   }
+
+   $('#pos_stocks_report_modal').on('show.bs.modal', function() {
+      load_low_stock_items();
+   });
 
    function load_pos_item_form(pos_item_id) {
 
@@ -1488,83 +1640,124 @@
       update_pos_item();
    });
 
-   $(document).ready(function() {
-      $(document).on('click', '.view_receipt_activator', function() {
-         let sale_code = $(this).data('sale-code');
+   function load_pos_checkout_receipt(sale_code) {
+      $.ajax({
+         url: '<?php echo base_url();?>i.php/sys_control/load_pos_checkout_receipt',
+         method: 'POST',
+         data: { sale_code: sale_code },
+         dataType: 'json',
+         success: function(res) {
 
-         $.ajax({
-            url: '<?php echo base_url();?>i.php/sys_control/load_pos_checkout_receipt',
-            method: 'POST',
-            data: {
-               sale_code: sale_code
-            },
-            dataType: 'json',
-            success: function(res) {
-
-               if (res.status !== 'success') {
-                  $('#receipt_items').html('<tr><td colspan="4">Failed to load receipt</td></tr>');
-                  return;
-               }
-
-               let data = res.data;
-
-               if (data.length === 0) {
-                  $('#receipt_items').html('<tr><td colspan="4">No items found</td></tr>');
-                  return;
-               }
-
-               let first = data[0];
-
-               let subtotal = 0;
-               let discount = parseFloat(first.pos_discount_value) || 0;
-
-               $('#receipt_info').html(`
-                  <small>Sale Code: <strong>${first.pos_checkout_code}</strong></small><br>
-                  <small>Date: <strong>${first.pos_checkout_date}</strong></small><br>
-                  <small>Cashier: <strong>${first.cashier_name ?? 'Unknown'}</strong></small>
-               `);
-
-               let items_html = '';
-
-               data.forEach(item => {
-
-                  let item_total = parseFloat(item.pos_item_price) * parseFloat(item.pos_item_quantity);
-                  subtotal += item_total;
-
-                  items_html += `
-                     <tr>
-                        <td class="text-start">${item.pos_item_name}</td>
-                        <td>${item.pos_item_quantity}</td>
-                        <td>${item.pos_item_unit}</td>
-                        <td class="text-end">₱${item_total.toFixed(2)}</td>
-                     </tr>
-                  `;
-               });
-
-               $('#receipt_items').html(items_html);
-
-               let final_total = subtotal - discount;
-
-               $('#receipt_totals').html(`
-                  <div class="d-flex justify-content-between mb-1">
-                     <span>Discount:</span>
-                     <span>₱${discount.toFixed(2)}</span>
-                  </div>
-                  <div class="d-flex justify-content-between mb-1 fw-bold">
-                     <span>Total:</span>
-                     <span>₱${final_total.toFixed(2)}</span>
-                  </div>
-                  <div class="d-flex justify-content-between mb-3">
-                     <span>Payment:</span>
-                     <span>Cash</span>
-                  </div>
-               `);
-            },
-            error: function() {
-               $('#receipt_items').html('<tr><td colspan="4">Server error</td></tr>');
+            if (res.status !== 'success') {
+               $('#receipt_items').html('<tr><td colspan="4">Failed to load receipt</td></tr>');
+               return;
             }
-         });
+
+            let data = res.data;
+
+            if (data.length === 0) {
+               $('#receipt_items').html('<tr><td colspan="4">No items found</td></tr>');
+               return;
+            }
+
+            let first = data[0];
+            let subtotal = 0;
+            let discount = parseFloat(first.pos_discount_value) || 0;
+
+            $('#receipt_info').html(`
+               <small>Sale Code: <strong>${first.pos_checkout_code}</strong></small><br>
+               <small>Date: <strong>${first.pos_checkout_date}</strong></small><br>
+               <small>Cashier: <strong>${first.cashier_name ?? 'Unknown'}</strong></small>
+            `);
+
+            let items_html = '';
+
+            data.forEach(item => {
+               let item_total = parseFloat(item.pos_item_price) * parseFloat(item.pos_item_quantity);
+               subtotal += item_total;
+
+               items_html += `
+                  <tr>
+                     <td class="text-start">${item.pos_item_name}</td>
+                     <td>${item.pos_item_quantity}</td>
+                     <td>${item.pos_item_unit}</td>
+                     <td class="text-end">₱${item_total.toFixed(2)}</td>
+                  </tr>
+               `;
+            });
+
+            $('#receipt_items').html(items_html);
+
+            let final_total = subtotal - discount;
+
+            $('#receipt_totals').html(`
+               <div class="d-flex justify-content-between mb-1">
+                  <span>Discount:</span>
+                  <span>₱${discount.toFixed(2)}</span>
+               </div>
+               <div class="d-flex justify-content-between mb-1 fw-bold">
+                  <span>Total:</span>
+                  <span>₱${final_total.toFixed(2)}</span>
+               </div>
+               <div class="d-flex justify-content-between mb-3">
+                  <span>Payment:</span>
+                  <span>Cash</span>
+               </div>
+            `);
+            let modal = new bootstrap.Modal(document.getElementById('receipt_modal'));
+            modal.show();
+         },
+         error: function() {
+            $('#receipt_items').html('<tr><td colspan="4">Server error</td></tr>');
+         }
       });
+   }
+   $(document).on('click', '.view_receipt_activator', function() {
+      let sale_code = $(this).data('sale-code');
+      load_pos_checkout_receipt(sale_code);
+   });
+
+   $('#print_receipt_btn').on('click', function() {
+      let content = document.getElementById('receipt_content').innerHTML;
+      let printWindow = window.open('', '', 'width=1000,height=600');
+      printWindow.document.write(`
+         <html>
+         <head>
+            <title>Print Receipt</title>
+            <style>
+               h5 {
+                  font-family: Arial, sans-serif;
+                  margin: 0;
+                  padding: 5px;
+                  font-size: 18px;
+               }
+               body {
+                  font-family: Arial, sans-serif;
+                  width: 58mm;
+                  margin: 0;
+                  padding: 5px;
+                  font-size: 10px;
+               }
+               table {
+                  width: 100%;
+                  border-collapse: collapse;
+                  font-size: 12px !important;
+               }
+               hr {
+                  border-top: 1px dashed #000;
+                  margin: 5px 0;
+               }
+               .text-end { text-align: right; }
+               .text-center { text-align: center; }
+            </style>
+         </head>
+         <body onload="window.print(); window.close();">
+            ${content}
+         </body>
+         </html>
+      `);
+
+      printWindow.document.close();
    });
 
    $(document).ready(function(){
@@ -1629,7 +1822,64 @@
 
          if (!confirm('Remove this item?')) return;
 
-         $(this).closest('tr').remove();
+         let row = $(this).closest('tr');
+         let item_id = row.data('id'); // matches your render
+
+         // update source of truth
+         if (pos_items[item_id]) {
+            pos_items[item_id].cart_quantity = 0;
+         }
+
+         render_pos_sales_cart();
       });
+   });
+   $(document).on('click', '.table.sortable th', function () {
+
+      const table = $(this).closest('table');
+      const tbody = table.find('tbody');
+      const rows = tbody.find('tr').toArray();
+      const index = $(this).index();
+
+      const ascending = !$(this).hasClass('sorted ascending');
+
+      // Reset all headers
+      table.find('th').removeClass('sorted ascending descending');
+
+      rows.sort((a, b) => {
+
+         let A = $(a).children('td').eq(index).text().trim();
+         let B = $(b).children('td').eq(index).text().trim();
+
+         // --- Handle currency / numbers ---
+         let numA = parseFloat(A.replace(/[^\d.-]/g, ''));
+         let numB = parseFloat(B.replace(/[^\d.-]/g, ''));
+
+         if (!isNaN(numA) && !isNaN(numB)) {
+            return ascending ? numA - numB : numB - numA;
+         }
+
+         // --- Handle dates ---
+         let dateA = new Date(A);
+         let dateB = new Date(B);
+
+         if (!isNaN(dateA) && !isNaN(dateB)) {
+            return ascending ? dateA - dateB : dateB - dateA;
+         }
+
+         // --- Fallback: string compare ---
+         A = A.toUpperCase();
+         B = B.toUpperCase();
+
+         if (A < B) return ascending ? -1 : 1;
+         if (A > B) return ascending ? 1 : -1;
+
+         return 0;
+      });
+
+      // Re-append sorted rows
+      $.each(rows, (_, row) => tbody.append(row));
+
+      // Apply sorting class
+      $(this).addClass(`sorted ${ascending ? 'ascending' : 'descending'}`);
    });
 </script>
