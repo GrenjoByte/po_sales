@@ -3,6 +3,15 @@ class Sys_control extends CI_Controller
 {
 	public function __construct() {
 		parent::__construct();
+
+		$allowed = ['login', 'attempt_login'];
+
+        if (!in_array($this->router->fetch_method(), $allowed)) {
+            if (!$this->session->userdata('active_user')) {
+                redirect('sys_control/login');
+                exit;
+            }
+        }
 		$_SERVER['warning_message'] = "<br><h1 align='center' style='color: red;'>System Administrator Data Compromised!<br>Please contact the Developer!</h1>";
 	}
 	public function load_system_datetime()
@@ -23,15 +32,10 @@ class Sys_control extends CI_Controller
 			echo $_SERVER['warning_message'];
 			die();
 		}
-		
-		// $this->model->grappler();
-	}
-	public function index()
-	{
-		$this->load->view('index');
 	}
 	public function login()
 	{
+		$this->session->sess_destroy();
 		$this->load->view('login');	
 	}
 	public function attempt_login()
@@ -282,11 +286,6 @@ class Sys_control extends CI_Controller
 	{
 		$this->load->model('sys_model');	
 		$this->sys_model->load_pos_restocking();
-	}
-	public function load_supply_inventory()
-	{
-		$this->load->model('sys_model');	
-		$this->sys_model->load_supply_inventory();
 	}
 	public function new_supply_item()
 	{

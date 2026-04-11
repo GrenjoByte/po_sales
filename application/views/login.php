@@ -19,6 +19,7 @@
 	<main>
 		<div class="container-fluid vh-80 d-flex align-items-center justify-content-center">
 		    <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
+				<h2 class="text-center mb-3">SAKI MART</h2>
 		        <h2 class="text-center mb-3">Login</h2>
 		        <form class="needs-validation" novalidate id="login_form">
 		            <div class="mb-3">
@@ -64,10 +65,20 @@
 				var response = JSON.parse(jqxhr.responseText);
 		
 				var status = response.status;
+				var user_type = response.user_type;
 				var last_name = response.last_name.UCwords();
 				var gender = response.gender;
 
 				if (status == 'success') {
+					if (user_type == 1) {
+						page = 'inventory';
+					}
+					else if (user_type == 2) {
+						page = 'sales';
+					}
+					else if (user_type == 3) {
+						alert("Unknown error. Please call the developer and refrain from using the system.")
+					}
 					if (gender == 'male') {
 						address_text = 'Mr. '+last_name;
 					}
@@ -85,7 +96,7 @@
 					status = "success";
 					load_notification(title, message, status);
 					setTimeout(function(){
-				  		window.location.replace('<?php echo base_url();?>i.php/sys_control/inventory');
+				  		window.location.replace('<?php echo base_url();?>i.php/sys_control/'+page);
 				  	}, 2500);
 				}
 				else if (status == 'error') {

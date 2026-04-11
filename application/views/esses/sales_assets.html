@@ -47,7 +47,6 @@
                         <th>Unit</th>
                         <th>Total</th>
                         <th>Date</th>
-                        <th>...</th>
                      </tr>
                   </thead>
                   <tbody class="text-center small" id="pos_restocking_report_container">
@@ -67,7 +66,6 @@
                      <tr class="fw-semibold text-center">
                         <td colspan="7" class="text-end">Grand Total:</td>
                         <td class="text-success" id="pos_restocking_report_total"></td>
-                        <td></td>
                         <td></td>
                      </tr>
                   </tfoot>
@@ -231,7 +229,7 @@
         </div>
       </div>
       <div class="modal-footer">
-         <button type="button" class="btn btn-sm btn-danger" id="void_sales">Void Sales</button>
+         <!-- <button type="button" class="btn btn-sm btn-danger" id="void_sales">Void Sales</button> -->
          <button type="button" class="btn btn-sm btn-success" id="print_receipt_btn">
             <i class="bi bi-printer"></i> Print
          </button>
@@ -250,6 +248,30 @@
 
          <div class="modal-body">
             <form id="pos_sales_form" enctype="multipart/form-data">
+               <div class="row">
+                 <div class="col-6 mb-2">
+                   <label class="form-label">Discount Type</label>
+                   <select class="form-select form-select-sm" 
+                           id="discount_type" 
+                           name="discount_type">
+                     <option value="none">No Discount</option>
+                     <option value="senior">Senior Citizen (20%)</option>
+                     <option value="pwd">PWD (20%)</option>
+                     <option value="promo">Promo (10%)</option>
+                     <option value="other">Other</option>
+                   </select>
+                 </div>
+                 <div class="col-6 mb-2 d-none" id="other_discount_container">
+                   <label class="form-label">Custom Discount (%)</label>
+                   <input type="number" 
+                          class="form-control form-control-sm" 
+                          id="other_discount" 
+                          min="0" 
+                          max="100" 
+                          step="0.01"
+                          placeholder="e.g. 5 for 5%">
+                 </div>
+               </div>
                <div>
                   <table class="table align-middle mb-0">
                      <tbody id="pos_sales_cart">
@@ -496,7 +518,7 @@
    </div>
 </div>
 
-<div class="dropup position-fixed bottom-0 end-0 m-4">
+<!-- <div class="dropup position-fixed bottom-0 end-0 m-4">
    <button type="button"
       class="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center dropdown-toggle"
       data-bs-toggle="dropdown"
@@ -516,7 +538,7 @@
          </button>
       </li>
    </ul>
-</div>
+</div> -->
 
 <div class="toast-container position-fixed top- end-0 p-3">
 
@@ -813,7 +835,7 @@
                <div class="dropdown dropstart">
                   <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">⋮</button>
                   <ul class="dropdown-menu w-auto">
-                     <li><a class="dropdown-item modify_row" href="#">Modify</a></li>
+                     <li class="d-none"><a class="dropdown-item modify_row" href="#">Modify</a></li>
                      <li><a class="dropdown-item text-danger remove_row" href="#">Remove</a></li>
                   </ul>
                </div>
@@ -839,12 +861,18 @@
       toast.show();
    }
 
-   // Only trigger barcode scanning when sales cart modal is open
    $('#pos_sales_cart_modal').on('shown.bs.modal', function () {
        if (!$('#pos_scan_input').length) {
            $('body').append('<input type="text" id="pos_scan_input" autocomplete="off" style="position:absolute;opacity:0;pointer-events:none;">');
        }
        $('#pos_scan_input').focus();
+   });
+
+   // bring focus back after discount input blur
+   $(document).on('blur', '#discount_type, #other_discount', function () {
+       setTimeout(function () {
+           $('#pos_scan_input').focus();
+       }, 50);
    });
 
    // Handle barcode scan
@@ -863,26 +891,39 @@
                data: { pos_barcode_value: barcode },
                dataType: 'json',
                success: function(res) {
-                   if (res.status !== 'success' || !res.pos_item_id) {
-                       show_cart_toast(`Item not found: ${barcode}`);
-                       $('#pos_scan_input').val('');
-                       return;
-                   }
+                  if (res.status === 'empty') {
+                     show_cart_toast(`Out of stock: ${barcode}`);
+                     $('#pos_scan_input').val('');
+                     return;
+                  }
 
-                   let item = pos_items[res.pos_item_id];
-                   if (!item) {
-                       show_cart_toast(`Item ID ${res.pos_item_id} not found in pos_items`);
-                       $('#pos_scan_input').val('');
-                       return;
-                   }
+                  if (res.status === 'not_found') {
+                     show_cart_toast(`Item not found: ${barcode}`);
+                     $('#pos_scan_input').val('');
+                     return;
+                  }
 
-                   if (!item.cart_quantity) item.cart_quantity = 0;
-                   item.cart_quantity += 1;
+                  if (res.status !== 'success') {
+                     show_cart_toast('Unexpected error');
+                     $('#pos_scan_input').val('');
+                     return;
+                  }
 
-                   render_pos_sales_cart();
-                   show_cart_toast(`${item.pos_item_name} (x1) added to cart`);
+                  let item = pos_items[res.pos_item_id];
 
-                   $('#pos_scan_input').val('');
+                  if (!item) {
+                     show_cart_toast(`Item ID ${res.pos_item_id} not found in pos_items`);
+                     $('#pos_scan_input').val('');
+                     return;
+                  }
+
+                  if (!item.cart_quantity) item.cart_quantity = 0;
+                  item.cart_quantity += 1;
+
+                  render_pos_sales_cart();
+                  show_cart_toast(`${item.pos_item_name} (x1) added to cart`);
+
+                  $('#pos_scan_input').val('');
                },
                error: function() {
                    show_cart_toast('Failed to retrieve item from barcode');
@@ -1136,24 +1177,44 @@
            return;
        }
 
+       let discount_type = $('#discount_type').val();
+       let other_discount = $('#other_discount').val();
+
+       // Only validate if "other"
+       if (discount_type === 'other') {
+           if (!other_discount || other_discount <= 0) {
+               alert('Enter a valid custom discount');
+               return;
+           }
+       }
+
        $.ajax({
            url: '<?php echo base_url();?>i.php/sys_control/process_sales',
            method: 'POST',
            data: {
-               items: JSON.stringify(items) // only items, cash assumed
+               items: JSON.stringify(items),
+               discount_type: discount_type,
+               other_discount: other_discount
            },
            dataType: 'json',
            success: function(res) {
                if (res.status === 'success') {
-                  const sale_code = res.sale_code;
-                  Object.values(pos_items).forEach(item => item.cart_quantity = 0);
-                  render_pos_sales_cart();
-                  load_pos_inventory(current_page);
-                  load_pos_checkout_receipt(sale_code);
+                   const sale_code = res.sale_code;
 
-                  $('#pos_sales_cart_modal').modal('hide');
+                   Object.values(pos_items).forEach(item => item.cart_quantity = 0);
+
+                   render_pos_sales_cart();
+                   load_pos_inventory(current_page);
+                   load_pos_checkout_receipt(sale_code);
+
+                   // reset UI
+                   $('#discount_type').val('none');
+                   $('#other_discount').val('');
+                   $('#other_discount_container').addClass('d-none');
+
+                   $('#pos_sales_cart_modal').modal('hide');
                } else {
-                  alert(res.message);
+                   alert(res.message);
                }
            },
            error: function() {
@@ -1300,17 +1361,6 @@
                         ₱${row_total.toFixed(2)}
                      </td>
                      <td>${row.pos_restocking_date}</td>
-                     <td class="text-end">
-                        <button 
-                           type="button"
-                           class="btn btn-sm btn-outline-danger void_restocking"
-                           data-pos_item_id="${row.pos_item_id}"
-                           data-pos_item_name="${row.pos_item_name}"
-                           data-pos_restocking_code="${row.pos_restocking_code}"
-                           title="Void">
-                           <i class="bi bi-x-lg"></i>
-                        </button>
-                     </td>
                   </tr>
                `);
             });
@@ -1318,35 +1368,6 @@
             console.log(pos_restocking_report_data);
 
             $('#pos_restocking_report_total').text('₱' + grand_total.toFixed(2));
-            $('.void_restocking')
-            .off('click')
-            .on('click', function () {
-               let pos_item_id = $(this).data('pos_item_id');
-               let pos_item_name = $(this).data('pos_item_name');
-               let pos_restocking_code = $(this).data('pos_restocking_code');
-               if (!confirm(`Void restocking of "${pos_item_name}" from restock #${pos_restocking_code}?`)) return;
-
-               $.ajax({
-                  url: '<?php echo base_url();?>i.php/sys_control/void_pos_restocking',
-                  method: 'POST',
-                  data: { 
-                     pos_item_id: pos_item_id, 
-                     pos_restocking_code: pos_restocking_code 
-                  },
-                  dataType: 'json',
-                  success: function(res) {
-                     if (res.status === 'success') {
-                        alert(`Restocking of "${pos_item_name}" from #${pos_restocking_code} successfully voided.`);
-                        load_pos_restocking_report($('#pos_restocking_report_date').val());
-                     } else {
-                        alert(res.message);
-                     }
-                  },
-                  error: function() {
-                     alert('Server error');
-                  }
-               });
-            });
          },
          error: function () {
             $('#pos_restocking_report_container')
@@ -1663,42 +1684,99 @@
             let first = data[0];
             let subtotal = 0;
             let discount = parseFloat(first.pos_discount_value) || 0;
+            let discount_type_map = {
+               'senior': 'Senior Citizen',
+               'pwd': 'PWD',
+               'promo': 'Promo Discount',
+               'other': 'Custom Discount',
+               'none': 'No Discount'
+            };
+
+            let discount_label = discount_type_map[first.pos_discount_type] || 'No Discount';
+            let discount_rate_display = (parseFloat(first.pos_discount_value) || 0) * 100;
 
             $('#receipt_info').html(`
                <small>Sale Code: <strong>${first.pos_checkout_code}</strong></small><br>
                <small>Date: <strong>${first.pos_checkout_date}</strong></small><br>
-               <small>Cashier: <strong>${first.cashier_name ?? 'Unknown'}</strong></small>
+               <small>Cashier: <strong>${first.cashier_name ?? 'Unknown'}</strong></small><br>
+               <small>Discount Type: <strong>${discount_label} (${discount_rate_display}%)</strong></small>
             `);
 
             let items_html = '';
 
+            let subtotal_net_vat = 0;
+            let total_vat = 0;
+            let total_discount = 0;
+            let gross_total = 0;
+
+            let discount_rate = parseFloat(first.pos_discount_value) || 0;
+
             data.forEach(item => {
-               let item_total = parseFloat(item.pos_item_price) * parseFloat(item.pos_item_quantity);
-               subtotal += item_total;
+
+               let price = parseFloat(item.pos_item_price);
+               let qty = parseFloat(item.pos_item_quantity);
+
+               let item_gross = price * qty;
+
+               // accumulate gross
+               gross_total += item_gross;
+
+               // discount per item (based on gross)
+               let item_discount = item_gross * discount_rate;
+               let discounted = item_gross - item_discount;
+
+               // VAT from discounted price
+               let vat_rate = 0.12;
+               let item_vat = discounted * vat_rate / (1 + vat_rate);
+
+               // net of VAT
+               let item_net = discounted - item_vat;
+
+               // totals
+               total_discount += item_discount;
+               total_vat += item_vat;
+               subtotal_net_vat += item_net;
 
                items_html += `
                   <tr>
                      <td class="text-start">${item.pos_item_name}</td>
-                     <td>${item.pos_item_quantity}</td>
+                     <td>${qty}</td>
                      <td>${item.pos_item_unit}</td>
-                     <td class="text-end">₱${item_total.toFixed(2)}</td>
+                     <td class="text-end">₱${item_gross.toFixed(2)}</td>
                   </tr>
                `;
             });
 
             $('#receipt_items').html(items_html);
 
-            let final_total = subtotal - discount;
+            let total = gross_total - total_discount;
 
             $('#receipt_totals').html(`
                <div class="d-flex justify-content-between mb-1">
+                  <span>Gross Total:</span>
+                  <span>₱${gross_total.toFixed(2)}</span>
+               </div>
+
+               <div class="d-flex justify-content-between mb-1">
                   <span>Discount:</span>
-                  <span>₱${discount.toFixed(2)}</span>
+                  <span>-₱${total_discount.toFixed(2)}</span>
                </div>
-               <div class="d-flex justify-content-between mb-1 fw-bold">
+
+               <div class="d-flex justify-content-between mb-1">
+                  <span>VAT (Included):</span>
+                  <span>₱${total_vat.toFixed(2)}</span>
+               </div>
+
+               <div class="d-flex justify-content-between mb-1">
+                  <span>Net of VAT:</span>
+                  <span>₱${subtotal_net_vat.toFixed(2)}</span>
+               </div>
+
+               <div class="d-flex justify-content-between mb-3 fw-bold">
                   <span>Total:</span>
-                  <span>₱${final_total.toFixed(2)}</span>
+                  <span>₱${total.toFixed(2)}</span>
                </div>
+
                <div class="d-flex justify-content-between mb-3">
                   <span>Payment:</span>
                   <span>Cash</span>
@@ -1780,6 +1858,32 @@
          });
       });
    });
+
+   $('#discount_type').on('change', function() {
+      if ($(this).val() === 'other') {
+         $('#other_discount_container').removeClass('d-none');
+      } 
+      else {
+         $('#other_discount_container').addClass('d-none');
+         $('#other_discount').val('');
+      }
+   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
    $(function () {
       $('.overflow-tooltip').each(function () {
          var $el = $(this);

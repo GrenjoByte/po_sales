@@ -6,7 +6,9 @@
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#inventory_nav_collapse" aria-controls="inventory_nav_collapse" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
-		<h1 class="m-0 fw-bold me-4">SAKI MART</h1>
+		<h2 id="logout_trigger" class="m-0 fw-bold me-4" style="cursor:pointer;">
+  			SAKI MART
+		</h2>
 		<div class="collapse navbar-collapse" id="inventory_nav_collapse">
 			<ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
 			<ul class="navbar-nav ms-auto px-3 mb-2 mb-lg-0">
@@ -67,3 +69,13 @@
 		</div>
 	</div>
 </div>
+<script>
+	$(document).ready(function() {
+	    $('#logout_trigger').on('dblclick', function() {
+	        if (!confirm('Logout now?')) return;
+            	setTimeout(function(){
+		  		window.location.replace('<?php echo base_url();?>i.php/sys_control/login');
+	        });
+	    });
+	});
+</script>

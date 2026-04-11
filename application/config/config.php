@@ -37,7 +37,7 @@ $config['base_url'] = 'http://localhost/po_sales';
 | variable so that it is blank.
 |
 */
-$config['index_page'] = 'i';
+$config['index_page'] = 'i.php';
 
 /*
 |--------------------------------------------------------------------------

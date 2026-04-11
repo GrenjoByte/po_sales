@@ -41,19 +41,22 @@ class Sys_model extends CI_Model {
 	    if ($row && $password === $row->password) {
 	        $user_id = $row->user_id;
 
-	        $sql = "SELECT last_name, gender FROM user_info WHERE user_id = ?";
+	        $sql = "SELECT user_type ,last_name, gender FROM user_info WHERE user_id = ?";
 	        $query = $this->db->query($sql, [$user_id]);
 	        $row = $query->row();
 
 	        if ($row) {
+	        	$_SESSION['active_user'] = $user_id;
 	            $attempt_response = array(
 	                'status' => 'success',
+	                'user_type' => $row->user_type,
 	                'last_name' => $row->last_name,
 	                'gender' => $row->gender
 	            );
 	        } else {
 	            $attempt_response = array(
 	                'status' => 'error',
+	                'user_type' => '',
 	                'last_name' => '',
 	                'gender' => 'failed'
 	            );
@@ -61,14 +64,15 @@ class Sys_model extends CI_Model {
 	    } else {
 	        $attempt_response = array(
 	            'status' => 'error',
+                'user_type' => '',
                 'last_name' => '',
 	            'gender' => 'Invalid username or password'
 	        );
 	    }
 
-	    // header('Content-Type: application/json');
+	    header('Content-Type: application/json');
 	    echo json_encode($attempt_response);
-	    // exit;
+	    exit;
 	}
 	public function load_pos_inventory()
 	{
@@ -533,93 +537,146 @@ class Sys_model extends CI_Model {
 	}
 	public function search_barcode($barcode)
 	{
-	    $sql = "SELECT pos_item_id FROM pos_item_codes WHERE pos_barcode_value = ?";
+	    $sql = "
+	        SELECT i.pos_item_id, i.pos_item_stock
+	        FROM pos_item_codes c
+	        INNER JOIN pos_inventory i ON i.pos_item_id = c.pos_item_id
+	        WHERE c.pos_barcode_value = ?
+	        LIMIT 1
+	    ";
+
 	    $query = $this->db->query($sql, array($barcode));
 
 	    if ($query->num_rows() > 0) {
-	        return $query->row()->pos_item_id;
+	        $row = $query->row();
+
+	        if ((float)$row->pos_item_stock <= 0) {
+	            echo json_encode([
+	                'status' => 'empty',
+	                'pos_item_id' => $row->pos_item_id
+	            ]);
+	            exit;
+	        }
+
+	        echo json_encode([
+	            'status' => 'success',
+	            'pos_item_id' => $row->pos_item_id
+	        ]);
+	        exit;
 	    }
 
-	    return false;
+	    echo json_encode([
+	        'status' => 'not_found'
+	    ]);
+	    exit;
 	}
 	public function process_sales() {
-		$items = json_decode($_POST['items'], true);
+	    $items = json_decode($_POST['items'], true);
+	    $discount_type = $_POST['discount_type'] ?? 'none';
+	    $other_discount = $_POST['other_discount'] ?? 0;
+	    $user_id = $_SESSION['active_user'] ?? 0;
 
-		header('Content-Type: application/json');
+	    header('Content-Type: application/json');
 
-		if (empty($items)) {
-			echo json_encode(['status'=>'error','message'=>'No items to sell']);
-			exit;
-		}
+	    if (empty($items)) {
+	        echo json_encode(['status'=>'error','message'=>'No items to sell']);
+	        exit;
+	    }
 
-		$this->db->trans_start();
+	    $this->db->trans_start();
 
-    // generate sale code
-		$sql = "SELECT CONCAT('CO-', LPAD(IFNULL(MAX(CAST(SUBSTRING(pos_checkout_code,4) AS UNSIGNED)),0)+1,4,'0')) AS new_code
-		FROM pos_checkouts";
-		$sale_code = $this->db->query($sql)->row()->new_code;
+	    // generate sale code
+	    $sql = "SELECT CONCAT('CO-', LPAD(IFNULL(MAX(CAST(SUBSTRING(pos_checkout_code,4) AS UNSIGNED)),0)+1,4,'0')) AS new_code
+	            FROM pos_checkouts";
+	    $sale_code = $this->db->query($sql)->row()->new_code;
 
-    // container for log
-		$activity_items = [];
+	    // discount setup
+	    $discount_rate = 0;
 
-		foreach ($items as $item) {
-			$subtotal = $item['pos_item_price'] * $item['pos_item_quantity'];
+	    switch ($discount_type) {
+	        case 'senior':
+	        case 'pwd':
+	            $discount_rate = 0.20;
+	            break;
+	        case 'promo':
+	            $discount_rate = 0.10;
+	            break;
+	        case 'other':
+	            $discount_rate = floatval($other_discount) / 100;
+	            break;
+	        default:
+	            $discount_rate = 0;
+	    }
 
-        // insert into pos_checkouts
-			$sql = "INSERT INTO pos_checkouts 
-			(pos_checkout_code, pos_item_id, pos_item_code, pos_item_name, 
-				pos_item_price, pos_item_quantity, pos_item_unit, pos_checkout_subtotal,
-				pos_checkout_total, pos_checkout_date)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+	    $vat_rate = 0.12;
 
-			$this->db->query($sql, [
-				$sale_code,
-				$item['pos_item_id'],
-				$item['pos_item_code'],
-				$item['pos_item_name'],
-				$item['pos_item_price'],
-				$item['pos_item_quantity'],
-				$item['pos_item_unit'],
-				$subtotal,
-				$subtotal
-			]);
+	    foreach ($items as $item) {
 
-        // update stock
-			$this->db->query(
-				"UPDATE pos_inventory 
-				SET pos_item_stock = pos_item_stock - ? 
-				WHERE pos_item_id = ?",
-				[$item['pos_item_quantity'], $item['pos_item_id']]
-			);
+	        $gross_price = $item['pos_item_price'];
+			$qty = $item['pos_item_quantity'];
 
-        // collect items for single log
-			$activity_items[] = $item['pos_item_name'] . 
-			" (x" . $item['pos_item_quantity'] . " " . $item['pos_item_unit'] . ")";
-		}
+			$gross_total = $gross_price * $qty;
 
-    // single log entry for the whole sale
-		$activity_type = "Sale";
-		$pos_code = $sale_code;
-		$activity = "<strong>Sold Items:</strong><br>" . implode("<br>", $activity_items);
+			// 1. Apply discount first
+			$discount_amount = $gross_total * $discount_rate;
+			$discounted_total = $gross_total - $discount_amount;
 
-		$this->db->query(
-			"INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)",
-			[$activity_type, $pos_code, $activity]
-		);
+			// 2. Compute VAT from discounted amount
+			$vat_amount = $discounted_total * $vat_rate / (1 + $vat_rate);
 
-		$this->db->trans_complete();
+			// 3. Net of VAT (VAT-exclusive base)
+			$pos_checkout_subtotal = $discounted_total - $vat_amount;
 
-		if ($this->db->trans_status() === FALSE) {
-			echo json_encode(['status'=>'error','message'=>'Sale failed (rolled back)']);
-		} else {
-			echo json_encode([
-				'status' => 'success',
-				'message' => 'Sale completed successfully',
-				'sale_code' => $sale_code
-			]);
-		}
+			// 4. Final total (what customer pays)
+			$final_total = $discounted_total;
 
-		exit;
+	        // insert checkout row
+	        $this->db->query(
+	            "INSERT INTO pos_checkouts 
+	            (user_id, pos_checkout_code, pos_item_id, pos_item_code, pos_item_name,
+	             pos_item_price, pos_item_quantity, pos_item_unit,
+	             pos_discount_type, pos_discount_value,
+	             pos_checkout_vat, pos_checkout_subtotal, pos_checkout_total,
+	             pos_checkout_date, pos_checkout_status)
+	            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), 1)",
+	            [
+	                $user_id,
+	                $sale_code,
+	                $item['pos_item_id'],
+	                $item['pos_item_code'],
+	                $item['pos_item_name'],
+	                $gross_price,
+	                $qty,
+	                $item['pos_item_unit'],
+	                $discount_type,
+	                $discount_rate,
+	                $vat_amount,
+	                $pos_checkout_subtotal,
+	                $final_total
+	            ]
+	        );
+
+	        // stock update
+	        $this->db->query(
+	            "UPDATE pos_inventory 
+	             SET pos_item_stock = pos_item_stock - ? 
+	             WHERE pos_item_id = ?",
+	            [$qty, $item['pos_item_id']]
+	        );
+	    }
+
+	    $this->db->trans_complete();
+
+	    if ($this->db->trans_status() === FALSE) {
+	        echo json_encode(['status'=>'error','message'=>'Sale failed (rolled back)']);
+	    } else {
+	        echo json_encode([
+	            'status' => 'success',
+	            'sale_code' => $sale_code
+	        ]);
+	    }
+
+	    exit;
 	}
 	public function load_pos_sales_report()
 	{

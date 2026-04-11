@@ -53,6 +53,7 @@
                         <td colspan="7" class="text-end">Grand Total:</td>
                         <td class="text-success" id="pos_restocking_report_total"></td>
                         <td></td>
+                        <td></td>
                      </tr>
                   </tfoot>
                </table>
@@ -541,7 +542,7 @@
             New Item
          </button>
       </li>
-      <li>
+      <li class="d-none">
          <button type="button"
             class="dropdown-item"
             data-bs-toggle="modal"
@@ -933,7 +934,7 @@
                <div class="dropdown dropstart">
                   <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">⋮</button>
                   <ul class="dropdown-menu w-auto">
-                     <li><a class="dropdown-item modify_row" href="#">Modify</a></li>
+                     <li class="d-none"><a class="dropdown-item modify_row" href="#">Modify</a></li>
                      <li><a class="dropdown-item text-danger remove_row" href="#">Remove</a></li>
                   </ul>
                </div>
@@ -1335,7 +1336,6 @@
          }
       });
    });
-
    function load_pos_restocking_report(report_date = '') {
       $.ajax({
          url: '<?php echo base_url();?>i.php/sys_control/load_pos_restocking_report',
@@ -1382,6 +1382,17 @@
                         ₱${row_total.toFixed(2)}
                      </td>
                      <td>${row.pos_restocking_date}</td>
+                     <td class="text-end">
+                        <button 
+                           type="button"
+                           class="btn btn-sm btn-outline-danger void_restocking"
+                           data-pos_item_id="${row.pos_item_id}"
+                           data-pos_item_name="${row.pos_item_name}"
+                           data-pos_restocking_code="${row.pos_restocking_code}"
+                           title="Void">
+                           <i class="bi bi-x-lg"></i>
+                        </button>
+                     </td>
                   </tr>
                `);
             });
@@ -1389,6 +1400,35 @@
             console.log(pos_restocking_report_data);
 
             $('#pos_restocking_report_total').text('₱' + grand_total.toFixed(2));
+            $('.void_restocking')
+            .off('click')
+            .on('click', function () {
+               let pos_item_id = $(this).data('pos_item_id');
+               let pos_item_name = $(this).data('pos_item_name');
+               let pos_restocking_code = $(this).data('pos_restocking_code');
+               if (!confirm(`Void restocking of "${pos_item_name}" from restock #${pos_restocking_code}?`)) return;
+
+               $.ajax({
+                  url: '<?php echo base_url();?>i.php/sys_control/void_pos_restocking',
+                  method: 'POST',
+                  data: { 
+                     pos_item_id: pos_item_id, 
+                     pos_restocking_code: pos_restocking_code 
+                  },
+                  dataType: 'json',
+                  success: function(res) {
+                     if (res.status === 'success') {
+                        alert(`Restocking of "${pos_item_name}" from #${pos_restocking_code} successfully voided.`);
+                        load_pos_restocking_report($('#pos_restocking_report_date').val());
+                     } else {
+                        alert(res.message);
+                     }
+                  },
+                  error: function() {
+                     alert('Server error');
+                  }
+               });
+            });
          },
          error: function () {
             $('#pos_restocking_report_container')
@@ -1773,13 +1813,20 @@
       });
    });
 
-   $(function () {
+   $(function () { 
       $(document).on('click', '.remove_row', function (e) {
          e.preventDefault();
 
          if (!confirm('Remove this item?')) return;
 
-         $(this).closest('tr').remove();
+         let row = $(this).closest('tr');
+         let pos_item_id = row.data('id'); // match your data-id
+
+         if (pos_items[pos_item_id]) {
+            pos_items[pos_item_id].cart_quantity = 0;
+         }
+
+         render_pos_restocking_cart();
       });
    });
 </script>
