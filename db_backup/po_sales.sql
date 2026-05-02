@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 10, 2026 at 04:18 PM
+-- Generation Time: May 02, 2026 at 07:49 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.0.28
 
@@ -29,6 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `pos_checkouts` (
   `pos_checkout_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `pos_checkout_code` varchar(50) NOT NULL,
   `pos_item_id` int(11) NOT NULL,
   `pos_item_code` varchar(100) NOT NULL,
@@ -40,8 +41,22 @@ CREATE TABLE `pos_checkouts` (
   `pos_discount_value` decimal(10,2) NOT NULL,
   `pos_checkout_subtotal` decimal(10,2) NOT NULL,
   `pos_checkout_total` decimal(10,2) NOT NULL,
-  `pos_checkout_date` datetime NOT NULL DEFAULT current_timestamp()
+  `pos_checkout_date` datetime NOT NULL DEFAULT current_timestamp(),
+  `pos_checkout_status` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `pos_checkouts`
+--
+
+INSERT INTO `pos_checkouts` (`pos_checkout_id`, `user_id`, `pos_checkout_code`, `pos_item_id`, `pos_item_code`, `pos_item_name`, `pos_item_price`, `pos_item_quantity`, `pos_item_unit`, `pos_discount_type`, `pos_discount_value`, `pos_checkout_subtotal`, `pos_checkout_total`, `pos_checkout_date`, `pos_checkout_status`) VALUES
+(1, 2, 'CO-0001', 1, 'c2_apple_450ml', 'C2 Apple', 45.00, 3.00, 'piece', '', 0.00, 135.00, 135.00, '2026-04-02 22:45:19', 2),
+(2, 2, 'CO-0002', 1, 'c2_apple_450ml', 'C2 Apple', 45.00, 2.00, 'piece', '', 0.00, 90.00, 90.00, '2026-04-02 22:45:49', 2),
+(3, 9, 'CO-0003', 2, 'c2_greentea_450ml', 'C2 Greentea', 43.00, 1.00, 'piece', 'senior', 0.20, 0.00, 34.40, '2026-05-03 00:43:36', 1),
+(4, 9, 'CO-0003', 3, 'c2_lemon_450ml', 'C2 Lemon', 46.00, 1.00, 'piece', 'senior', 0.20, 0.00, 36.80, '2026-05-03 00:43:36', 1),
+(5, 9, 'CO-0004', 2, 'c2_greentea_450ml', 'C2 Greentea', 43.00, 1.00, 'piece', 'none', 0.00, 0.00, 43.00, '2026-05-03 00:45:50', 1),
+(6, 9, 'CO-0004', 3, 'c2_lemon_450ml', 'C2 Lemon', 46.00, 4.00, 'piece', 'none', 0.00, 0.00, 184.00, '2026-05-03 00:45:50', 1),
+(7, 9, 'CO-0005', 3, 'c2_lemon_450ml', 'C2 Lemon', 46.00, 3.00, 'piece', 'none', 0.00, 0.00, 138.00, '2026-05-03 01:25:22', 1);
 
 -- --------------------------------------------------------
 
@@ -66,9 +81,9 @@ CREATE TABLE `pos_inventory` (
 --
 
 INSERT INTO `pos_inventory` (`pos_item_id`, `pos_item_name`, `pos_item_code`, `pos_item_image`, `pos_item_price`, `pos_item_stock`, `pos_item_unit`, `pos_item_low`, `pos_item_status`) VALUES
-(1, 'C2 Apple', 'c2_apple_450ml', 'c2_apple_1l.jpg', 45.00, 23, 'piece', 5, 1),
-(2, 'C2 Greentea', 'c2_greentea_450ml', 'c2_greentea.webp', 43.00, 18, 'piece', 5, 1),
-(3, 'C2 Lemon', 'c2_lemon_450ml', 'c2_lemon.webp', 46.00, 12, 'piece', 5, 1);
+(1, 'C2 Apple', 'c2_apple_450ml', 'c2_apple_1l.jpg', 45.00, 27, 'piece', 5, 1),
+(2, 'C2 Greentea', 'c2_greentea_450ml', 'c2_greentea.webp', 43.00, 5, 'piece', 5, 1),
+(3, 'C2 Lemon', 'c2_lemon_450ml', 'c2_lemon.webp', 46.00, 4, 'piece', 5, 1);
 
 -- --------------------------------------------------------
 
@@ -80,6 +95,14 @@ CREATE TABLE `pos_item_codes` (
   `pos_item_id` int(11) NOT NULL,
   `pos_barcode_value` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `pos_item_codes`
+--
+
+INSERT INTO `pos_item_codes` (`pos_item_id`, `pos_barcode_value`) VALUES
+(3, '6954301166405'),
+(2, 'SN:25120019');
 
 -- --------------------------------------------------------
 
@@ -94,6 +117,41 @@ CREATE TABLE `pos_logs` (
   `pos_activity` text NOT NULL,
   `timestamp` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `pos_logs`
+--
+
+INSERT INTO `pos_logs` (`pos_log_id`, `pos_activity_type`, `pos_code`, `pos_activity`, `timestamp`) VALUES
+(1, 'Item Updating', 'Item ID: ', '<strong>Updated:</strong><br>Item Name, Item Price, Item Unit, Current Stock, Low Stock Level', '2026-03-25 13:32:42'),
+(2, 'Item Updating', 'Item ID: 2', '<strong>Updated:</strong><br>Low Stock Level', '2026-03-25 13:34:02'),
+(3, 'Item Updating', 'Item ID: 2', '<strong>Updated:</strong><br>Low Stock Level', '2026-03-25 13:36:57'),
+(4, 'Item Updating', 'Item ID: 2', '<strong>Updated:</strong><br>Low Stock Level', '2026-03-25 13:38:49'),
+(5, 'Item Updating', 'Item ID: 2', '<strong>Updated:</strong><br>Low Stock Level', '2026-03-25 13:43:20'),
+(6, 'Item Updating', 'Item ID: 2', '<strong>Updated:</strong><br>Low Stock Level', '2026-03-25 13:46:59'),
+(7, 'Item Updating', 'Item ID: 3', '<strong>Updated:</strong><br>Current Stock', '2026-03-25 13:55:31'),
+(8, 'Barcode Creation', 'Item ID: 3', '<strong>Added Barcode:</strong><br>6936685220683', '2026-03-31 16:36:38'),
+(9, 'Barcode Creation', 'Item ID: 3', '<strong>Added Barcode:</strong><br>4800888195708', '2026-03-31 16:52:39'),
+(10, 'Barcode Creation', 'Item ID: 2', '<strong>Added Barcode:</strong><br>4800888195708', '2026-03-31 16:54:10'),
+(11, 'Barcode Creation', 'Item ID: 2', '<strong>Added Barcode:</strong><br>6936685220683', '2026-03-31 16:54:26'),
+(12, 'Barcode Creation', 'Item ID: 1', '<strong>Added Barcode:</strong><br>SN:25120019', '2026-04-02 14:10:12'),
+(13, 'Sale', 'Item ID: 1', '<strong>Sold:</strong><br>C2 Apple (x3 piece)', '2026-04-02 14:45:19'),
+(14, 'Sale', 'Item ID: 1', '<strong>Sold:</strong><br>C2 Apple (x2 piece)', '2026-04-02 14:45:49'),
+(15, 'Restocking', 'Item ID: 2', '<strong>Restocked:</strong><br>C2 Greentea (+3 piece)', '2026-05-02 09:16:19'),
+(16, 'Restocking', 'Item ID: 3', '<strong>Restocked:</strong><br>C2 Lemon (+6 piece)', '2026-05-02 09:16:19'),
+(17, 'Barcode Deletion', 'Item ID: 3', '<strong>Removed Barcode:</strong><br>6936685220683', '2026-05-02 11:19:58'),
+(18, 'Barcode Deletion', 'Item ID: 3', '<strong>Removed Barcode:</strong><br>4800888195708', '2026-05-02 11:20:00'),
+(19, 'Barcode Deletion', 'Item ID: 1', '<strong>Removed Barcode:</strong><br>SN:25120019', '2026-05-02 11:20:08'),
+(20, 'Account Creation', 'User ID: 4', '<strong>Created Account:</strong><br>Sealthiel Rose Advincula (@rose) [Cashier]', '2026-05-02 14:38:41'),
+(21, 'Account Creation', 'User ID: 9', '<strong>Created Account:</strong><br>Sealthiel Rose Advincula (@rose) [Cashier]', '2026-05-02 15:23:20'),
+(22, 'Barcode Creation', 'Item ID: 3', '<strong>Added Barcode:</strong><br>6954301166405', '2026-05-02 16:40:51'),
+(23, 'Barcode Creation', 'Item ID: 2', '<strong>Added Barcode:</strong><br>SN:25120019', '2026-05-02 16:41:07'),
+(24, 'Item Updating', 'Item ID: 3', '<strong>Updated:</strong><br>Current Stock', '2026-05-02 17:20:21'),
+(25, 'Item Updating', 'Item ID: 2', '<strong>Updated:</strong><br>Current Stock, Low Stock Level', '2026-05-02 17:27:31'),
+(26, 'Account Update', 'User ID: 9', '<strong>Updated Account:</strong><br>Status: Active → Inactive', '2026-05-02 17:28:47'),
+(27, 'Account Update', 'User ID: 9', '<strong>Updated Account:</strong><br>Status: Inactive → Active', '2026-05-02 17:28:52'),
+(28, 'Restocking', 'Item ID: 1', '<strong>Restocked:</strong><br>C2 Apple (+4 piece)', '2026-05-02 17:41:21'),
+(29, 'Restocking', 'Item ID: 3', '<strong>Restocked:</strong><br>C2 Lemon (+4 piece)', '2026-05-02 17:41:21');
 
 -- --------------------------------------------------------
 
@@ -111,8 +169,19 @@ CREATE TABLE `pos_restocking` (
   `pos_item_quantity` decimal(10,2) NOT NULL,
   `pos_item_unit` varchar(50) NOT NULL,
   `pos_restocking_total` decimal(10,2) NOT NULL,
-  `pos_restocking_date` datetime NOT NULL DEFAULT current_timestamp()
+  `pos_restocking_date` datetime NOT NULL DEFAULT current_timestamp(),
+  `pos_restocking_status` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `pos_restocking`
+--
+
+INSERT INTO `pos_restocking` (`pos_restocking_id`, `pos_restocking_code`, `pos_item_id`, `pos_item_code`, `pos_item_name`, `pos_item_price`, `pos_item_quantity`, `pos_item_unit`, `pos_restocking_total`, `pos_restocking_date`, `pos_restocking_status`) VALUES
+(1, 'R2_2026', 2, 'c2_greentea_450ml', 'C2 Greentea', 43.00, 3.00, 'piece', 129.00, '2026-05-02 00:00:00', 2),
+(2, 'R2_2026', 3, 'c2_lemon_450ml', 'C2 Lemon', 46.00, 6.00, 'piece', 276.00, '2026-05-02 00:00:00', 2),
+(3, 'R3_2026', 1, 'c2_apple_450ml', 'C2 Apple', 45.00, 4.00, 'piece', 180.00, '2026-05-03 00:00:00', 1),
+(4, 'R3_2026', 3, 'c2_lemon_450ml', 'C2 Lemon', 46.00, 4.00, 'piece', 184.00, '2026-05-03 00:00:00', 1);
 
 -- --------------------------------------------------------
 
@@ -196,7 +265,8 @@ CREATE TABLE `user_accounts` (
 --
 
 INSERT INTO `user_accounts` (`user_id`, `username`, `password`) VALUES
-(1, 'grenjo8', '123456Aa');
+(1, 'sakimart', '$2b$10$lr5RVADqlDcsPGMuy1EZCOHmoyzuIbV4g5sySc/HI6UkFZBl3GpYq'),
+(9, 'rose', '$2y$10$.8d6XBljN4zvnjTqVtVkHuiX7tviEVL3uixE5Y5PtxMBi9ilB2qMW');
 
 -- --------------------------------------------------------
 
@@ -210,15 +280,18 @@ CREATE TABLE `user_info` (
   `middle_name` varchar(50) NOT NULL,
   `last_name` varchar(50) NOT NULL,
   `gender` varchar(10) NOT NULL,
-  `email_address` varchar(100) NOT NULL
+  `email_address` varchar(100) NOT NULL,
+  `user_type` int(11) NOT NULL,
+  `user_status` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `user_info`
 --
 
-INSERT INTO `user_info` (`user_id`, `first_name`, `middle_name`, `last_name`, `gender`, `email_address`) VALUES
-(1, 'renzo', 'ferreras', 'advincula', 'male', 'advincularenzo@gmail.com');
+INSERT INTO `user_info` (`user_id`, `first_name`, `middle_name`, `last_name`, `gender`, `email_address`, `user_type`, `user_status`) VALUES
+(1, 'Saki Mart', '', 'Administrator', 'Male', 'superadmin@sakimart.com', 8, 1),
+(9, 'Sealthiel Rose', 'Nite', 'Advincula', 'female', 'rose@gmail.com', 2, 1);
 
 --
 -- Indexes for dumped tables
@@ -292,7 +365,7 @@ ALTER TABLE `user_info`
 -- AUTO_INCREMENT for table `pos_checkouts`
 --
 ALTER TABLE `pos_checkouts`
-  MODIFY `pos_checkout_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `pos_checkout_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `pos_inventory`
@@ -304,13 +377,13 @@ ALTER TABLE `pos_inventory`
 -- AUTO_INCREMENT for table `pos_logs`
 --
 ALTER TABLE `pos_logs`
-  MODIFY `pos_log_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `pos_log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `pos_restocking`
 --
 ALTER TABLE `pos_restocking`
-  MODIFY `pos_restocking_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `pos_restocking_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `supply_checkouts`
@@ -340,13 +413,13 @@ ALTER TABLE `supply_restocking`
 -- AUTO_INCREMENT for table `user_accounts`
 --
 ALTER TABLE `user_accounts`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `user_info`
 --
 ALTER TABLE `user_info`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
