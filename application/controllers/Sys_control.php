@@ -134,13 +134,54 @@ class Sys_control extends CI_Controller
 		$this->load->model('sys_model');
 	    $this->sys_model->load_low_stock_items();
 	}
-	
 	public function void_pos_restocking()
 	{
 		$this->load->model('sys_model');
 	    $this->sys_model->void_pos_restocking();
 	}
+	public function load_accounts()
+	{
+	    $this->load->model('sys_model');
+	    $this->sys_model->load_accounts();
+	}
 
+	public function get_account()
+	{
+	    $this->load->model('sys_model');
+	    $this->sys_model->get_account();
+	}
+
+	public function create_account()
+	{
+	    $this->load->model('sys_model');
+	    $this->sys_model->create_account();
+	}
+
+	public function update_account()
+	{
+	    $this->load->model('sys_model');
+	    $this->sys_model->update_account();
+	}
+	public function void_pos_sale()
+	{
+	    $this->load->model('sys_model');
+	    $this->sys_model->void_pos_sale();
+	}
+	public function void_pos_checkout_item()
+	{
+	    $this->load->model('sys_model');
+	    $this->sys_model->void_pos_checkout_item();
+	}
+	public function restore_pos_checkout_item()
+	{
+	    $this->load->model('sys_model');
+	    $this->sys_model->restore_pos_checkout_item();
+	}
+	public function restore_pos_sale()
+	{
+	    $this->load->model('sys_model');
+	    $this->sys_model->restore_pos_sale();
+	}
 
 
 
@@ -257,16 +298,6 @@ class Sys_control extends CI_Controller
 		$this->load->model('sys_model');	
 		$this->sys_model->load_pos_checkout();
 	}
-	public function void_pos_checkout_item()
-	{
-		$this->load->model('sys_model');	
-		$this->sys_model->void_pos_checkout_item();
-	}
-	public function void_pos_checkout()
-	{
-		$this->load->model('sys_model');	
-		$this->sys_model->void_pos_checkout();
-	}
 	public function pos_restock()
 	{
 		$this->load->model('sys_model');	
@@ -311,16 +342,6 @@ class Sys_control extends CI_Controller
 	{
 		$this->load->model('sys_model');	
 		$this->sys_model->load_supply_checkout();
-	}
-	public function void_supply_checkout_item()
-	{
-		$this->load->model('sys_model');	
-		$this->sys_model->void_supply_checkout_item();
-	}
-	public function void_supply_checkout()
-	{
-		$this->load->model('sys_model');	
-		$this->sys_model->void_supply_checkout();
 	}
 	public function supply_restock()
 	{

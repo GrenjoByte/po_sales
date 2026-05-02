@@ -34,39 +34,93 @@ class Sys_model extends CI_Model {
 	    $username = $this->input->post('username', TRUE);
 	    $password = $this->input->post('password', TRUE);
 
-	    $sql = "SELECT user_id, username, password FROM user_accounts WHERE username = ?";
+	    // Get account info
+	    $sql = "SELECT user_id, username, password
+	            FROM user_accounts
+	            WHERE username = ?";
 	    $query = $this->db->query($sql, [$username]);
-	    $row = $query->row();
+	    $account = $query->row();
 
-	    if ($row && $password === $row->password) {
-	        $user_id = $row->user_id;
+	    $password_valid = false;
 
-	        $sql = "SELECT user_type ,last_name, gender FROM user_info WHERE user_id = ?";
-	        $query = $this->db->query($sql, [$user_id]);
-	        $row = $query->row();
+	    // Support hashed + legacy plain text passwords
+	    if ($account) {
 
-	        if ($row) {
-	        	$_SESSION['active_user'] = $user_id;
-	            $attempt_response = array(
-	                'status' => 'success',
-	                'user_type' => $row->user_type,
-	                'last_name' => $row->last_name,
-	                'gender' => $row->gender
-	            );
-	        } else {
-	            $attempt_response = array(
-	                'status' => 'error',
-	                'user_type' => '',
-	                'last_name' => '',
-	                'gender' => 'failed'
+	        if (password_verify($password, $account->password)) {
+	            $password_valid = true;
+	        }
+
+	        // ===== CHANGED =====
+	        elseif ($password === $account->password) {
+	            $password_valid = true;
+
+	            // Automatically upgrade old plain text password to hashed password
+	            $new_hash = password_hash($password, PASSWORD_DEFAULT);
+
+	            $this->db->query(
+	                "UPDATE user_accounts
+	                 SET password = ?
+	                 WHERE user_id = ?",
+	                [$new_hash, $account->user_id]
 	            );
 	        }
-	    } else {
+	        // ===== END CHANGE =====
+	    }
+
+	    if ($account && $password_valid) {
+
+	        $user_id = $account->user_id;
+
+	        // Get user details
+	        $sql = "SELECT user_type, last_name, gender, user_status
+	                FROM user_info
+	                WHERE user_id = ?";
+	        $query = $this->db->query($sql, [$user_id]);
+	        $user = $query->row();
+
+	        if ($user) {
+
+	            // Prevent inactive users from logging in
+	            if ($user->user_status == 0) {
+	                $attempt_response = array(
+	                    'status'    => 'inactive',
+	                    'user_type' => '',
+	                    'last_name' => '',
+	                    'gender'    => '',
+	                    'message'   => 'Account is inactive'
+	                );
+	            }
+	            else {
+	                // Create session only for active users
+	                $_SESSION['active_user'] = $user_id;
+
+	                $attempt_response = array(
+	                    'status'    => 'success',
+	                    'user_type' => $user->user_type,
+	                    'last_name' => $user->last_name,
+	                    'gender'    => $user->gender
+	                );
+	            }
+
+	        }
+	        else {
+	            $attempt_response = array(
+	                'status'    => 'error',
+	                'user_type' => '',
+	                'last_name' => '',
+	                'gender'    => '',
+	                'message'   => 'User info not found'
+	            );
+	        }
+
+	    }
+	    else {
 	        $attempt_response = array(
-	            'status' => 'error',
-                'user_type' => '',
-                'last_name' => '',
-	            'gender' => 'Invalid username or password'
+	            'status'    => 'error',
+	            'user_type' => '',
+	            'last_name' => '',
+	            'gender'    => '',
+	            'message'   => 'Invalid username or password'
 	        );
 	    }
 
@@ -575,24 +629,18 @@ class Sys_model extends CI_Model {
 	    $discount_type = $_POST['discount_type'] ?? 'none';
 	    $other_discount = $_POST['other_discount'] ?? 0;
 	    $user_id = $_SESSION['active_user'] ?? 0;
-
 	    header('Content-Type: application/json');
-
 	    if (empty($items)) {
 	        echo json_encode(['status'=>'error','message'=>'No items to sell']);
 	        exit;
 	    }
-
 	    $this->db->trans_start();
-
 	    // generate sale code
 	    $sql = "SELECT CONCAT('CO-', LPAD(IFNULL(MAX(CAST(SUBSTRING(pos_checkout_code,4) AS UNSIGNED)),0)+1,4,'0')) AS new_code
 	            FROM pos_checkouts";
 	    $sale_code = $this->db->query($sql)->row()->new_code;
-
 	    // discount setup
 	    $discount_rate = 0;
-
 	    switch ($discount_type) {
 	        case 'senior':
 	        case 'pwd':
@@ -607,38 +655,21 @@ class Sys_model extends CI_Model {
 	        default:
 	            $discount_rate = 0;
 	    }
-
-	    $vat_rate = 0.12;
-
 	    foreach ($items as $item) {
-
 	        $gross_price = $item['pos_item_price'];
-			$qty = $item['pos_item_quantity'];
-
-			$gross_total = $gross_price * $qty;
-
-			// 1. Apply discount first
-			$discount_amount = $gross_total * $discount_rate;
-			$discounted_total = $gross_total - $discount_amount;
-
-			// 2. Compute VAT from discounted amount
-			$vat_amount = $discounted_total * $vat_rate / (1 + $vat_rate);
-
-			// 3. Net of VAT (VAT-exclusive base)
-			$pos_checkout_subtotal = $discounted_total - $vat_amount;
-
-			// 4. Final total (what customer pays)
-			$final_total = $discounted_total;
-
+	        $qty = $item['pos_item_quantity'];
+	        $gross_total = $gross_price * $qty;
+	        $discount_amount = $gross_total * $discount_rate;
+	        $final_total = $gross_total - $discount_amount;
 	        // insert checkout row
 	        $this->db->query(
 	            "INSERT INTO pos_checkouts 
 	            (user_id, pos_checkout_code, pos_item_id, pos_item_code, pos_item_name,
 	             pos_item_price, pos_item_quantity, pos_item_unit,
 	             pos_discount_type, pos_discount_value,
-	             pos_checkout_vat, pos_checkout_subtotal, pos_checkout_total,
+	             pos_checkout_total,
 	             pos_checkout_date, pos_checkout_status)
-	            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), 1)",
+	            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), 1)",
 	            [
 	                $user_id,
 	                $sale_code,
@@ -650,12 +681,9 @@ class Sys_model extends CI_Model {
 	                $item['pos_item_unit'],
 	                $discount_type,
 	                $discount_rate,
-	                $vat_amount,
-	                $pos_checkout_subtotal,
 	                $final_total
 	            ]
 	        );
-
 	        // stock update
 	        $this->db->query(
 	            "UPDATE pos_inventory 
@@ -664,9 +692,7 @@ class Sys_model extends CI_Model {
 	            [$qty, $item['pos_item_id']]
 	        );
 	    }
-
 	    $this->db->trans_complete();
-
 	    if ($this->db->trans_status() === FALSE) {
 	        echo json_encode(['status'=>'error','message'=>'Sale failed (rolled back)']);
 	    } else {
@@ -675,7 +701,6 @@ class Sys_model extends CI_Model {
 	            'sale_code' => $sale_code
 	        ]);
 	    }
-
 	    exit;
 	}
 	public function load_pos_sales_report()
@@ -784,1214 +809,549 @@ class Sys_model extends CI_Model {
 	}
 	public function void_pos_restocking()
 	{
-		header('Content-Type: application/json');
+	    header('Content-Type: application/json');
+	    $pos_item_id         = $this->input->post('pos_item_id', true);
+	    $pos_restocking_code = $this->input->post('pos_restocking_code', true);
 
-		$pos_item_id = $this->input->post('pos_item_id', true);
-		$pos_restocking_code = $this->input->post('pos_restocking_code', true);
-
-		if (empty($pos_item_id)) {
-			echo json_encode([
-				'status' => 'error',
-				'message' => 'Invalid restocking code'
-			]);
-			return;
-		}
-
-		$sql = "SELECT pos_restocking_status 
-		FROM pos_restocking 
-		WHERE pos_item_id = ? AND pos_restocking_code = ?";
-		$query = $this->db->query($sql, [$pos_item_id, $pos_restocking_code]);
-
-		if ($query->num_rows() == 0) {
-			echo json_encode([
-				'status' => 'error',
-				'message' => 'Record not found'
-			]);
-			return;
-		}
-
-		$row = $query->row();
-
-		if ($row->pos_restocking_status == 2) {
-			echo json_encode([
-				'status' => 'error',
-				'message' => 'Already voided'
-			]);
-			return;
-		}
-
-		$sql = "SELECT pos_item_id, pos_item_quantity 
-	        	FROM pos_restocking 
-				WHERE pos_item_id = ? AND pos_restocking_code = ?";
-		$query_item = $this->db->query($sql, [$pos_item_id, $pos_restocking_code]);
-
-		if ($query_item->num_rows() == 0) {
-		    echo json_encode([
-		        'status' => 'error',
-		        'message' => 'Restocking item not found'
-		    ]);
-		    return;
-		}
-
-		$item = $query_item->row();
-
-		$sql = "UPDATE pos_inventory 
-		        SET pos_item_stock = pos_item_stock - ? 
-		        WHERE pos_item_id = ?";
-		$this->db->query($sql, [
-		    $item->pos_item_quantity,
-		    $item->pos_item_id
-		]);
-
-		$sql = "UPDATE pos_restocking 
-		SET pos_restocking_status = 2 
-		WHERE pos_item_id = ? AND pos_restocking_code = ?";
-		$this->db->query($sql, [$pos_item_id, $pos_restocking_code]);
-
-		if ($this->db->affected_rows() > 0) {
-			echo json_encode([
-				'status' => 'success',
-				'message' => 'Restocking voided'
-			]);
-		} else {
-			echo json_encode([
-				'status' => 'error',
-				'message' => 'No changes made'
-			]);
-		}
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	public function save_child_profile()
-	{
-	    $guardian_name      = $_POST['guardian_name'];
-	    $guardian_contact   = $_POST['guardian_contact'];
-	    $full_name          = $_POST['full_name'];
-	    $gender             = $_POST['gender'];
-	    $birthdate          = $_POST['birthdate'];
-	    $profile_image_name = $_POST['profile_image_name'];
-
-	    $profile_image = $_POST['profile_image'] ?? null;
-
-	    // Check if profile already exists
-	    $sql = "SELECT client_id FROM client_profiles WHERE full_name = ? AND birthdate = ?";
-	    $query = $this->db->query($sql, [$full_name, $birthdate]);
-
-	    if ($query->num_rows() > 0) {
-	        echo "duplicate";
+	    if (empty($pos_item_id) || empty($pos_restocking_code)) {
+	        echo json_encode(['status' => 'error', 'message' => 'Invalid parameters']);
 	        return;
 	    }
 
-	    if (empty($profile_image)) {
-	    	$profile_image_name = 'avatar.jpg';
+	    $sql = "SELECT pos_item_id, pos_item_name, pos_item_quantity, pos_item_unit, pos_restocking_status 
+	            FROM pos_restocking 
+	            WHERE pos_item_id = ? AND pos_restocking_code = ?";
+	    $query = $this->db->query($sql, [$pos_item_id, $pos_restocking_code]);
+
+	    if ($query->num_rows() == 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'Record not found']);
+	        return;
 	    }
-	    elseif (!empty($profile_image)) {
 
-	        if (strpos($profile_image, 'base64,') !== false) {
+	    $row = $query->row();
 
-	            list($meta, $content) = explode('base64,', $profile_image);
-
-	            $image_binary = base64_decode($content);
-
-	            $upload_path = FCPATH . 'photos/profile_pictures/';
-
-	            if (!is_dir($upload_path)) {
-	                mkdir($upload_path, 0755, true);
-	            }
-
-	            file_put_contents($upload_path . $profile_image_name, $image_binary);
-	        }
+	    if ($row->pos_restocking_status == 2) {
+	        echo json_encode(['status' => 'error', 'message' => 'Already voided']);
+	        return;
 	    }
-	    $sql = "INSERT INTO client_profiles 
-	            (guardian_name, guardian_contact, full_name, gender, birthdate, profile_image)
-	            VALUES (?, ?, ?, ?, ?, ?)";
 
-	    $this->db->query($sql, [
-	        $guardian_name,
-	        $guardian_contact,
-	        $full_name,
-	        $gender,
-	        $birthdate,
-	        $profile_image_name
+	    $sql = "UPDATE pos_restocking 
+	            SET pos_restocking_status = 2 
+	            WHERE pos_item_id = ? AND pos_restocking_code = ? AND pos_restocking_status = 1";
+	    $this->db->query($sql, [$pos_item_id, $pos_restocking_code]);
+
+	    if ($this->db->affected_rows() == 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'No changes made']);
+	        return;
+	    }
+
+	    $sql = "UPDATE pos_inventory 
+	            SET pos_item_stock = pos_item_stock - ? 
+	            WHERE pos_item_id = ?";
+	    $this->db->query($sql, [$row->pos_item_quantity, $row->pos_item_id]);
+
+	    $this->db->query(
+	        "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)",
+	        [
+	            'Restocking Void',
+	            'Item ID: ' . $row->pos_item_id,
+	            '<strong>Voided Restocking:</strong><br>'
+	                . $row->pos_item_name
+	                . ' (-' . $row->pos_item_quantity . ' ' . $row->pos_item_unit . ')'
+	                . ' [Code: ' . $pos_restocking_code . ']'
+	        ]
+	    );
+
+	    echo json_encode(['status' => 'success', 'message' => 'Restocking voided']);
+	}
+	public function load_accounts()
+	{
+	    header('Content-Type: application/json');
+	    $sql = "SELECT a.user_id, a.username, i.first_name, i.middle_name, i.last_name,
+	                   i.gender, i.email_address, i.user_type, i.user_status
+	            FROM user_accounts a
+	            JOIN user_info i ON a.user_id = i.user_id
+	            ORDER BY i.last_name ASC, i.first_name ASC";
+	    $query = $this->db->query($sql);
+	    echo json_encode([
+	        'status' => 'success',
+	        'data'   => $query->result()
 	    ]);
+	}
 
-	    if ($this->db->affected_rows() > 0) {
-
-	        echo "success";
-
-	        $client_id = $this->db->insert_id();
-
-	        $activity = "<strong>Account Created</strong>";
-	        $sql = "INSERT INTO time_logs (client_id, activity) VALUES (?, ?)";
-	        $this->db->query($sql, [$client_id, $activity]);
-
-	    } else {
-
-	        echo "error";
+	public function get_account()
+	{
+	    header('Content-Type: application/json');
+	    $user_id = $this->input->post('user_id', true);
+	    if (empty($user_id)) {
+	        echo json_encode(['status' => 'error', 'message' => 'Invalid user ID']);
+	        return;
 	    }
-	}
-
-	public function update_child_profile()
-	{
-	    $client_id = $_POST['update_client_id'];
-	    $guardian_name = $_POST['update_guardian_name'];
-	    $guardian_contact = $_POST['update_guardian_contact'];
-	    $full_name = $_POST['update_full_name'];
-	    $gender = $_POST['update_gender'];
-	    $birthdate = $_POST['update_birthdate'];
-	    $profile_image_b64 = $_POST['update_profile_image'];
-	    $profile_image_name = $_POST['update_profile_image_name'];
-
-	    $sql = "SELECT * FROM client_profiles WHERE client_id=?";
-	    $query = $this->db->query($sql, array($client_id));
-	    $current = $query->row_array();
-
-	    $file_path = null;
-	    if (!empty($profile_image_b64)) {
-	        $image_parts = explode(";base64,", $profile_image_b64);
-	        if (count($image_parts) == 2) {
-	            $image_base64 = base64_decode($image_parts[1]);
-	            $file_name = 'profile_' . time() . '.png';
-	            $upload_path = FCPATH . 'photos/profile_pictures/';
-	            if (!is_dir($upload_path)) {
-	                mkdir($upload_path, 0755, true);
-	            }
-	            file_put_contents($upload_path . $file_name, $image_base64);
-	            $profile_image_name = $file_name;
-	            $file_path = 'photos/profile_pictures/' . $file_name;
-	        }
+	    $sql = "SELECT a.user_id, a.username, i.first_name, i.middle_name, i.last_name,
+	                   i.gender, i.email_address, i.user_type, i.user_status
+	            FROM user_accounts a
+	            JOIN user_info i ON a.user_id = i.user_id
+	            WHERE a.user_id = ?";
+	    $query = $this->db->query($sql, [$user_id]);
+	    if ($query->num_rows() == 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'Account not found']);
+	        return;
 	    }
-
-	    if ($file_path) {
-	        $sql = "UPDATE client_profiles 
-	                   SET guardian_name=?, guardian_contact=?, full_name=?, gender=?, birthdate=?, profile_image=? 
-	                 WHERE client_id=?";
-	        $update_query = $this->db->query($sql, array($guardian_name,$guardian_contact,$full_name,$gender,$birthdate,$profile_image_name,$client_id));
-	    } else {
-	        $sql = "UPDATE client_profiles 
-	                   SET guardian_name=?, guardian_contact=?, full_name=?, gender=?, birthdate=? 
-	                 WHERE client_id=?";
-	        $update_query = $this->db->query($sql, array($guardian_name,$guardian_contact,$full_name,$gender,$birthdate,$client_id));
-	    }
-
-	    $changed = array();
-	    if ($current['guardian_name'] != $guardian_name) $changed[] = 'Guardian Name';
-	    if ($current['guardian_contact'] != $guardian_contact) $changed[] = 'Guardian Contact';
-	    if ($current['full_name'] != $full_name) $changed[] = 'Full Name';
-	    if ($current['gender'] != $gender) $changed[] = 'Gender';
-	    if ($current['birthdate'] != $birthdate) $changed[] = 'Birthdate';
-	    if ($file_path && $current['profile_image'] != $profile_image_name) $changed[] = 'Profile Image';
-
-	    if ($update_query) {
-	        echo "success";
-	        if (!empty($changed)) {
-	            $activity = "<strong>Updated:</strong><br>" . implode(', ', $changed);
-	            $sql = "INSERT INTO time_logs (client_id, activity) VALUES (?, ?)";
-	            $this->db->query($sql, array($client_id, $activity));
-	        }
-	    } else {
-	        echo "error";
-	    }
+	    echo json_encode(['status' => 'success', 'data' => $query->row()]);
 	}
-	public function load_inactive_clients()
+
+	public function create_account()
 	{
-		$sql = "SELECT * FROM client_profiles WHERE client_id NOT IN(SELECT client_id FROM time_manager) AND client_status = 1";
-		// $sql = "SELECT * FROM client_profiles LEFT JOIN time_manager ON client_profiles.client_id = time_manager.client_id";
-		$query = $this->db->query($sql);
-		foreach ($query->result() as $row) {
- 			$output_data[] = $row;
-		}
-		if (isset($output_data)) {
-			echo json_encode($output_data);	
-		}
-		else {
-			echo json_encode('');
-		}
-	}
-	public function load_active1_clients()
-	{
-		date_default_timezone_set('Asia/Manila');
-		$current_date = date('Y-m-d');
-
-		$sql = "
-			WITH RECURSIVE split_rates AS (
-			    SELECT 
-			        tm.client_id,
-			        tm.time_date,
-			        tm.start_time,
-			        tm.rate_id AS tm_id,
-			        TRIM(SUBSTRING_INDEX(tm.rate_id, ',', 1)) AS single_rate,
-			        CASE 
-			            WHEN INSTR(tm.rate_id, ',') > 0 THEN TRIM(SUBSTR(tm.rate_id, INSTR(tm.rate_id, ',') + 1))
-			            ELSE '' 
-			        END AS rest
-			    FROM time_manager tm
-
-			    UNION ALL
-
-			    SELECT 
-			        client_id,
-			        time_date,
-			        start_time,
-			        tm_id,
-			        TRIM(SUBSTRING_INDEX(rest, ',', 1)),
-			        CASE 
-			            WHEN INSTR(rest, ',') > 0 THEN TRIM(SUBSTR(rest, INSTR(rest, ',') + 1))
-			            ELSE '' 
-			        END
-			    FROM split_rates
-			    WHERE rest <> ''
-			)
-
-			SELECT 
-			    cp.client_id,
-			    FLOOR(SUM(tr.hour * 60 + tr.minute) / 60) AS total_hours,
-			    MOD(SUM(tr.hour * 60 + tr.minute), 60) AS total_minutes,
-			    SUM(tr.price) AS total_price
-			FROM client_profiles cp
-			JOIN time_manager tm 
-			    ON cp.client_id = tm.client_id
-			JOIN split_rates sr 
-			    ON sr.client_id = tm.client_id 
-			    AND sr.time_date = tm.time_date 
-			    AND sr.start_time = tm.start_time
-			JOIN time_rates tr 
-			    ON tr.rate_id = CAST(sr.single_rate AS UNSIGNED)
-			WHERE sr.time_date != ?
-			GROUP BY cp.client_id;
-		";
-		$query = $this->db->query($sql, $current_date);
-		foreach ($query->result() as $row) {
- 			$res_client_id = $row->client_id;
- 			$total_hours = $row->total_hours;
- 			$total_minutes = $row->total_minutes;
- 			$time = $total_hours.':'.$total_minutes;
- 			$rate = $row->total_price;
-		}
-		if (isset($res_client_id)) {
-			$sql = "INSERT INTO time_reports (client_id, time, rate)
-		            VALUES (?, ?, ?)";
-		    $this->db->query($sql, array($res_client_id, $time, $rate));
-
-			$sql = "DELETE FROM time_manager WHERE client_id = ?";
-			$this->db->query($sql, [$res_client_id]);	
-		}
-
-		$sql = "
-			WITH RECURSIVE split_rates AS (
-			    SELECT 
-			        tm.client_id,
-			        tm.start_time,
-			        TRIM(SUBSTRING_INDEX(tm.rate_id, ',', 1)) AS single_rate,
-			        CASE 
-			            WHEN INSTR(tm.rate_id, ',') > 0 
-			            THEN TRIM(SUBSTR(tm.rate_id, INSTR(tm.rate_id, ',') + 1))
-			            ELSE '' 
-			        END AS rest
-			    FROM time_manager tm
-
-			    UNION ALL
-
-			    SELECT 
-			        client_id,
-			        start_time,
-			        TRIM(SUBSTRING_INDEX(rest, ',', 1)),
-			        CASE 
-			            WHEN INSTR(rest, ',') > 0 
-			            THEN TRIM(SUBSTR(rest, INSTR(rest, ',') + 1))
-			            ELSE '' 
-			        END
-			    FROM split_rates
-			    WHERE rest <> ''
-			)
-
-			SELECT 
-			    cp.client_id,
-			    cp.full_name,
-			    cp.gender,
-			    cp.birthdate,
-			    cp.profile_image,
-			    cp.guardian_name,
-			    cp.guardian_contact,
-			    MIN(sr.start_time) AS start_time,  -- earliest active time session
-			    FLOOR(SUM(tr.hour * 60 + tr.minute) / 60) AS total_hours,
-			    MOD(SUM(tr.hour * 60 + tr.minute), 60) AS total_minutes,
-			    SUM(tr.price) AS total_price
-			FROM client_profiles cp
-			JOIN split_rates sr ON cp.client_id = sr.client_id
-			JOIN time_rates tr ON tr.rate_id = CAST(sr.single_rate AS UNSIGNED)
-			WHERE cp.client_status = 1
-			GROUP BY cp.client_id;
-		";
-		$query = $this->db->query($sql);
-		foreach ($query->result() as $row) {
- 			$output_data[] = $row;
-		}
-		if (isset($output_data)) {
-			echo json_encode($output_data);	
-		}
-		else {
-			echo json_encode('');
-		}
-	}
-	public function load_active_clients()
-	{
-		date_default_timezone_set('Asia/Manila');
-		$current_date = date('Y-m-d');
-
-		$sql = "SELECT client_profiles.client_id, guardian_name, guardian_contact, full_name, gender, birthdate, profile_image, client_status, start_time, rate_id FROM time_manager, client_profiles WHERE client_profiles.client_id = time_manager.client_id AND time_manager.time_date != ?";
-		$query = $this->db->query($sql, [$current_date]);
-
-		$output_data = array();
-
-		foreach ($query->result() as $row) {
-		    $client_id        = $row->client_id;
-		    $guardian_name    = $row->guardian_name;
-		    $guardian_contact = $row->guardian_contact;
-		    $full_name        = $row->full_name;
-		    $gender           = $row->gender;
-		    $birthdate        = $row->birthdate;
-		    $profile_image    = $row->profile_image;
-		    $start_time       = $row->start_time;
-		    $client_status    = $row->client_status;
-
-		    $rate_ids = explode(',', $row->rate_id);
-
-		    $total_hour   = 0;
-		    $total_minute = 0;
-		    $total_price  = 0;
-
-		    foreach ($rate_ids as $rate) {
-
-		        $rate = trim($rate);
-
-		        $sql = "SELECT hour, minute, price FROM time_rates WHERE rate_id = ?";
-		        $query2 = $this->db->query($sql, array($rate));
-
-		        foreach ($query2->result() as $row2) {
-		            $total_hour   += $row2->hour;
-		            $total_minute += $row2->minute;
-		            $total_price  += $row2->price;
-		        }
-		    }
-
-		    // Normalize minutes
-		    if ($total_minute >= 60) {
-		        $extra_hours  = floor($total_minute / 60);
-		        $total_hour  += $extra_hours;
-		        $total_minute = $total_minute % 60;
-		    }
-
-		    $time = $total_hour.':'.$total_minute;
-			$rate = $total_price;
-
-			if (isset($client_id)) {
-				$sql = "INSERT INTO time_reports (client_id, time, rate)
-			            VALUES (?, ?, ?)";
-			    $this->db->query($sql, array($client_id, $time, $rate));
-
-				$sql = "DELETE FROM time_manager WHERE client_id = ?";
-				$this->db->query($sql, [$client_id]);	
-			}
-		}
-
-		$sql = "SELECT client_profiles.client_id, guardian_name, guardian_contact, full_name, gender, birthdate, profile_image, client_status, start_time, rate_id FROM time_manager, client_profiles WHERE client_profiles.client_id = time_manager.client_id";
-		$query = $this->db->query($sql);
-
-		$output_data = array();
-
-		foreach ($query->result() as $row) {
-
-		    $client_id        = $row->client_id;
-		    $guardian_name    = $row->guardian_name;
-		    $guardian_contact = $row->guardian_contact;
-		    $full_name        = $row->full_name;
-		    $gender           = $row->gender;
-		    $birthdate        = $row->birthdate;
-		    $profile_image    = $row->profile_image;
-		    $start_time       = $row->start_time;
-		    $client_status    = $row->client_status;
-
-		    $rate_ids = explode(',', $row->rate_id);
-
-		    $total_hour   = 0;
-		    $total_minute = 0;
-		    $total_price  = 0;
-
-		    foreach ($rate_ids as $rate) {
-
-		        $rate = trim($rate);
-
-		        $sql = "SELECT hour, minute, price FROM time_rates WHERE rate_id = ?";
-		        $query2 = $this->db->query($sql, array($rate));
-
-		        foreach ($query2->result() as $row2) {
-		            $total_hour   += $row2->hour;
-		            $total_minute += $row2->minute;
-		            $total_price  += $row2->price;
-		        }
-		    }
-
-		    // Normalize minutes
-		    if ($total_minute >= 60) {
-		        $extra_hours  = floor($total_minute / 60);
-		        $total_hour  += $extra_hours;
-		        $total_minute = $total_minute % 60;
-		    }
-
-		    // Store results
-		    $output_data[] = array(
-		        'client_id'        => $client_id,
-		        'guardian_name'    => $guardian_name,
-		        'guardian_contact' => $guardian_contact,
-		        'full_name'        => $full_name,
-		        'gender'           => $gender,
-		        'birthdate'        => $birthdate,
-		        'profile_image'    => $profile_image,
-		        'client_status'    => $client_status,
-		        'start_time'       => $start_time,
-		        'total_hours'       => $total_hour,
-		        'total_minutes'     => $total_minute,
-		        'total_price'      => $total_price
-		    );
-		}
-	    
-		if (isset($output_data)) {
-			echo json_encode($output_data);	
-		}
-		else {
-			echo json_encode('');
-		}
-	}
-	public function load_registered_clients()
-	{
-		$sql = "SELECT * FROM client_profiles WHERE client_status = 1";
-		$query = $this->db->query($sql);
-		foreach ($query->result() as $row) {
- 			$output_data[] = $row;
-		}
-		if (isset($output_data)) {
-			echo json_encode($output_data);	
-		}
-		else {
-			echo json_encode('');
-		}
-	}
-	public function load_archived_clients()
-	{
-		$sql = "SELECT * FROM client_profiles WHERE client_status = 0";
-		$query = $this->db->query($sql);
-		foreach ($query->result() as $row) {
- 			$output_data[] = $row;
-		}
-		if (isset($output_data)) {
-			echo json_encode($output_data);	
-		}
-		else {
-			echo json_encode('');
-		}
-	}
-	public function load_time_rates()
-	{
-		$sql = "SELECT * FROM time_rates";
-		// $sql = "SELECT * FROM client_profiles LEFT JOIN time_manager ON client_profiles.client_id = time_manager.client_id";
-		$query = $this->db->query($sql);
-		foreach ($query->result() as $row) {
- 			$output_data[] = $row;
-		}
-		if (isset($output_data)) {
-			echo json_encode($output_data);	
-		}
-		else {
-			echo json_encode('');
-		}
-	}
-	public function new_active_client()
-	{
-		date_default_timezone_set('Asia/Manila');
-		$current_date = date('Y-m-d');
-
-	    $client_id = $_POST['client_id'];
-		$start_time = date("H:i:s");
-	    $time_rate = $_POST['time_rate'];
-
-		$sql = "SELECT client_id FROM time_manager WHERE client_id = ?";
-		$query = $this->db->query($sql, $client_id);
-		foreach ($query->result() as $row) {
- 			$res_client_id = $row->res_client_id;
-		}
-		if (isset($res_client_id)) {
-			echo "duplicate";
-		}
-		else {
-
-		    $sql = "INSERT INTO time_manager (client_id, time_date, start_time, rate_id)
-		            VALUES (?, ?, ?, ?)";
-		    $this->db->query($sql, array($client_id, $current_date, $start_time, $time_rate));
-
-		    if ($this->db->affected_rows() > 0) {
-		        echo "success";
-		        $sql = "SELECT hour, minute, price FROM time_rates WHERE rate_id = ?";
-				$query = $this->db->query($sql, $time_rate);
-				foreach ($query->result() as $row) {
-		 			$hour = $row->hour;
-		 			$minute = $row->minute;
-		 			$price = $row->price;
-				}
-				$time = '';
-				if ($price != 0) {
-					if ($hour > 0 && $minute > 0) {
-					    $time = $hour . ' hour' . ($hour > 1 ? 's ' : ' ') . $minute . ' min' . ($minute > 1 ? 's' : '');
-					} elseif ($hour > 0) {
-					    $time = $hour . ' hour' . ($hour > 1 ? 's' : '');
-					} elseif ($minute > 0) {
-					    $time = $minute . ' min' . ($minute > 1 ? 's' : '');
-					} else {
-					    $time = 'Unlimited';
-					}
-				}
-				else {
-					$time = 'Loyalty';
-				}
-
-	        	$activity = "<strong>Time Created:</strong><br>Time: ".$time.", "."Rate: ₱".$price;
-		        $sql = "INSERT INTO time_logs (client_id, activity)
-		            VALUES (?, ?)";
-		    	$this->db->query($sql, array($client_id, $activity));
-		    } else {
-		        echo "error";
-		    }	
-		}
-	}
-	public function extend_client_time()
-	{
-		date_default_timezone_set('Asia/Manila');
-		$current_date = date('Y-m-d');
-
-	    $client_id = $_POST['extend_client_id'];
-		$start_time = date("H:i:s");
-	    $time_rate = $_POST['extend_time_rate'];
-
-	    if ($time_rate == 0) {
-		    $sql = "UPDATE time_manager SET rate_id = ? WHERE client_id = ?";
-	    }
-	    else {
-	    	$time_rate = ','.$time_rate;
-		    $sql = "UPDATE time_manager SET rate_id = CONCAT(rate_id, ?) WHERE client_id = ?";
-	    }
-
-	    $this->db->query($sql, array($time_rate, $client_id));
-
-	    if ($this->db->affected_rows() > 0) {
-	        $sql = "SELECT hour, minute, price FROM time_rates WHERE rate_id = ?";
-			$query = $this->db->query($sql, [$_POST['extend_time_rate']]);
-			foreach ($query->result() as $row) {
-	 			$hour = $row->hour;
-	 			$minute = $row->minute;
-	 			$price = $row->price;
-			}
-			$time = '';
-			if ($price != 0) {
-				if ($hour > 0 && $minute > 0) {
-				    $time = $hour . ' hour' . ($hour > 1 ? 's ' : ' ') . $minute . ' min' . ($minute > 1 ? 's' : '');
-				} elseif ($hour > 0) {
-				    $time = $hour . ' hour' . ($hour > 1 ? 's' : '');
-				} elseif ($minute > 0) {
-				    $time = $minute . ' min' . ($minute > 1 ? 's' : '');
-				} else {
-				    $time = 'Unlimited';
-				}
-			}
-			else {
-				$time = 'Loyalty';
-			}
-
-	        $activity = "<strong>Time Extended:</strong><br>Time: ".$time.", "."Rate: ₱".$price;
-	        $sql = "INSERT INTO time_logs (client_id, activity)
-	            VALUES (?, ?)";
-	    	$this->db->query($sql, array($client_id, $activity));
-	    	echo $client_id;
-	    } else {
-	        echo "error";
-	    }	
-	}
-	public function end_client_time()
-	{
-	    $client_id = $_POST['client_id'];
-	    $sql = "SELECT rate_id FROM time_manager WHERE client_id = ?";
-		$query = $this->db->query($sql, [$client_id]);
-
-		$output_data = array();
-
-		foreach ($query->result() as $row) {
-		    $rate_ids = explode(',', $row->rate_id);
-
-		    $total_hour   = 0;
-		    $total_minute = 0;
-		    $total_price  = 0;
-
-		    foreach ($rate_ids as $rate) {
-
-		        $rate = trim($rate);
-
-		        $sql = "SELECT hour, minute, price FROM time_rates WHERE rate_id = ?";
-		        $query2 = $this->db->query($sql, array($rate));
-
-		        foreach ($query2->result() as $row2) {
-		            $total_hour   += $row2->hour;
-		            $total_minute += $row2->minute;
-		            $total_price  += $row2->price;
-		        }
-		    }
-
-		    // Normalize minutes
-		    if ($total_minute >= 60) {
-		        $extra_hours  = floor($total_minute / 60);
-		        $total_hour  += $extra_hours;
-		        $total_minute = $total_minute % 60;
-		    }
-
-		    $time = $total_hour.':'.$total_minute;
-			$rate = $total_price;
-		}
-
-	    $sql = "INSERT INTO time_reports (client_id, time, rate)
-		            VALUES (?, ?, ?)";
-	    $this->db->query($sql, array($client_id, $time, $rate));
-
-	    $time = '';
-		if ($hour > 0 && $minute > 0) {
-		    $time = $hour . ' hour' . ($hour > 1 ? 's ' : ' ') . $minute . ' min' . ($minute > 1 ? 's' : '');
-		} elseif ($hour > 0) {
-		    $time = $hour . ' hour' . ($hour > 1 ? 's' : '');
-		} elseif ($minute > 0) {
-		    $time = $minute . ' min' . ($minute > 1 ? 's' : '');
-		} else {
-		    $time = 'Unlimited';
-		}
-
-	    $activity = "<strong>Time Ended:</strong><br>Time: ".$time.", "."Rate: ₱".$rate;
-        $sql = "INSERT INTO time_logs (client_id, activity)
-            VALUES (?, ?)";
-    	$this->db->query($sql, array($client_id, $activity));
-
-		$sql = "DELETE FROM time_manager WHERE client_id = ?";
-		$query = $this->db->query($sql, [$client_id]);
-
-		if ($query) {
-		    echo $client_id;
-		} else {
-		    echo 'error';
-		}
-	}
-	public function remove_client_time()
-	{
-	    $client_id = $_POST['client_id'];
-	    $hour = $_POST['hour'];
-	    $minute = $_POST['minute'];
-	    $price = $_POST['price'];
-
-		$sql = "DELETE FROM time_manager WHERE client_id = ?";
-		$query = $this->db->query($sql, [$client_id]);
-
-		if ($query) {
-		    $time = '';
-			if ($price != 0) {
-				if ($hour > 0 && $minute > 0) {
-				    $time = $hour . ' hour' . ($hour > 1 ? 's ' : ' ') . $minute . ' min' . ($minute > 1 ? 's' : '');
-				} elseif ($hour > 0) {
-				    $time = $hour . ' hour' . ($hour > 1 ? 's' : '');
-				} elseif ($minute > 0) {
-				    $time = $minute . ' min' . ($minute > 1 ? 's' : '');
-				} else {
-				    $time = 'Unlimited';
-				}
-			}
-			else {
-				$time = 'Loyalty';
-			}
-
-        	$activity = "<strong>Time Cancelled:</strong><br>Time: ".$time.", "."Rate: ₱".$price;
-	        $sql = "INSERT INTO time_logs (client_id, activity)
-	            VALUES (?, ?)";
-	    	$this->db->query($sql, array($client_id, $activity));
-	    	
-		    echo $client_id;
-		} else {
-		    echo 'error';
-		}
-	}
-	public function archive_client()
-	{
-	    $client_id = $_POST['client_id'];
-
-	    $sql = "UPDATE client_profiles SET client_status = 0 WHERE client_id = ?";
-		$query = $this->db->query($sql, [$client_id]);
-
-		if ($query) {
-		    echo 'success';
-		} else {
-		    echo 'error';
-		}
-	}
-	public function unarchive_client()
-	{
-	    $client_id = $_POST['client_id'];
-
-	    $sql = "UPDATE client_profiles SET client_status = 1 WHERE client_id = ?";
-		$query = $this->db->query($sql, [$client_id]);
-
-		if ($query) {
-		    echo 'success';
-		} else {
-		    echo 'error';
-		}
-	}
-	public function delete_client()
-	{
-	    $client_id = $_POST['client_id'];
-
-	    $sql = "UPDATE client_profiles SET client_status = 3 WHERE client_id = ?";
-		$query = $this->db->query($sql, [$client_id]);
-
-		if ($query) {
-		    echo 'success';
-		} else {
-		    echo 'error';
-		}
-	}
-	public function load_tm_reports()
-	{
-	    $report_type = $_POST['report_type'];
-	    $report_date = $_POST['report_date'];
-
-	    if ($report_type == 'daily') {
-	    	$sql = "SELECT report_id, full_name, birthdate, profile_image, time_reports.client_id, SUM(rate) AS total_rate, FLOOR(SUM(SUBSTRING_INDEX(time, ':', 1)) + (SUM(SUBSTRING_INDEX(time, ':', -1)) DIV 60)) AS total_hours, MOD(SUM(SUBSTRING_INDEX(time, ':', -1)), 60) AS total_minutes FROM client_profiles, time_reports WHERE client_profiles.client_id = time_reports.client_id AND DATE(time_stamp) = ? GROUP BY time_reports.client_id ORDER BY time_reports.client_id ASC";
-	    }
-	    else if ($report_type == 'monthly') {
-	    	$sql = "SELECT report_id, full_name, birthdate, profile_image, time_reports.client_id, SUM(rate) AS total_rate, FLOOR(SUM(SUBSTRING_INDEX(time, ':', 1)) + (SUM(SUBSTRING_INDEX(time, ':', -1)) DIV 60)) AS total_hours, MOD(SUM(SUBSTRING_INDEX(time, ':', -1)), 60) AS total_minutes FROM client_profiles, time_reports WHERE client_profiles.client_id = time_reports.client_id AND DATE_FORMAT(time_stamp, '%Y-%m') = DATE_FORMAT(?, '%Y-%m') GROUP BY time_reports.client_id ORDER BY time_reports.client_id ASC";
-	    }
-	    else if ($report_type == 'annual') {
-	    	$sql = "SELECT report_id, full_name, birthdate, profile_image, time_reports.client_id, SUM(rate) AS total_rate, FLOOR(SUM(SUBSTRING_INDEX(time, ':', 1)) + (SUM(SUBSTRING_INDEX(time, ':', -1)) DIV 60)) AS total_hours, MOD(SUM(SUBSTRING_INDEX(time, ':', -1)), 60) AS total_minutes FROM client_profiles, time_reports WHERE client_profiles.client_id = time_reports.client_id AND YEAR(time_stamp) = YEAR(?) GROUP BY time_reports.client_id ORDER BY time_reports.client_id ASC";
-	    }
-		$query = $this->db->query($sql, $report_date);
-		foreach ($query->result() as $row) {
- 			$output_data[] = $row;
-		}
-		if (isset($output_data)) {
-			echo json_encode($output_data);	
-		}
-		else {
-			echo json_encode('');
-		}
-	}
-	public function load_tm_logs()
-	{
-	    $log_type = $_POST['log_type'];
-	    $log_date = $_POST['log_date'];
-
-	    if ($log_type == 'daily') {
-	    	$sql = "SELECT * FROM client_profiles JOIN time_logs ON client_profiles.client_id=time_logs.client_id WHERE DATE(time_logs.time_stamp)=? ORDER BY time_logs.log_id ASC";
-	    }
-	    else if ($log_type == 'monthly') {
-	    	$sql = "SELECT * FROM client_profiles JOIN time_logs ON client_profiles.client_id=time_logs.client_id WHERE DATE_FORMAT(time_logs.time_stamp,'%Y-%m')=DATE_FORMAT(?,'%Y-%m') ORDER BY time_logs.log_id ASC";
-	    }
-	    else if ($log_type == 'annual') {
-	    	$sql = "SELECT * FROM client_profiles JOIN time_logs ON client_profiles.client_id=time_logs.client_id WHERE YEAR(time_logs.time_stamp)=YEAR(?) ORDER BY time_logs.log_id ASC";
-	    }
-		$query = $this->db->query($sql, $log_date);
-		foreach ($query->result() as $row) {
- 			$output_data[] = $row;
-		}
-		if (isset($output_data)) {
-			echo json_encode($output_data);	
-		}
-		else {
-			echo json_encode('');
-		}
-	}
-	public function new_pos_item()
-	{
-	    // Handle pluralization of units
-	    function pluralize_unit($unit, $count) {
-	        $unit = strtolower(trim($unit));
-
-	        // Irregular plural forms
-	        $irregulars = [
-	            'man' => 'men',
-	            'woman' => 'women',
-	            'person' => 'people',
-	            'mouse' => 'mice',
-	            'goose' => 'geese',
-	            'tooth' => 'teeth',
-	            'foot' => 'feet',
-	            'child' => 'children',
-	        ];
-
-	        if ($count == 1) {
-	            // Return singular
-	            foreach ($irregulars as $singular => $plural) {
-	                if ($unit === $plural) return $singular;
-	            }
-	            if (preg_match('/(sh|ch|x|z|s)$/', $unit)) {
-	                return preg_replace('/(es)$/', '', $unit);
-	            } else {
-	                return preg_replace('/s$/', '', $unit);
-	            }
-	        } else {
-	            // Return plural
-	            if (array_key_exists($unit, $irregulars)) return $irregulars[$unit];
-	            if (in_array($unit, $irregulars)) return $unit;
-	            if (preg_match('/(sh|ch|x|z|s)$/', $unit)) return $unit . 'es';
-	            return preg_match('/s$/', $unit) ? $unit : $unit . 's';
-	        }
-	    }
-
-	    // Retrieve form inputs
-	    $new_pos_item_name = $_POST['new_pos_item_name'];
-	    $new_pos_item_price = $_POST['new_pos_item_price'];
-	    $new_pos_item_stock = $_POST['new_pos_item_stock'];
-	    $new_pos_item_unit = $_POST['new_pos_item_unit'];
-	    $new_pos_item_low = $_POST['new_pos_item_low'];
-	    $new_pos_item_image_base64 = $_POST['new_pos_item_image'] ?? '';
-	    $new_pos_item_image_name = $_POST['new_pos_item_image_name'] ?? '';
-
-	    // Check for duplicate item name
-	    $sql = "SELECT pos_item_name FROM pos_inventory WHERE pos_item_name = ?";
-	    $query = $this->db->query($sql, [$new_pos_item_name]);
-	    if ($query->num_rows() > 0) {
-	        echo "duplicate";
+	    header('Content-Type: application/json');
+
+	    $first_name    = $this->input->post('first_name', true);
+	    $middle_name   = $this->input->post('middle_name', true);
+	    $last_name     = $this->input->post('last_name', true);
+	    $gender        = $this->input->post('gender', true);
+	    $email_address = $this->input->post('email_address', true);
+	    $user_type     = $this->input->post('user_type', true);
+	    $username      = $this->input->post('username', true);
+	    $password      = $this->input->post('password', true);
+
+	    if (!$first_name || !$last_name || !$gender || !$email_address || !$user_type || !$username || !$password) {
+	        echo json_encode(['status' => 'error', 'message' => 'Missing required fields']);
 	        return;
 	    }
 
-	    // Handle image saving
-	    $saved_file_path = null;
-	    if (!empty($new_pos_item_image_base64)) {
-	        $image_parts = explode(";base64,", $new_pos_item_image_base64);
-	        if (count($image_parts) == 2) {
-	            $image_base64 = base64_decode($image_parts[1]);
-	            $file_name = $new_pos_item_image_name;
-	            $upload_path = FCPATH . 'photos/pos_images/';
-
-	            if (!is_dir($upload_path)) {
-	                mkdir($upload_path, 0755, true);
-	            }
-
-	            file_put_contents($upload_path . $file_name, $image_base64);
-	            $saved_file_path = 'photos/pos_images/' . $file_name;
-	        }
-	    }
-
-	    // Insert new item into the database
-	    $sql = "INSERT INTO pos_inventory (pos_item_name, pos_item_price, pos_item_image, pos_item_stock, pos_item_unit, pos_item_low)
-	            VALUES (?, ?, ?, ?, ?, ?)";
-	    $this->db->query($sql, [
-	        $new_pos_item_name,
-	        $new_pos_item_price,
-	        $new_pos_item_image_name,
-	        $new_pos_item_stock,
-	        $new_pos_item_unit,
-	        $new_pos_item_low
-	    ]);
-
-	    if ($this->db->affected_rows() > 0) {
-	        echo "success";
-
-	        $pos_item_id = $this->db->insert_id();
-	        $unit_label = pluralize_unit($new_pos_item_unit, $new_pos_item_stock);
-	        $activity_type = "Item Creation";
-        	$pos_code = "Item ID: ". $pos_item_id;
-	        $activity = "
-	            <strong>Item '$new_pos_item_name' created.</strong>
-	            <br>Price: ₱$new_pos_item_price
-	            <br>Stock: $new_pos_item_stock $unit_label
-	            <br>Low: $new_pos_item_low
-	        ";
-	        $sql = "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)";
-	        $this->db->query($sql, [$activity_type, $pos_code, $activity]);
-	    } else {
-	        echo "error";
-	    }
-	}
-
-
-	public function pos_checkout(){
-	    date_default_timezone_set('Asia/Manila');
-	    $current_date = date('Y-m-d H:i:s');
-
-	    // Generate unique checkout code
-	    $random_code = strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 6));
-	    $pos_checkout_code = 'POS-' . date('Ymd') . '-' . $random_code;
-
-	    // Retrieve posted cart data
-	    $cart_items = $this->input->post('cart_items');
-	    if (is_string($cart_items)) {
-	        $cart_items = json_decode($cart_items, true);
-	    }
-	    
-	    if (empty($cart_items) || !is_array($cart_items)) {
-	        echo "empty_cart";
+	    $check_username = $this->db->query(
+	        "SELECT user_id FROM user_accounts WHERE username = ?", [$username]
+	    );
+	    if ($check_username->num_rows() > 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'Username already taken']);
 	        return;
 	    }
 
-	    $checked_out_items = [];
-	    $failed = false; // <-- final status tracker
-
-	    foreach ($cart_items as $item) {
-	        $pos_item_id        = $item['pos_item_id'];
-	        $pos_item_name      = $item['pos_item_name'];
-	        $pos_item_price     = $item['pos_item_price'];
-	        $pos_item_count     = $item['item_count'];
-	        $pos_item_unit      = $item['pos_item_unit'];
-	        $pos_item_image     = $item['pos_item_image'];
-	        $pos_item_subtotal  = $item['total_item_price'];
-
-	        // Insert checkout item
-	        $sql = "INSERT INTO pos_checkouts 
-	                (pos_checkout_code, pos_item_id, pos_item_name, pos_item_price, pos_item_count, pos_item_unit, pos_item_image, pos_item_subtotal, pos_checkout_date)
-	                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-	        $insert_query = $this->db->query($sql, [
-	            $pos_checkout_code,
-	            $pos_item_id,
-	            $pos_item_name,
-	            $pos_item_price,
-	            $pos_item_count,
-	            $pos_item_unit,
-	            $pos_item_image,
-	            $pos_item_subtotal,
-	            $current_date
-	        ]);
-
-	        if (!$insert_query) {
-	            $failed = true;
-	            continue; // skip stock update for this item
-	        }
-
-	        // Update inventory
-	        $sql = "UPDATE pos_inventory 
-	                SET pos_item_stock = pos_item_stock - ? 
-	                WHERE pos_item_id = ?";
-	        $update_query = $this->db->query($sql, [$pos_item_count, $pos_item_id]);
-
-	        if (!$update_query) {
-	            $failed = true;
-	        }
-
-	        $checked_out_items[] = "{$pos_item_name} ({$pos_item_count} {$pos_item_unit})";
+	    $check_email = $this->db->query(
+	        "SELECT user_id FROM user_info WHERE email_address = ?", [$email_address]
+	    );
+	    if ($check_email->num_rows() > 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'Email address already in use']);
+	        return;
 	    }
 
-	    // Log only if at least something was processed
-	    if (!empty($checked_out_items)) {
-	        $activity_type = 'Checkout';
-	        $activity = implode('<br>', $checked_out_items);
-	        $sql = "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity)
-	                VALUES (?, ?, ?)";
-	        $this->db->query($sql, [$activity_type, $pos_checkout_code, $activity]);
+	    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+	    $this->db->trans_start();
+
+	    $this->db->query(
+	        "INSERT INTO user_info (first_name, middle_name, last_name, gender, email_address, user_type)
+	         VALUES (?, ?, ?, ?, ?, ?)",
+	        [$first_name, $middle_name, $last_name, $gender, $email_address, $user_type]
+	    );
+
+	    $new_user_id = $this->db->insert_id();
+
+	    $this->db->query(
+	        "INSERT INTO user_accounts (user_id, username, password) VALUES (?, ?, ?)",
+	        [$new_user_id, $username, $hashed_password]
+	    );
+
+	    $this->db->trans_complete();
+
+	    if ($this->db->trans_status() === false) {
+	        echo json_encode(['status' => 'error', 'message' => 'Failed to create account']);
+	        return;
 	    }
 
-	    // Final output
-	    echo $failed ? "error" : "success";
+	    $type_label = $user_type == 1 ? 'Admin' : 'Cashier';
+	    $this->db->query(
+	        "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)",
+	        [
+	            'Account Creation',
+	            'User ID: ' . $new_user_id,
+	            '<strong>Created Account:</strong><br>'
+	                . $first_name . ' ' . $last_name
+	                . ' (@' . $username . ')'
+	                . ' [' . $type_label . ']'
+	        ]
+	    );
+
+	    echo json_encode(['status' => 'success', 'message' => 'Account created successfully']);
 	}
-
-	public function load_pos_checkout_codes(){
-	    $report_type = $_POST['pos_checkouts_type'];
-		$report_date = $_POST['pos_checkouts_date'];
-
-		if ($report_type == 'daily') {
-		    $sql = "
-		    	SELECT 
-				    c.pos_checkout_code,
-				    SUM(c.pos_item_count) AS total_item_count,
-				    MAX(c.pos_checkout_date) AS pos_checkout_date
-				FROM pos_checkouts c
-				WHERE DATE(c.pos_checkout_date) = ?
-				GROUP BY c.pos_checkout_code
-				ORDER BY c.pos_checkout_date DESC;
-		    ";
-		}
-		else if ($report_type == 'monthly') {
-		    $sql = "
-		    	SELECT 
-				    c.pos_checkout_code,
-				    SUM(c.pos_item_count) AS total_item_count,
-				    MAX(c.pos_checkout_date) AS pos_checkout_date
-				FROM pos_checkouts c
-				WHERE DATE_FORMAT(c.pos_checkout_date, '%Y-%m') = DATE_FORMAT(?, '%Y-%m')
-				GROUP BY c.pos_checkout_code
-				ORDER BY c.pos_checkout_date DESC;
-		    ";
-		}
-		else if ($report_type == 'annual') {
-		    $sql = "
-		    	SELECT 
-				    c.pos_checkout_code,
-				    SUM(c.pos_item_count) AS total_item_count,
-				    MAX(c.pos_checkout_date) AS pos_checkout_date
-				FROM pos_checkouts c
-				WHERE DATE_FORMAT(c.pos_checkout_date, '%Y') = DATE_FORMAT(?, '%Y')
-				GROUP BY c.pos_checkout_code
-				ORDER BY c.pos_checkout_date DESC;
-		    ";
-		}
-
-		$query = $this->db->query($sql, $report_date);
-
-		foreach ($query->result() as $row) {
-		    $output_data[] = $row;
-		}
-
-		if (isset($output_data)) {
-		    echo json_encode($output_data);
-		} else {
-		    echo json_encode('');
-		}
-	}
-
-	public function load_pos_checkout()
+	public function update_account()
 	{
-	    $pos_checkout_code = $_POST['pos_checkout_code'];
+	    header('Content-Type: application/json');
+	    $user_id       = $this->input->post('user_id', true);
+	    $first_name    = $this->input->post('first_name', true);
+	    $middle_name   = $this->input->post('middle_name', true);
+	    $last_name     = $this->input->post('last_name', true);
+	    $gender        = $this->input->post('gender', true);
+	    $email_address = $this->input->post('email_address', true);
+	    $user_type     = $this->input->post('user_type', true);
+	    $user_status   = $this->input->post('user_status', true);
+	    $username      = $this->input->post('username', true);
+	    $password      = $this->input->post('password', true);
 
-	    $sql = "
-	        SELECT 
-	            c.pos_checkout_id,
-	            i.pos_item_image,
-	            i.pos_item_name,
-	            i.pos_item_price,
-	            c.pos_item_count,
-	            i.pos_item_unit
-	        FROM 
-	            pos_checkouts c,
-	            pos_inventory i
-	        WHERE 
-	            c.pos_item_id = i.pos_item_id 
-	            AND
-	            pos_checkout_code = ?
-	        ORDER BY pos_checkout_id DESC;
-	    ";
+	    if (!$user_id || !$first_name || !$last_name || !$gender || !$email_address || !$user_type || !$username) {
+	        echo json_encode(['status' => 'error', 'message' => 'Missing required fields']);
+	        return;
+	    }
 
+	    $check = $this->db->query(
+	        "SELECT user_id FROM user_accounts WHERE username = ? AND user_id != ?",
+	        [$username, $user_id]
+	    );
+	    if ($check->num_rows() > 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'Username already taken']);
+	        return;
+	    }
+
+	    $check_email = $this->db->query(
+	        "SELECT user_id FROM user_info WHERE email_address = ? AND user_id != ?",
+	        [$email_address, $user_id]
+	    );
+	    if ($check_email->num_rows() > 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'Email address already in use']);
+	        return;
+	    }
+
+	    // Snapshot old values for log diff
+	    $old = $this->db->query(
+	        "SELECT a.username, i.first_name, i.last_name, i.user_type, i.user_status
+	         FROM user_accounts a JOIN user_info i ON a.user_id = i.user_id
+	         WHERE a.user_id = ?",
+	        [$user_id]
+	    )->row();
+
+	    $this->db->query(
+	        "UPDATE user_info
+	         SET first_name = ?, middle_name = ?, last_name = ?, gender = ?,
+	             email_address = ?, user_type = ?, user_status = ?
+	         WHERE user_id = ?",
+	        [$first_name, $middle_name, $last_name, $gender, $email_address, $user_type, $user_status, $user_id]
+	    );
+
+	    $this->db->query(
+	        "UPDATE user_accounts SET username = ? WHERE user_id = ?",
+	        [$username, $user_id]
+	    );
+
+	    if (!empty($password)) {
+	        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+	        $this->db->query(
+	            "UPDATE user_accounts SET password = ? WHERE user_id = ?",
+	            [$hashed_password, $user_id]
+	        );
+	    }
+
+	    // Build change list for log
+	    $changes = [];
+	    if ($old->first_name . ' ' . $old->last_name !== $first_name . ' ' . $last_name)
+	        $changes[] = 'Name: ' . $old->first_name . ' ' . $old->last_name . ' → ' . $first_name . ' ' . $last_name;
+	    if ($old->username !== $username)
+	        $changes[] = 'Username: @' . $old->username . ' → @' . $username;
+	    if ($old->user_type != $user_type)
+	        $changes[] = 'Type: ' . ($old->user_type == 1 ? 'Admin' : 'Cashier') . ' → ' . ($user_type == 1 ? 'Admin' : 'Cashier');
+	    if ($old->user_status != $user_status)
+	        $changes[] = 'Status: ' . ($old->user_status == 1 ? 'Active' : 'Inactive') . ' → ' . ($user_status == 1 ? 'Active' : 'Inactive');
+	    if (!empty($password))
+	        $changes[] = 'Password changed';
+
+	    $change_detail = !empty($changes)
+	        ? implode('<br>', $changes)
+	        : 'No significant changes';
+
+	    $this->db->query(
+	        "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)",
+	        [
+	            'Account Update',
+	            'User ID: ' . $user_id,
+	            '<strong>Updated Account:</strong><br>' . $change_detail
+	        ]
+	    );
+
+	    echo json_encode(['status' => 'success', 'message' => 'Account updated']);
+	}
+	public function void_pos_sale()
+	{
+	    header('Content-Type: application/json');
+	    $pos_checkout_code = $this->input->post('pos_checkout_code', true);
+
+	    if (empty($pos_checkout_code)) {
+	        echo json_encode(['status' => 'error', 'message' => 'Invalid sale code']);
+	        return;
+	    }
+
+	    $sql = "SELECT pos_item_id, pos_item_name, pos_item_quantity, pos_item_unit, pos_checkout_status 
+	            FROM pos_checkouts 
+	            WHERE pos_checkout_code = ?";
 	    $query = $this->db->query($sql, [$pos_checkout_code]);
 
-	    foreach ($query->result() as $row) {
-	        $output_data[] = $row;
+	    if ($query->num_rows() == 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'Sale not found']);
+	        return;
 	    }
 
-	    if (isset($output_data)) {
-	        echo json_encode($output_data);
-	    } else {
-	        echo json_encode('');
+	    $rows = $query->result();
+	    $all_voided = array_reduce($rows, fn($carry, $r) => $carry && $r->pos_checkout_status == 2, true);
+	    if ($all_voided) {
+	        echo json_encode(['status' => 'error', 'message' => 'Sale already voided']);
+	        return;
 	    }
+
+	    $sql = "UPDATE pos_checkouts 
+	            SET pos_checkout_status = 2 
+	            WHERE pos_checkout_code = ? AND pos_checkout_status != 2";
+	    $this->db->query($sql, [$pos_checkout_code]);
+
+	    if ($this->db->affected_rows() == 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'No changes made']);
+	        return;
+	    }
+
+	    $item_lines = [];
+	    foreach ($rows as $row) {
+	        if ($row->pos_checkout_status != 2) {
+	            $this->db->query(
+	                "UPDATE pos_inventory SET pos_item_stock = pos_item_stock + ? WHERE pos_item_id = ?",
+	                [$row->pos_item_quantity, $row->pos_item_id]
+	            );
+	            $item_lines[] = $row->pos_item_name . ' (x' . $row->pos_item_quantity . ' ' . $row->pos_item_unit . ')';
+	        }
+	    }
+
+	    $this->db->query(
+	        "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)",
+	        [
+	            'Sale Void',
+	            'Sale Code: ' . $pos_checkout_code,
+	            '<strong>Voided Sale:</strong><br>' . implode('<br>', $item_lines)
+	        ]
+	    );
+
+	    echo json_encode(['status' => 'success', 'message' => 'Sale voided']);
 	}
-	public function void_pos_checkout_item(){
-	    $pos_checkout_id = $_POST['pos_checkout_id'];
-	
-	    $sql = "SELECT pos_item_id, pos_item_count, pos_checkout_code, pos_item_name FROM pos_checkouts WHERE pos_checkout_id = ?";
-	    $select_query = $this->db->query($sql, [$pos_checkout_id]);
-		foreach ($select_query->result() as $row) {
- 			$pos_item_id = $row->pos_item_id;
- 			$pos_item_count = $row->pos_item_count;
- 			$pos_checkout_code = $row->pos_checkout_code;
- 			$pos_item_name = $row->pos_item_name;
-		}
-        
-        $sql = "UPDATE pos_inventory SET pos_item_stock = pos_item_stock + ? WHERE pos_item_id = ?";
-	    $update_query = $this->db->query($sql, [$pos_item_count, $pos_item_id]);
 
-	    if ($update_query) {
-			$sql = "DELETE FROM pos_checkouts WHERE pos_checkout_id = ?";
-		    $delete_query = $this->db->query($sql, [$pos_checkout_id]);	 
+	public function void_pos_checkout_item()
+	{
+	    header('Content-Type: application/json');
+	    $pos_item_id       = $this->input->post('pos_item_id', true);
+	    $pos_checkout_code = $this->input->post('pos_checkout_code', true);
 
-		    if ($delete_query) {
-		    	$sql = "SELECT COUNT(*) AS total FROM pos_checkouts WHERE pos_checkout_code = ?";
-				$query = $this->db->query($sql, [$pos_checkout_code]);
-				$result = $query->row();
-				$pos_checkout_count = $result->total;
-
-				$activity_type = "Checkout Item Voided";
-	        	$pos_code = $pos_checkout_code;
-		        $activity = "
-		            Voided $pos_item_name * $pos_item_count from '$pos_checkout_code'.
-		        ";
-		        $sql = "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)";
-		        $this->db->query($sql, [$activity_type, $pos_code, $activity]);
-
-				if ($pos_checkout_count == 0) {
-		    		echo "success-null";
-				}
-				else {
-		    		echo "success";
-				}
-	       	}
-	       	else {
-	    		echo "error";
-	       	}
+	    if (empty($pos_item_id) || empty($pos_checkout_code)) {
+	        echo json_encode(['status' => 'error', 'message' => 'Invalid parameters']);
+	        return;
 	    }
-	    else {
-    		echo "error";
+
+	    $sql = "SELECT pos_item_id, pos_item_name, pos_item_quantity, pos_item_unit, pos_checkout_status
+	            FROM pos_checkouts
+	            WHERE pos_item_id = ? AND pos_checkout_code = ?";
+	    $query = $this->db->query($sql, [$pos_item_id, $pos_checkout_code]);
+
+	    if ($query->num_rows() == 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'Item not found']);
+	        return;
 	    }
+
+	    $row = $query->row();
+
+	    if ($row->pos_checkout_status == 2) {
+	        echo json_encode(['status' => 'error', 'message' => 'Item already voided']);
+	        return;
+	    }
+
+	    $sql = "UPDATE pos_checkouts
+	            SET pos_checkout_status = 2
+	            WHERE pos_item_id = ? AND pos_checkout_code = ? AND pos_checkout_status != 2";
+	    $this->db->query($sql, [$pos_item_id, $pos_checkout_code]);
+
+	    if ($this->db->affected_rows() == 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'No changes made']);
+	        return;
+	    }
+
+	    $this->db->query(
+	        "UPDATE pos_inventory SET pos_item_stock = pos_item_stock + ? WHERE pos_item_id = ?",
+	        [$row->pos_item_quantity, $row->pos_item_id]
+	    );
+
+	    $this->db->query(
+	        "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)",
+	        [
+	            'Sale Item Void',
+	            'Sale Code: ' . $pos_checkout_code,
+	            '<strong>Voided Item:</strong><br>'
+	                . $row->pos_item_name
+	                . ' (x' . $row->pos_item_quantity . ' ' . $row->pos_item_unit . ')'
+	        ]
+	    );
+
+	    echo json_encode(['status' => 'success', 'message' => 'Item voided']);
 	}
-	public function void_pos_checkout(){
-	    $pos_checkout_code = $_POST['pos_checkout_code'];
-	
-	    $sql = "SELECT pos_item_id, pos_item_count FROM pos_checkouts WHERE pos_checkout_code = ?";
-	    $select_query = $this->db->query($sql, [$pos_checkout_code]);
-		foreach ($select_query->result() as $row) {
- 			$pos_item_id = $row->pos_item_id;
- 			$pos_item_count = $row->pos_item_count;
-		
- 			$sql = "UPDATE pos_inventory SET pos_item_stock = pos_item_stock + ? WHERE pos_item_id = ?";
-	    	$update_query = $this->db->query($sql, [$pos_item_count, $pos_item_id]);
-		}
 
-	    if ($update_query) {
-			$sql = "DELETE FROM pos_checkouts WHERE pos_checkout_code = ?";
-		    $delete_query = $this->db->query($sql, [$pos_checkout_code]);	 
+	public function restore_pos_checkout_item()
+	{
+	    header('Content-Type: application/json');
+	    $pos_item_id       = $this->input->post('pos_item_id', true);
+	    $pos_checkout_code = $this->input->post('pos_checkout_code', true);
 
-		    $activity_type = "Checkout Voided";
-        	$pos_code = $pos_checkout_code;
-	        $activity = "
-	            Voided the whole checkout with code '$pos_checkout_code'.
-	        ";
-	        $sql = "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)";
-	        $this->db->query($sql, [$activity_type, $pos_code, $activity]);
-
-		    if ($delete_query) {
-	    		echo "success";
-	       	}
-	       	else {
-	    		echo "error";
-	       	}
+	    if (empty($pos_item_id) || empty($pos_checkout_code)) {
+	        echo json_encode(['status' => 'error', 'message' => 'Invalid parameters']);
+	        return;
 	    }
-	    else {
-    		echo "error";
+
+	    $sql = "SELECT pos_item_id, pos_item_name, pos_item_quantity, pos_item_unit, pos_checkout_status
+	            FROM pos_checkouts
+	            WHERE pos_item_id = ? AND pos_checkout_code = ?";
+	    $query = $this->db->query($sql, [$pos_item_id, $pos_checkout_code]);
+
+	    if ($query->num_rows() == 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'Item not found']);
+	        return;
 	    }
+
+	    $row = $query->row();
+
+	    if ($row->pos_checkout_status != 2) {
+	        echo json_encode(['status' => 'error', 'message' => 'Item is not voided']);
+	        return;
+	    }
+
+	    $sql = "UPDATE pos_checkouts
+	            SET pos_checkout_status = 1
+	            WHERE pos_item_id = ? AND pos_checkout_code = ? AND pos_checkout_status = 2";
+	    $this->db->query($sql, [$pos_item_id, $pos_checkout_code]);
+
+	    if ($this->db->affected_rows() == 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'No changes made']);
+	        return;
+	    }
+
+	    $this->db->query(
+	        "UPDATE pos_inventory SET pos_item_stock = pos_item_stock - ? WHERE pos_item_id = ?",
+	        [$row->pos_item_quantity, $row->pos_item_id]
+	    );
+
+	    $this->db->query(
+	        "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)",
+	        [
+	            'Sale Item Restore',
+	            'Sale Code: ' . $pos_checkout_code,
+	            '<strong>Restored Item:</strong><br>'
+	                . $row->pos_item_name
+	                . ' (x' . $row->pos_item_quantity . ' ' . $row->pos_item_unit . ')'
+	        ]
+	    );
+
+	    echo json_encode(['status' => 'success', 'message' => 'Item restored']);
 	}
+
+	public function restore_pos_sale()
+	{
+	    header('Content-Type: application/json');
+	    $pos_checkout_code = $this->input->post('pos_checkout_code', true);
+
+	    if (empty($pos_checkout_code)) {
+	        echo json_encode(['status' => 'error', 'message' => 'Invalid sale code']);
+	        return;
+	    }
+
+	    $sql = "SELECT pos_item_id, pos_item_name, pos_item_quantity, pos_item_unit, pos_checkout_status 
+	            FROM pos_checkouts 
+	            WHERE pos_checkout_code = ?";
+	    $query = $this->db->query($sql, [$pos_checkout_code]);
+
+	    if ($query->num_rows() == 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'Sale not found']);
+	        return;
+	    }
+
+	    $rows = $query->result();
+	    $all_active = array_reduce($rows, fn($carry, $r) => $carry && $r->pos_checkout_status == 1, true);
+	    if ($all_active) {
+	        echo json_encode(['status' => 'error', 'message' => 'Sale is not voided']);
+	        return;
+	    }
+
+	    $sql = "UPDATE pos_checkouts
+	            SET pos_checkout_status = 1
+	            WHERE pos_checkout_code = ? AND pos_checkout_status = 2";
+	    $this->db->query($sql, [$pos_checkout_code]);
+
+	    if ($this->db->affected_rows() == 0) {
+	        echo json_encode(['status' => 'error', 'message' => 'No changes made']);
+	        return;
+	    }
+
+	    $item_lines = [];
+	    foreach ($rows as $row) {
+	        if ($row->pos_checkout_status == 2) {
+	            $this->db->query(
+	                "UPDATE pos_inventory SET pos_item_stock = pos_item_stock - ? WHERE pos_item_id = ?",
+	                [$row->pos_item_quantity, $row->pos_item_id]
+	            );
+	            $item_lines[] = $row->pos_item_name . ' (x' . $row->pos_item_quantity . ' ' . $row->pos_item_unit . ')';
+	        }
+	    }
+
+	    $this->db->query(
+	        "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)",
+	        [
+	            'Sale Restore',
+	            'Sale Code: ' . $pos_checkout_code,
+	            '<strong>Restored Sale:</strong><br>' . implode('<br>', $item_lines)
+	        ]
+	    );
+
+	    echo json_encode(['status' => 'success', 'message' => 'Sale restored']);
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	public function pos_restock()
 	{
 	    $pos_restocking_date = $_POST['pos_restocking_date'];
@@ -2619,7 +1979,7 @@ class Sys_model extends CI_Model {
 	        echo json_encode('');
 	    }
 	}
-	public function void_supply_checkout_item(){
+	public function void_supply_checkout(){
 	    $supply_checkout_id = $_POST['supply_checkout_id'];
 	
 	    $sql = "SELECT supply_item_id, supply_item_count, supply_checkout_code, supply_item_name FROM supply_checkouts WHERE supply_checkout_id = ?";
@@ -2658,42 +2018,6 @@ class Sys_model extends CI_Model {
 				else {
 		    		echo "success";
 				}
-	       	}
-	       	else {
-	    		echo "error";
-	       	}
-	    }
-	    else {
-    		echo "error";
-	    }
-	}
-	public function void_supply_checkout(){
-	    $supply_checkout_code = $_POST['supply_checkout_code'];
-	
-	    $sql = "SELECT supply_item_id, supply_item_count FROM supply_checkouts WHERE supply_checkout_code = ?";
-	    $select_query = $this->db->query($sql, [$supply_checkout_code]);
-		foreach ($select_query->result() as $row) {
- 			$supply_item_id = $row->supply_item_id;
- 			$supply_item_count = $row->supply_item_count;
-		
- 			$sql = "UPDATE supply_inventory SET supply_item_stock = supply_item_stock + ? WHERE supply_item_id = ?";
-	    	$update_query = $this->db->query($sql, [$supply_item_count, $supply_item_id]);
-		}
-
-	    if ($update_query) {
-			$sql = "DELETE FROM supply_checkouts WHERE supply_checkout_code = ?";
-		    $delete_query = $this->db->query($sql, [$supply_checkout_code]);	 
-
-		    $activity_type = "Checkout Voided";
-        	$supply_code = $supply_checkout_code;
-	        $activity = "
-	            Voided the whole checkout with code '$supply_checkout_code'.
-	        ";
-	        $sql = "INSERT INTO supply_logs (supply_activity_type, supply_code, supply_activity) VALUES (?, ?, ?)";
-	        $this->db->query($sql, [$activity_type, $supply_code, $activity]);
-
-		    if ($delete_query) {
-	    		echo "success";
 	       	}
 	       	else {
 	    		echo "error";

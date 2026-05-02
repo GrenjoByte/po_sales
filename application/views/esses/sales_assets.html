@@ -21,51 +21,68 @@
       -ms-user-select: none;     /* IE/Edge */
       user-select: none;         /* Standard */
    }
+   @media print {
+      .no-print { display: none !important; }
+      body > *:not(.modal) { display: none !important; }
+      .modal, .modal-dialog, .modal-content, .modal-body {
+         display: block !important;
+         position: static !important;
+         border: none !important;
+         box-shadow: none !important;
+         padding: 0 !important;
+         margin: 0 !important;
+         max-width: 100% !important;
+      }
+   }
 </style>
+
+<!-- Restocking Report Modal -->
 <div class="modal fade" id="pos_restocking_report_modal" tabindex="-1" aria-labelledby="pos_restocking_report_title" aria-hidden="true">
    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-      <div class="modal-content">
-         <div class="modal-header">
-            <h1 class="modal-title fs-5" id="pos_restocking_report_title">Restocking Report</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-         </div>
-         <div class="modal-body">
-            <div class="input-group input-group-sm" style="width: 220px;">
-               <span class="input-group-text">Date</span>
-               <input type="date" id="pos_restocking_report_date" class="form-control">
+      <div class="modal-content border-0">
+         <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+            <div>
+               <h1 class="modal-title fs-5 fw-semibold" id="pos_restocking_report_title">
+                  <i class="bi bi-boxes me-2 text-primary"></i>Restocking Report
+               </h1>
+               <p class="text-muted small mb-0 mt-1">View and manage inventory restocking records</p>
             </div>
-            <div class="table-responsive">
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body px-4 pt-3">
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+               <div class="input-group input-group-sm" style="width: 220px;">
+                  <span class="input-group-text bg-transparent border-end-0">
+                     <i class="bi bi-calendar3 text-muted" style="font-size:12px;"></i>
+                  </span>
+                  <input type="date" id="pos_restocking_report_date" class="form-control border-start-0 ps-0">
+               </div>
+               <div class="d-flex align-items-center gap-2">
+                  <span class="text-muted small">Grand Total:</span>
+                  <span class="badge bg-success-subtle text-success fs-6 fw-semibold px-3 py-2" id="pos_restocking_report_total">₱0.00</span>
+               </div>
+            </div>
+            <div class="table-responsive rounded-3 border">
                <table class="table table-sm align-middle mb-0 sortable">
-                  <thead class="pointered table-light text-center">
-                     <tr>
-                        <th>#</th>
-                        <th>Restock Code</th>
-                        <th>Item Code</th>
-                        <th class="text-start">Item Name</th>
-                        <th>Price</th>
-                        <th>Qty</th>
-                        <th>Unit</th>
-                        <th>Total</th>
-                        <th>Date</th>
+                  <thead style="background: var(--bs-tertiary-bg);">
+                     <tr class="text-center small text-muted pointered" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
+                        <th class="fw-semibold ps-3" style="width:40px;">#</th>
+                        <th class="fw-semibold">Restock Code</th>
+                        <th class="fw-semibold">Item Code</th>
+                        <th class="fw-semibold text-start">Item Name</th>
+                        <th class="fw-semibold">Price</th>
+                        <th class="fw-semibold">Qty</th>
+                        <th class="fw-semibold">Unit</th>
+                        <th class="fw-semibold">Total</th>
+                        <th class="fw-semibold pe-3">Date</th>
                      </tr>
                   </thead>
                   <tbody class="text-center small" id="pos_restocking_report_container">
-                    <!-- <tr>
-                       <td>10</td>
-                       <td>RS-0010</td>
-                       <td>ITM-1010</td>
-                       <td class="text-start">Salt</td>
-                       <td>₱20.00</td>
-                       <td>100</td>
-                       <td>packs</td>
-                       <td class="fw-semibold text-success">₱2,000.00</td>
-                       <td>2026-03-05 03:15 PM</td>
-                    </tr> -->
                   </tbody>
-                  <tfoot class="table-light small">
-                     <tr class="fw-semibold text-center">
-                        <td colspan="7" class="text-end">Grand Total:</td>
-                        <td class="text-success" id="pos_restocking_report_total"></td>
+                  <tfoot style="background: var(--bs-tertiary-bg);">
+                     <tr class="fw-semibold text-center small">
+                        <td colspan="7" class="text-end pe-3">Grand Total:</td>
+                        <td class="text-success" id="pos_restocking_report_total_foot"></td>
                         <td></td>
                      </tr>
                   </tfoot>
@@ -75,78 +92,82 @@
       </div>
    </div>
 </div>
+
+<!-- Sales Report Modal -->
 <div class="modal fade" id="pos_sales_report_modal" tabindex="-1" aria-labelledby="pos_sales_report_title" aria-hidden="true">
    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-      <div class="modal-content">
-         <div class="modal-header">
-            <h1 class="modal-title fs-5" id="pos_sales_report_title">Sales Report</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-         </div>
-         <div class="modal-body">
-            <div class="input-group input-group-sm" style="width: 220px;">
-               <span class="input-group-text">Date</span>
-               <input type="date" id="pos_sales_report_date" class="form-control">
+      <div class="modal-content border-0">
+         <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+            <div>
+               <h1 class="modal-title fs-5 fw-semibold" id="pos_sales_report_title">
+                  <i class="bi bi-receipt me-2 text-primary"></i>Sales Report
+               </h1>
+               <p class="text-muted small mb-0 mt-1">View completed, voided, and pending sales transactions</p>
             </div>
-            <div class="table-responsive">
-               <table class="table table-sm sortable align-middle mb-0">
-                  <thead class="pointered table-light text-center">
-                     <tr>
-                        <th>#</th>
-                        <th>Sale Code</th>
-                        <th>Items</th>
-                        <th>Total Qty</th>
-                        <th>Discount</th>
-                        <th>Total Amount</th>
-                        <th>Payment</th>
-                        <th>Cashier</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                        <th>...</th>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body px-4 pt-3">
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+               <div class="input-group input-group-sm" style="width: 220px;">
+                  <span class="input-group-text bg-transparent border-end-0">
+                     <i class="bi bi-calendar3 text-muted" style="font-size:12px;"></i>
+                  </span>
+                  <input type="date" id="pos_sales_report_date" class="form-control border-start-0 ps-0">
+               </div>
+               <div class="d-flex align-items-center gap-2">
+                  <span class="text-muted small">Grand Total:</span>
+                  <span class="badge bg-success-subtle text-success fs-6 fw-semibold px-3 py-2" id="pos_sales_report_total">₱0.00</span>
+               </div>
+            </div>
+            <div class="table-responsive rounded-3 border">
+               <table class="table table-sm align-middle mb-0">
+                  <thead style="background: var(--bs-tertiary-bg);">
+                     <tr class="text-center small text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
+                        <th class="fw-semibold ps-3" style="width:40px;">#</th>
+                        <th class="fw-semibold">Sale Code</th>
+                        <th class="fw-semibold">Items</th>
+                        <th class="fw-semibold">Total Qty</th>
+                        <th class="fw-semibold">Discount</th>
+                        <th class="fw-semibold">Total Amount</th>
+                        <th class="fw-semibold">Payment</th>
+                        <th class="fw-semibold">Cashier</th>
+                        <th class="fw-semibold">Status</th>
+                        <th class="fw-semibold">Date & Time</th>
+                        <th class="fw-semibold pe-3"></th>
                      </tr>
                   </thead>
                   <tbody class="text-center small" id="pos_sales_report_container">
-                    <!-- <tr>
-                       <td>10</td>
-                       <td>RS-0010</td>
-                       <td>ITM-1010</td>
-                       <td class="text-start">Salt</td>
-                       <td>₱20.00</td>
-                       <td>100</td>
-                       <td>packs</td>
-                       <td class="fw-semibold text-success">₱2,000.00</td>
-                       <td>2026-03-05 03:15 PM</td>
-                    </tr> -->
                   </tbody>
-                  <tfoot class="table-light small">
-                     <tr class="fw-semibold text-center">
-                        <td colspan="5" class="text-end">Grand Total:</td>
-                        <td class="text-success" id="pos_sales_report_total"></td>
-                        <td colspan="5"></td>
-                     </tr>
-                  </tfoot>
                </table>
             </div>
          </div>
       </div>
    </div>
 </div>
+
+<!-- Activity Log Modal -->
 <div class="modal fade" id="pos_logs_modal" tabindex="-1" aria-labelledby="pos_logs_title" aria-hidden="true">
    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-      <div class="modal-content">
-         <div class="modal-header">
-            <h1 class="modal-title fs-5" id="pos_logs_title">Activity Log</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-content border-0">
+         <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+            <div>
+               <h1 class="modal-title fs-5 fw-semibold" id="pos_logs_title">
+                  <i class="bi bi-journal-text me-2 text-primary"></i>Activity Log
+               </h1>
+               <p class="text-muted small mb-0 mt-1">System activity and event history</p>
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
-         <div class="modal-body">
-            <div class="table-responsive">
+         <div class="modal-body px-4 pt-3">
+            <div class="table-responsive rounded-3 border">
                <table class="table table-sm align-middle mb-0 sortable">
-                  <thead class="pointered table-light text-center">
-                     <tr>
-                        <th>#</th>
-                        <th>Activity Type</th>
-                        <th>POSCode</th>
-                        <th>Activity Details</th>
-                        <th>Timestamp</th>
+                  <thead style="background: var(--bs-tertiary-bg);">
+                     <tr class="text-center small text-muted pointered" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
+                        <th class="fw-semibold ps-3" style="width:40px;">#</th>
+                        <th class="fw-semibold">Activity Type</th>
+                        <th class="fw-semibold text-start">POSCode</th>
+                        <th class="fw-semibold text-start">Activity Details</th>
+                        <th class="fw-semibold pe-3">Timestamp</th>
                      </tr>
                   </thead>
                   <tbody class="text-center small" id="pos_logs_container">
@@ -158,23 +179,29 @@
    </div>
 </div>
 
+<!-- Low Stock Items Modal -->
 <div class="modal fade" id="pos_stocks_report_modal" tabindex="-1" aria-labelledby="pos_stocks_report_title" aria-hidden="true">
    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-      <div class="modal-content">
-         <div class="modal-header">
-            <h1 class="modal-title fs-5" id="pos_stocks_report_title">Low Stock Items</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-content border-0">
+         <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+            <div>
+               <h1 class="modal-title fs-5 fw-semibold" id="pos_stocks_report_title">
+                  <i class="bi bi-exclamation-triangle me-2 text-warning"></i>Low Stock Items
+               </h1>
+               <p class="text-muted small mb-0 mt-1">Items that have fallen below their stock threshold</p>
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
-         <div class="modal-body">
-            <div class="table-responsive">
+         <div class="modal-body px-4 pt-3">
+            <div class="table-responsive rounded-3 border">
                <table class="table table-sm align-middle mb-0 sortable">
-                  <thead class="pointered table-light text-center">
-                     <tr>
-                        <th>#</th>
-                        <th>Item Name</th>
-                        <th>POS Code</th>
-                        <th>Current Stock</th>
-                        <th>Low Stock Level</th>
+                  <thead style="background: var(--bs-tertiary-bg);">
+                     <tr class="text-center small text-muted pointered" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
+                        <th class="fw-semibold ps-3" style="width:40px;">#</th>
+                        <th class="fw-semibold text-start">Item Name</th>
+                        <th class="fw-semibold">POS Code</th>
+                        <th class="fw-semibold">Current Stock</th>
+                        <th class="fw-semibold pe-3">Low Stock Level</th>
                      </tr>
                   </thead>
                   <tbody class="text-center small" id="pos_low_stocks_container">
@@ -186,73 +213,91 @@
    </div>
 </div>
 
-<div class="modal fade" id="receipt_modal" tabindex="-1" aria-labelledby="receiptModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="receipt_modal_label">Receipt</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div id="receipt_content" class="p-3 border" style="font-family: Arial, sans-serif;">
-          <div class="text-center mb-3">
-            <h5 class="fw-bold">SAKI MART</h5>
-            <small>Sitio Sto. Niño, Brgy. San Andres, Catbalogan City</small><br>
-            <small>Tel: 0995-330-6583</small>
-          </div>
-          <hr>
-          <div id="receipt_info" class="mb-2">
-          </div>
-          <hr>
-          <table class="table table-borderless table-sm mb-0" style="width: 100%; font-size: 0.85rem;">
-            <thead>
-              <tr>
-                <th class="text-start">Item</th>
-                <th>Qty</th>
-                <th>Unit</th>
-                <th class="text-end">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody id="receipt_items">
-              <!-- Items will be inserted here dynamically -->
-            </tbody>
-          </table>
-          <hr>
-          <div id="receipt_totals">
-            <!-- Totals (Discount, Total, Payment) will be inserted here -->
-          </div>
-          <hr>
-          <div class="text-center small">
-            Thank you for your purchase!<br>
-            Visit us again.
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-         <!-- <button type="button" class="btn btn-sm btn-danger" id="void_sales">Void Sales</button> -->
-         <button type="button" class="btn btn-sm btn-success" id="print_receipt_btn">
-            <i class="bi bi-printer"></i> Print
-         </button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- Receipt Modal -->
+<div class="modal fade" id="receipt_modal" tabindex="-1" aria-labelledby="receipt_modal_label" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+      <div class="modal-content border-0">
 
-<div class="modal fade" id="pos_sales_cart_modal" tabindex="-1" aria-labelledby="pos_sales_title" aria-hidden="true">
-   <div class="modal-dialog modal-lg modal-dialog-scrollable">
-      <div class="modal-content">
-         <div class="modal-header">
-            <h1 class="modal-title fs-5" id="pos_sales_title">Sales Cart</h1> 
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+            <div>
+               <h5 class="modal-title fw-semibold" id="receipt_modal_label">
+                  <i class="bi bi-receipt me-2 text-primary"></i>Receipt
+               </h5>
+               <p class="text-muted small mb-0 mt-1">Transaction summary</p>
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
 
-         <div class="modal-body">
+         <div class="modal-body px-4 pt-3 pb-2">
+            <div id="receipt_content" style="font-family: Arial, sans-serif;">
+
+               <div class="text-center mb-3">
+                  <div class="fw-bold fs-5 mb-1">SAKI MART</div>
+                  <div class="text-muted small">Sitio Sto. Niño, Brgy. San Andres, Catbalogan City</div>
+                  <div class="text-muted small">Tel: 0995-330-6583</div>
+               </div>
+
+               <hr class="my-2">
+               <div id="receipt_info" class="mb-2 small"></div>
+               <hr class="my-2">
+
+               <table class="table table-borderless table-sm mb-0" style="font-size: 0.82rem;">
+                  <thead>
+                     <tr class="text-muted" style="font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase;">
+                        <th class="text-start ps-0 fw-semibold">Item</th>
+                        <th class="text-center fw-semibold">Qty</th>
+                        <th class="text-center fw-semibold">Unit</th>
+                        <th class="text-end fw-semibold">Price</th>
+                        <th class="text-end fw-semibold">Subtotal</th>
+                        <!-- <th class="no-print" style="width: 36px;"></th> -->
+                     </tr>
+                  </thead>
+                  <tbody id="receipt_items"></tbody>
+               </table>
+
+               <hr class="my-2">
+               <div id="receipt_totals"></div>
+               <hr class="my-2">
+
+               <div class="text-center text-muted small py-1">
+                  Thank you for your purchase!<br>Visit us again.
+               </div>
+
+            </div>
+         </div>
+
+         <div class="modal-footer border-top-0 px-4 pb-4 pt-2 no-print">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-sm btn-success rounded-pill px-3" id="print_receipt_btn">
+               <i class="bi bi-printer me-1"></i>Print
+            </button>
+         </div>
+
+      </div>
+   </div>
+</div>
+
+<!-- Sales Cart Modal -->
+<div class="modal fade" id="pos_sales_cart_modal" tabindex="-1" aria-labelledby="pos_sales_title" aria-hidden="true">
+   <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content border-0">
+         <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+            <div>
+               <h1 class="modal-title fs-5 fw-semibold" id="pos_sales_title">
+                  <i class="bi bi-cart3 me-2 text-primary"></i>Sales Cart
+               </h1>
+               <p class="text-muted small mb-0 mt-1">Review and submit items for sale</p>
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+
+         <div class="modal-body px-4 pt-3">
             <form id="pos_sales_form" enctype="multipart/form-data">
-               <div class="row">
-                 <div class="col-6 mb-2">
-                   <label class="form-label">Discount Type</label>
-                   <select class="form-select form-select-sm" 
-                           id="discount_type" 
+               <div class="row g-3 mb-3">
+                 <div class="col-6">
+                   <label class="form-label small fw-semibold">Discount Type</label>
+                   <select class="form-select form-select-sm"
+                           id="discount_type"
                            name="discount_type">
                      <option value="none">No Discount</option>
                      <option value="senior">Senior Citizen (20%)</option>
@@ -261,18 +306,18 @@
                      <option value="other">Other</option>
                    </select>
                  </div>
-                 <div class="col-6 mb-2 d-none" id="other_discount_container">
-                   <label class="form-label">Custom Discount (%)</label>
-                   <input type="number" 
-                          class="form-control form-control-sm" 
-                          id="other_discount" 
-                          min="0" 
-                          max="100" 
+                 <div class="col-6 d-none" id="other_discount_container">
+                   <label class="form-label small fw-semibold">Custom Discount (%)</label>
+                   <input type="number"
+                          class="form-control form-control-sm"
+                          id="other_discount"
+                          min="0"
+                          max="100"
                           step="0.01"
                           placeholder="e.g. 5 for 5%">
                  </div>
                </div>
-               <div>
+               <div class="table-responsive rounded-3 border">
                   <table class="table align-middle mb-0">
                      <tbody id="pos_sales_cart">
                         <!-- Dynamic rows go here -->
@@ -281,263 +326,226 @@
                </div>
             </form>
          </div>
-         <div class="modal-footer">
+         <div class="modal-footer border-top-0 px-4 pb-4 pt-2">
             <input type="text" id="pos_scan_input" autocomplete="off" style="position:absolute;opacity:0;pointer-events:none;">
-            <button type="submit" form="pos_sales_form" class="btn btn-sm btn-primary">
-               Submit
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" form="pos_sales_form" class="btn btn-sm btn-primary rounded-pill px-3">
+               <i class="bi bi-check-lg me-1"></i>Submit
             </button>
          </div>
       </div>
    </div>
 </div>
 
+<!-- New Item Modal -->
 <div class="modal fade" id="new_pos_item_modal" tabindex="-1" aria-labelledby="new_pos_item_title" aria-hidden="true">
    <div class="modal-dialog modal-dialog-scrollable">
-      <div class="modal-content">
-         <div class="modal-header">
-            <h1 class="modal-title fs-5" id="new_pos_item_title">New Item</h1> 
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-         </div>
-         <div class="modal-body">
-            <div class="container-sm">
-               <form id="new_pos_item_form" enctype="multipart/form-data">
-                  <div class="mb-2">
-                     <label for="new_pos_item_name" class="form-label">Item Name</label>
-                     <input type="text" class="form-control form-control-sm" 
-                     id="new_pos_item_name" 
-                     name="new_pos_item_name" 
-                     maxlength="200" 
-                     placeholder="e.g. Coca-Cola 1.5L" 
-                     required>
-                  </div>
-
-                  <div class="mb-2">
-                     <label for="new_pos_item_code" class="form-label">Item Code</label>
-                     <input type="text" class="form-control form-control-sm" 
-                     id="new_pos_item_code" 
-                     name="new_pos_item_code" 
-                     maxlength="50" 
-                     placeholder="e.g. COKE-15L" 
-                     required>
-                  </div>
-
-                  <div class="mb-2">
-                     <label for="new_pos_item_price" class="form-label">Price</label>
-                     <input type="number" 
-                     class="form-control form-control-sm" 
-                     id="new_pos_item_price" 
-                     name="new_pos_item_price" 
-                     step="0.01" 
-                     placeholder="Price per unit" 
-                     required>
-                  </div>
-
-                  <div class="mb-2">
-                     <label for="new_pos_item_stock" class="form-label">Stock</label>
-                     <input type="number" 
-                     class="form-control form-control-sm" 
-                     id="new_pos_item_stock" 
-                     name="new_pos_item_stock" 
-                     placeholder="Current stock" 
-                     required>
-                  </div>
-
-                  <div class="mb-2">
-                     <label for="new_pos_item_unit" class="form-label">Unit</label>
-                     <input type="text" 
-                     class="form-control form-control-sm" 
-                     id="new_pos_item_unit" 
-                     name="new_pos_item_unit" 
-                     maxlength="10" 
-                     placeholder="e.g. pcs" 
-                     required>
-                  </div>   
-
-                  <div class="mb-2">
-                     <label for="new_pos_item_low" class="form-label">Low Stock Threshold</label>
-                     <input type="number" 
-                     class="form-control form-control-sm" 
-                     id="new_pos_item_low" 
-                     name="new_pos_item_low" 
-                     placeholder="Low stock level" 
-                     required>
-                  </div>
-               </form>
+      <div class="modal-content border-0">
+         <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+            <div>
+               <h1 class="modal-title fs-5 fw-semibold" id="new_pos_item_title">
+                  <i class="bi bi-box-seam me-2 text-primary"></i>New Item
+               </h1>
+               <p class="text-muted small mb-0 mt-1">Add a new item to the inventory</p>
             </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
-         <div class="modal-footer">
-            <button type="submit" form="new_pos_item_form" class="btn btn-primary">Create Item</button>
-         </div>
-      </div>
-   </div>
-</div>
-
-<div class="modal fade" id="update_pos_item_modal" tabindex="-1" aria-labelledby="update_pos_item_title" aria-hidden="true">
-   <div class="modal-dialog modal-dialog-scrollable">
-      <div class="modal-content">
-         <div class="modal-header">
-            <h1 class="modal-title fs-5" id="update_pos_item_title">Update Item</h1> 
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-         </div>
-         <div class="modal-body">
-            <div class="container-sm">
-               <form id="update_pos_item_form" enctype="multipart/form-data">
-                  <div class="mb-2">
-                     <label for="update_pos_item_name" class="form-label">Item Name</label>
-                     <input type="text" class="form-control form-control-sm" 
-                     id="update_pos_item_name" 
-                     name="update_pos_item_name" 
-                     maxlength="200" 
-                     placeholder="e.g. Coca-Cola 1.5L" 
+         <div class="modal-body px-4 pt-3">
+            <form id="new_pos_item_form" enctype="multipart/form-data">
+               <div class="row g-3">
+                  <div class="col-12">
+                     <label for="new_pos_item_name" class="form-label small fw-semibold">Item Name</label>
+                     <input type="text" class="form-control form-control-sm"
+                     id="new_pos_item_name"
+                     name="new_pos_item_name"
+                     maxlength="200"
+                     placeholder="e.g. Coca-Cola 1.5L"
                      required>
                   </div>
-
-                  <div class="mb-2">
-                     <label for="update_pos_item_code" class="form-label">Item Code</label>
-                     <input type="text" class="form-control form-control-sm" 
-                     id="update_pos_item_code" 
-                     name="update_pos_item_code" 
-                     maxlength="50" 
-                     placeholder="e.g. COKE-15L" 
+                  <div class="col-12">
+                     <label for="new_pos_item_code" class="form-label small fw-semibold">Item Code</label>
+                     <input type="text" class="form-control form-control-sm"
+                     id="new_pos_item_code"
+                     name="new_pos_item_code"
+                     maxlength="50"
+                     placeholder="e.g. COKE-15L"
                      required>
                   </div>
-                  
-                  <div class="mb-2">
-                     <label for="update_pos_item_price" class="form-label">Price</label>
-                     <input type="number" 
-                     class="form-control form-control-sm" 
-                     id="update_pos_item_price" 
-                     name="update_pos_item_price" 
-                     step="0.01" 
-                     placeholder="Price per unit" 
+                  <div class="col-6">
+                     <label for="new_pos_item_price" class="form-label small fw-semibold">Price</label>
+                     <input type="number"
+                     class="form-control form-control-sm"
+                     id="new_pos_item_price"
+                     name="new_pos_item_price"
+                     step="0.01"
+                     placeholder="Price per unit"
                      required>
                   </div>
-
-                  <div class="mb-2">
-                     <label for="update_pos_item_stock" class="form-label">Stock</label>
-                     <input type="number" 
-                     class="form-control form-control-sm" 
-                     id="update_pos_item_stock" 
-                     name="update_pos_item_stock" 
-                     placeholder="Current stock" 
+                  <div class="col-6">
+                     <label for="new_pos_item_stock" class="form-label small fw-semibold">Stock</label>
+                     <input type="number"
+                     class="form-control form-control-sm"
+                     id="new_pos_item_stock"
+                     name="new_pos_item_stock"
+                     placeholder="Current stock"
                      required>
                   </div>
-
-                  <div class="mb-2">
-                     <label for="update_pos_item_unit" class="form-label">Unit</label>
-                     <input type="text" 
-                     class="form-control form-control-sm" 
-                     id="update_pos_item_unit" 
-                     name="update_pos_item_unit" 
-                     maxlength="10" 
-                     placeholder="e.g. pcs" 
+                  <div class="col-6">
+                     <label for="new_pos_item_unit" class="form-label small fw-semibold">Unit</label>
+                     <input type="text"
+                     class="form-control form-control-sm"
+                     id="new_pos_item_unit"
+                     name="new_pos_item_unit"
+                     maxlength="10"
+                     placeholder="e.g. pcs"
                      required>
                   </div>
-
-                  <div class="mb-2">
-                     <label for="update_pos_item_low" class="form-label">Low Stock Threshold</label>
-                     <input type="number" 
-                     class="form-control form-control-sm" 
-                     id="update_pos_item_low" 
-                     name="update_pos_item_low" 
-                     placeholder="Low stock level" 
+                  <div class="col-6">
+                     <label for="new_pos_item_low" class="form-label small fw-semibold">Low Stock Threshold</label>
+                     <input type="number"
+                     class="form-control form-control-sm"
+                     id="new_pos_item_low"
+                     name="new_pos_item_low"
+                     placeholder="Low stock level"
                      required>
-                  </div>
-               </form>
-            </div>
-         </div>
-         <div class="modal-footer">
-            <button type="submit" form="update_pos_item_form" class="btn btn-primary">Update Item</button>
-         </div>
-      </div>
-   </div>
-</div>
-
-<div class="modal fade" id="pos_item_barcodes_modal" tabindex="-1">
-   <div class="modal-dialog modal-sm modal-dialog-centered">
-      <div class="modal-content">
-
-         <div class="modal-header">
-            <h6 class="modal-title mb-0">Item Barcodes</h6>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-         </div>
-
-         <div class="modal-body" id="barcodes_pos_item_id" data-pos_item_id="">
-            <div class="row align-items-center mb-3">
-               <div class="col-12 text-center">
-                  <div class="fw-semibold fs-5 text-truncate overflow-tooltip" id="barcodes_item_name">
-                     Coca-Cola 1.5L
-                  </div>
-                  <div class="text-muted small" id="barcodes_item_code">
-                     COKE-15L
                   </div>
                </div>
-            </div>
-            <hr>
+            </form>
+         </div>
+         <div class="modal-footer border-top-0 px-4 pb-4 pt-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" form="new_pos_item_form" class="btn btn-sm btn-primary rounded-pill px-3">
+               <i class="bi bi-check-lg me-1"></i>Create Item
+            </button>
+         </div>
+      </div>
+   </div>
+</div>
 
-               <div>
-                  <table class="table align-middle mb-0">
-                     <tbody id="barcodes_container">
-                        <tr>
-                           <td class="text-center align-middle">
-                              <svg id="barcode" class="d-inline-block"></svg>
-                           </td>
-                           <td class="text-end">
-                              <div class="dropdown dropstart">
-                                 <button class="btn btn-sm btn-light"
-                                 type="button"
-                                 data-bs-toggle="dropdown"
-                                 aria-expanded="false">
-                                 ⋮
-                              </button>
-                              <ul class="dropdown-menu w-auto">
-                                 <!-- <li>
-                                    <a class="dropdown-item regenerate_barcode" href="#">
-                                       Regenerate
-                                    </a>
-                                 </li> -->
-                                 <li>
-                                    <a class="dropdown-item text-danger remove_barcode" href="#">
-                                       Remove
-                                    </a>
-                                 </li>
-                              </ul>
-                           </div>
-                        </td>
-                     </tr>
-                  </tbody>
+<!-- Update Item Modal -->
+<div class="modal fade" id="update_pos_item_modal" tabindex="-1" aria-labelledby="update_pos_item_title" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content border-0">
+         <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+            <div>
+               <h1 class="modal-title fs-5 fw-semibold" id="update_pos_item_title">
+                  <i class="bi bi-pencil-square me-2 text-primary"></i>Update Item
+               </h1>
+               <p class="text-muted small mb-0 mt-1">Modify an existing inventory item</p>
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body px-4 pt-3">
+            <form id="update_pos_item_form" enctype="multipart/form-data">
+               <div class="row g-3">
+                  <div class="col-12">
+                     <label for="update_pos_item_name" class="form-label small fw-semibold">Item Name</label>
+                     <input type="text" class="form-control form-control-sm"
+                     id="update_pos_item_name"
+                     name="update_pos_item_name"
+                     maxlength="200"
+                     placeholder="e.g. Coca-Cola 1.5L"
+                     required>
+                  </div>
+                  <div class="col-12">
+                     <label for="update_pos_item_code" class="form-label small fw-semibold">Item Code</label>
+                     <input type="text" class="form-control form-control-sm"
+                     id="update_pos_item_code"
+                     name="update_pos_item_code"
+                     maxlength="50"
+                     placeholder="e.g. COKE-15L"
+                     required>
+                  </div>
+                  <div class="col-6">
+                     <label for="update_pos_item_price" class="form-label small fw-semibold">Price</label>
+                     <input type="number"
+                     class="form-control form-control-sm"
+                     id="update_pos_item_price"
+                     name="update_pos_item_price"
+                     step="0.01"
+                     placeholder="Price per unit"
+                     required>
+                  </div>
+                  <div class="col-6">
+                     <label for="update_pos_item_stock" class="form-label small fw-semibold">Stock</label>
+                     <input type="number"
+                     class="form-control form-control-sm"
+                     id="update_pos_item_stock"
+                     name="update_pos_item_stock"
+                     placeholder="Current stock"
+                     required>
+                  </div>
+                  <div class="col-6">
+                     <label for="update_pos_item_unit" class="form-label small fw-semibold">Unit</label>
+                     <input type="text"
+                     class="form-control form-control-sm"
+                     id="update_pos_item_unit"
+                     name="update_pos_item_unit"
+                     maxlength="10"
+                     placeholder="e.g. pcs"
+                     required>
+                  </div>
+                  <div class="col-6">
+                     <label for="update_pos_item_low" class="form-label small fw-semibold">Low Stock Threshold</label>
+                     <input type="number"
+                     class="form-control form-control-sm"
+                     id="update_pos_item_low"
+                     name="update_pos_item_low"
+                     placeholder="Low stock level"
+                     required>
+                  </div>
+               </div>
+            </form>
+         </div>
+         <div class="modal-footer border-top-0 px-4 pb-4 pt-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" form="update_pos_item_form" class="btn btn-sm btn-primary rounded-pill px-3">
+               <i class="bi bi-check-lg me-1"></i>Update Item
+            </button>
+         </div>
+      </div>
+   </div>
+</div>
+
+<!-- Item Barcodes Modal -->
+<div class="modal fade" id="pos_item_barcodes_modal" tabindex="-1" aria-hidden="true">
+   <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content border-0">
+
+         <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+            <div>
+               <h6 class="modal-title fw-semibold mb-0">
+                  <i class="bi bi-upc-scan me-2 text-primary"></i>Item Barcodes
+               </h6>
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"></button>
+         </div>
+
+         <div class="modal-body px-4 pt-3" id="barcodes_pos_item_id" data-pos_item_id="">
+            <div class="text-center mb-3">
+               <div class="fw-semibold fs-5 text-truncate overflow-tooltip" id="barcodes_item_name"></div>
+               <div class="text-muted small" id="barcodes_item_code"></div>
+            </div>
+            <hr class="my-2">
+            <div class="table-responsive">
+               <table class="table align-middle mb-0">
+                  <tbody id="barcodes_container"></tbody>
                </table>
             </div>
          </div>
-         <div class="modal-footer">
-            <button type="button" class="btn btn-sm btn-primary" id="add_new_barcode_button">
-               Add a Barcode
+         <div class="modal-footer border-top-0 px-4 pb-4 pt-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3" id="add_new_barcode_button">
+               <i class="bi bi-plus-lg me-1"></i>Add Barcode
             </button>
          </div>
       </div>
    </div>
 </div>
 
+<!-- <!-- FAB Dropdown (kept commented out as in original) -->
 <!-- <div class="dropup position-fixed bottom-0 end-0 m-4">
-   <button type="button"
-      class="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center dropdown-toggle"
-      data-bs-toggle="dropdown"
-      aria-expanded="false"
-      style="width: 48px; height: 48px;">
-
-      <i class="bi bi-grid fs-5"></i>
-   </button>
-
-   <ul class="dropdown-menu dropdown-menu-end w-auto">
-      <li>
-         <button type="button"
-            class="dropdown-item"
-            data-bs-toggle="modal"
-            data-bs-target="#new_pos_item_modal">
-            New Item
-         </button>
-      </li>
-   </ul>
+   ...
 </div> -->
 
 <div class="toast-container position-fixed top- end-0 p-3">
@@ -568,6 +576,7 @@
    const items_per_page = 15;
 
    function load_pos_inventory(page = 1) {
+      render_pos_sales_cart();
       let search = $('#pos_inventory_search').val();
 
       $.ajax({
@@ -587,149 +596,81 @@
                response.items.forEach(item => {
                   pos_items[item.pos_item_id] = item;
 
-                  pos_item_id = item.pos_item_id;
-                  pos_item_name = item.pos_item_name;
-                  pos_item_code = item.pos_item_code;
-                  pos_item_price = item.pos_item_price;
-                  pos_item_stock = item.pos_item_stock;
-                  pos_item_unit = item.pos_item_unit;
-
+                  let pos_item_id    = item.pos_item_id;
+                  let pos_item_name  = item.pos_item_name;
+                  let pos_item_code  = item.pos_item_code;
+                  let pos_item_price = item.pos_item_price;
+                  let pos_item_stock = Number(item.pos_item_stock);
+                  let pos_item_unit  = item.pos_item_unit;
+                  let pos_item_low   = Number(item.pos_item_low);
 
                   if (pos_item_stock > 1) {
-                     unit_last = pos_item_unit[pos_item_unit.length - 1].toLowerCase();
-
+                     const u = pos_item_unit.toLowerCase();
                      if (
-                        unit_last == 's' ||
-                        unit_last == 'h' && pos_item_unit.endsWith('sh') ||
-                        unit_last == 'h' && pos_item_unit.endsWith('ch') ||
-                        unit_last == 'x' ||
-                        unit_last == 'z'
-                        ) {
+                        u.endsWith('s')  ||
+                        u.endsWith('sh') ||
+                        u.endsWith('ch') ||
+                        u.endsWith('x')  ||
+                        u.endsWith('z')
+                     ) {
                         pos_item_unit = pos_item_unit + 'es';
                      } else {
                         pos_item_unit = pos_item_unit + 's';
                      }
                   }
 
-                  let search = $('#pos_inventory_search').val().toLowerCase();
-                  let is_match = search && (
-                     item.pos_item_name.toLowerCase().includes(search) ||
-                     item.pos_item_code.toLowerCase().includes(search)
+                  let search_val = $('#pos_inventory_search').val().toLowerCase();
+                  let is_match = search_val && (
+                     item.pos_item_name.toLowerCase().includes(search_val) ||
+                     item.pos_item_code.toLowerCase().includes(search_val)
                   );
+
+                  let low_stock_badge = pos_item_stock <= 0
+                   ? `<span class="position-absolute top-0 end-0 m-1 badge bg-danger text-white" style="font-size:10px;">Out of Stock</span>`
+                   : (pos_item_low > 0 && pos_item_stock <= pos_item_low)
+                   ? `<span class="position-absolute top-0 end-0 m-1 badge bg-warning text-dark" style="font-size:10px;">Low Stock</span>`
+                   : '';
 
                   const card_html = `
                   <div class="col" id="item_cards">
-                     <div class="card h-100 ${is_match ? 'border border-warning shadow-sm' : ''}" data-pos_item_id="${pos_item_id}">
-                        <div class="position-relative img-hover-wrapper d-flex justify-content-center align-items-center"style="aspect-ratio:5/2; background-color:white;">
-                           <i class="bi bi-box2" style="font-size: 3rem;"></i>
+                     <div class="card h-100 border-0 shadow-sm ${is_match ? 'border border-warning' : ''}" data-pos_item_id="${pos_item_id}">
+
+                        <div class="position-relative img-hover-wrapper d-flex justify-content-center align-items-center rounded-top"
+                           style="aspect-ratio:5/2; background: var(--bs-tertiary-bg);">
+                           <i class="bi bi-box2 text-secondary opacity-50" style="font-size:2.5rem;"></i>
+                           ${low_stock_badge}
+                           <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer rounded-top d-flex justify-content-center align-items-center gap-2">
+                              <button type="button" class="btn btn-sm btn-light rounded-pill px-3 hover-btn pos_item_update_activator">
+                                 <i class="bi bi-pencil me-1" style="font-size:11px;"></i>Edit
+                              </button>
+                              <button type="button" class="btn btn-sm btn-light rounded-pill px-3 hover-btn pos_item_barcodes_activator">
+                                 <i class="bi bi-upc-scan me-1" style="font-size:11px;"></i>Barcode
+                              </button>
+                           </div>
                         </div>
-                        <small class="card-body">
-                           <div class="card-title fs-6 text-truncate overflow-tooltip" role="button">
+
+                        <div class="card-body px-3 pt-2 pb-2">
+                           <div class="fw-semibold text-truncate overflow-tooltip" style="font-size:0.875rem;" role="button">
                               ${pos_item_name}
                            </div>
-                           <small class="card-subtitle text-muted d-block text-truncate">
+                           <div class="text-muted text-truncate" style="font-size:0.75rem;">
                               ${pos_item_code}
-                           </small>
-                           <div class="d-flex fs-6 mt-1 fw-semibold align-items-center gap-1">
-                              <span>${pos_item_stock}</span>
-                              <span>${pos_item_unit}</span>
                            </div>
-                        </small>
-                        
+                           <div class="d-flex align-items-center gap-1 mt-1">
+                              <div class="fw-semibold text-truncate overflow-tooltip" style="font-size:0.875rem;" role="button">
+                                 ₱${pos_item_price}
+                              </div>
+                           </div>
+                           <div class="d-flex align-items-center gap-1 mt-1">
+                              <span class="fw-semibold" style="font-size:0.85rem;">${pos_item_stock}</span>
+                              <span class="text-muted" style="font-size:0.75rem;">${pos_item_unit}</span>
+                           </div>
+                        </div>
+
                      </div>
-                  </div>`
-                  ;
+                  </div>`;
+
                   $container.append(card_html);
-               });
-               $('.pos_count_minus, .pos_count_plus')
-               .off('click')
-               .on('click', function () {
-
-                  let card = $(this).closest('.card');
-                  let pos_item_id = card.data('pos_item_id');
-
-                  let item = pos_items[pos_item_id];
-                  if (!item) return;
-
-                  let container = card.find('.pos_count_container');
-                  let item_count = Number(container.attr('data-text'));
-
-                  let base_unit = item.pos_item_unit;
-
-                  let add_button = card.find('.add_to_pos_cart');
-
-                  if ($(this).hasClass('pos_count_plus')) {
-                     item_count++;
-                  } 
-                  else {
-                     if (item_count > 0) {
-                        item_count--;
-                     }
-                  }
-
-                  item.restock_quantity = item_count;
-
-                  container.attr('data-text', item_count);
-                  container.text(item_count);
-
-                  item_count > 0 
-                    ? add_button.removeClass('invisible') 
-                    : add_button.addClass('invisible');
-               });
-               $('.pos_count_container')
-               .off('input')
-               .on('input', function () {
-
-                  let container = $(this);
-                  let card = container.closest('.card');
-                  let pos_item_id = card.data('pos_item_id');
-
-                  let item = pos_items[pos_item_id];
-                  if (!item) return;
-
-                  let add_button = card.find('.add_to_pos_cart');
-
-                  let value = container.text().replace(/[^0-9]/g, '');
-                  let item_count = Number(value) || 0;
-
-                  if (item_count < 0) item_count = 0;
-
-                  container.attr('data-text', item_count);
-
-                  item.restock_quantity = item_count;
-
-                  item_count > 0
-                    ? add_button.removeClass('invisible')
-                    : add_button.addClass('invisible');
-               });
-               $('.pos_add_cart')
-               .off('click')
-               .on('click', function () {
-
-                  let card = $(this).closest('.card');
-                  let pos_item_id = card.data('pos_item_id');
-
-                  let item = pos_items[pos_item_id];
-                  if (!item) return;
-
-                  let quantity = Number(item.restock_quantity) || 0;
-
-                  if (quantity <= 0) return;
-
-                  if (!item.cart_quantity) {
-                     item.cart_quantity = 0;
-                  }
-
-                  item.cart_quantity += quantity;
-
-                  render_pos_sales_cart();
-                  show_cart_toast(`${item.pos_item_name} (x${quantity}) added to cart`);
-
-                  card.find('.pos_count_container')
-                  .attr('data-text', 0)
-                  .text(0);
-
-                  item.restock_quantity = 0;
                });
             } 
             else {
@@ -800,53 +741,101 @@
       let $cart = $('#pos_sales_cart');
       $cart.empty();
 
+      let items_in_cart = Object.values(pos_items).filter(i => i.cart_quantity && i.cart_quantity > 0);
+
+      if (items_in_cart.length === 0) {
+        $cart.html(`
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    <i class="bi bi-cart-x d-block mb-2" style="font-size:2rem;"></i>
+                    Cart is empty
+                </td>
+            </tr>
+        `);
+        $('#cart_total').text('₱0.00');
+        return;
+      }
+
       let grand_total = 0;
 
-      Object.values(pos_items).forEach(item => {
+      items_in_cart.forEach(item => {
+        let price    = Number(item.pos_item_price);
+        let quantity = item.cart_quantity;
+        let total    = price * quantity;
+        grand_total += total;
 
-         if (!item.cart_quantity || item.cart_quantity <= 0) return;
-
-         let price = Number(item.pos_item_price);
-         let quantity = item.cart_quantity;
-         let total = price * quantity;
-
-         grand_total += total;
-
-         let row = `
-         <tr class="text-center" data-id="${item.pos_item_id}">
-            <td class="text-start">
-               <div class="d-flex align-items-center">
-                  <div>
-                     <div class="fw-semibold d-block text-truncate overflow-tooltip">
-                        ${item.pos_item_name}
-                     </div>
-                     <small class="text-muted">Code: ${item.pos_item_code}</small>
-                  </div>
-               </div>
+        let row = `
+        <tr class="text-center border-top align-middle" data-id="${item.pos_item_id}">
+            <td class="text-start ps-3">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <div class="fw-semibold d-block text-truncate overflow-tooltip">
+                            ${item.pos_item_name}
+                        </div>
+                        <small class="text-muted font-monospace">${item.pos_item_code}</small>
+                    </div>
+                </div>
             </td>
-
-            <td>₱${price.toFixed(2)}</td>
-            <td>x</td>
-            <td contenteditable="false">${quantity}</td>
-            <td class="text-start">${item.pos_item_unit}</td>
-            <td>=</td>
-            <td class="fw-semibold">₱${total.toFixed(2)}</td>
-            <td class="text-end">
-               <div class="dropdown dropstart">
-                  <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">⋮</button>
-                  <ul class="dropdown-menu w-auto">
-                     <li class="d-none"><a class="dropdown-item modify_row" href="#">Modify</a></li>
-                     <li><a class="dropdown-item text-danger remove_row" href="#">Remove</a></li>
-                  </ul>
-               </div>
+            <td class="text-muted">₱${price.toFixed(2)}</td>
+            <td class="text-muted">x</td>
+            <td>
+                <input type="number"
+                    class="form-control form-control-sm text-center qty_input p-0"
+                    data-id="${item.pos_item_id}"
+                    value="${quantity}"
+                    min="1"
+                    max="${item.pos_item_stock}"
+                    style="width:54px;font-size:13px;">
             </td>
-         </tr>`;
-
-         $cart.append(row);
+            <td class="text-start text-muted">${item.pos_item_unit}</td>
+            <td class="text-muted">=</td>
+            <td class="fw-semibold text-success item_total">₱${total.toFixed(2)}</td>
+            <td class="text-end pe-3">
+                <div class="dropdown dropstart">
+                    <button class="btn btn-sm btn-light rounded-pill px-2" data-bs-toggle="dropdown">
+                        <i class="bi bi-three-dots" style="font-size:11px;"></i>
+                    </button>
+                    <ul class="dropdown-menu shadow-sm border-0 rounded-3 py-1">
+                        <li class="d-none"><a class="dropdown-item small modify_row" href="#">Modify</a></li>
+                        <li>
+                            <a class="dropdown-item small text-danger remove_row d-flex align-items-center gap-2" href="#">
+                                <i class="bi bi-x-circle" style="font-size:12px;"></i>Remove
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </td>
+        </tr>`;
+        $cart.append(row);
       });
 
       $('#cart_total').text(`₱${grand_total.toFixed(2)}`);
-   }
+
+      function update_totals() {
+        let new_grand_total = 0;
+        $('#pos_sales_cart tr').each(function () {
+            let id    = $(this).data('id');
+            let item  = pos_items[id];
+            if (!item) return;
+            let qty   = parseInt($(this).find('.qty_input').val()) || 1;
+            let price = Number(item.pos_item_price);
+            let total = price * qty;
+            item.cart_quantity = qty;
+            $(this).find('.item_total').text(`₱${total.toFixed(2)}`);
+            new_grand_total += total;
+        });
+        $('#cart_total').text(`₱${new_grand_total.toFixed(2)}`);
+      }
+
+      $cart.on('change', '.qty_input', function () {
+        let max = parseInt($(this).attr('max')) || Infinity;
+        let val = parseInt($(this).val()) || 1;
+        if (val < 1)   val = 1;
+        if (val > max) val = max;
+        $(this).val(val);
+        update_totals();
+      });
+      }
 
    function show_cart_toast(message) {
       const toastEl = document.getElementById('cart_toast');
@@ -992,16 +981,16 @@
                   </td>
                   <td class="text-end">
                      <div class="dropdown dropstart">
-                        <button class="btn btn-sm btn-light"
+                        <button class="btn btn-sm btn-light rounded-pill px-2"
                            type="button"
                            data-bs-toggle="dropdown">
-                           ⋮
+                           <i class="bi bi-three-dots" style="font-size:11px;"></i>
                         </button>
-                        <ul class="dropdown-menu w-auto">
+                        <ul class="dropdown-menu shadow-sm border-0 rounded-3 py-1">
                            <li>
-                              <a class="dropdown-item text-danger remove_barcode" 
+                              <a class="dropdown-item small text-danger remove_barcode d-flex align-items-center gap-2"
                                  data-code="${code}" href="#">
-                                 Remove
+                                 <i class="bi bi-x-circle" style="font-size:12px;"></i>Remove
                               </a>
                            </li>
                         </ul>
@@ -1157,70 +1146,77 @@
 
    $('#pos_sales_form').on('submit', function(e) {
       e.preventDefault();
-
       let items = [];
       Object.values(pos_items).forEach(item => {
-           if (item.cart_quantity && item.cart_quantity > 0) {
-               items.push({
-                   pos_item_id: item.pos_item_id,
-                   pos_item_code: item.pos_item_code,
-                   pos_item_name: item.pos_item_name,
-                   pos_item_price: item.pos_item_price,
-                   pos_item_quantity: item.cart_quantity,
-                   pos_item_unit: item.pos_item_unit
-               });
-           }
-       });
-
-       if (items.length === 0) {
-           alert('Cart is empty');
-           return;
-       }
-
-       let discount_type = $('#discount_type').val();
-       let other_discount = $('#other_discount').val();
-
-       // Only validate if "other"
-       if (discount_type === 'other') {
-           if (!other_discount || other_discount <= 0) {
-               alert('Enter a valid custom discount');
-               return;
-           }
-       }
-
-       $.ajax({
-           url: '<?php echo base_url();?>i.php/sys_control/process_sales',
-           method: 'POST',
-           data: {
-               items: JSON.stringify(items),
-               discount_type: discount_type,
-               other_discount: other_discount
-           },
-           dataType: 'json',
-           success: function(res) {
-               if (res.status === 'success') {
-                   const sale_code = res.sale_code;
-
-                   Object.values(pos_items).forEach(item => item.cart_quantity = 0);
-
-                   render_pos_sales_cart();
-                   load_pos_inventory(current_page);
-                   load_pos_checkout_receipt(sale_code);
-
-                   // reset UI
-                   $('#discount_type').val('none');
-                   $('#other_discount').val('');
-                   $('#other_discount_container').addClass('d-none');
-
-                   $('#pos_sales_cart_modal').modal('hide');
-               } else {
-                   alert(res.message);
-               }
-           },
-           error: function() {
-               alert('Server error');
-           }
-       });
+         if (item.cart_quantity && item.cart_quantity > 0) {
+            items.push({
+                pos_item_id: item.pos_item_id,
+                pos_item_code: item.pos_item_code,
+                pos_item_name: item.pos_item_name,
+                pos_item_price: item.pos_item_price,
+                pos_item_quantity: item.cart_quantity,
+                pos_item_unit: item.pos_item_unit
+            });
+        }
+      });
+      if (items.length === 0) {
+        alert('Cart is empty');
+        return;
+      }
+      let discount_type = $('#discount_type').val();
+      let other_discount = $('#other_discount').val();
+      if (discount_type === 'other') {
+        if (!other_discount || other_discount <= 0) {
+            alert('Enter a valid custom discount');
+            return;
+        }
+      }
+      $.ajax({
+        url: '<?php echo base_url();?>i.php/sys_control/process_sales',
+        method: 'POST',
+        data: {
+            items: JSON.stringify(items),
+            discount_type: discount_type,
+            other_discount: other_discount
+        },
+        dataType: 'json',
+        success: function(res) {
+            if (res.status === 'success') {
+                const sale_code = res.sale_code;
+                Object.values(pos_items).forEach(item => item.cart_quantity = 0);
+                render_pos_sales_cart();
+                load_pos_inventory(current_page);
+                load_pos_checkout_receipt(sale_code);
+                // reset UI
+                $('#discount_type').val('none');
+                $('#other_discount').val('');
+                $('#other_discount_container').addClass('d-none');
+                $('#pos_sales_cart_modal').modal('hide');
+                // success notification
+                const toast = $(`
+                    <div class="toast align-items-center text-white bg-success border-0 position-fixed bottom-0 end-0 m-3"
+                         role="alert" aria-live="assertive" aria-atomic="true" style="z-index:9999;">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                Sale <strong>${sale_code}</strong> recorded successfully!
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `);
+                $('body').append(toast);
+                const bsToast = new bootstrap.Toast(toast[0], { delay: 4000 });
+                bsToast.show();
+                toast[0].addEventListener('hidden.bs.toast', () => toast.remove());
+            } else {
+                alert(res.message);
+            }
+        },
+        error: function() {
+            alert('Server error');
+        }
+      });
    });
 
    let pos_sales_report_data = {};
@@ -1260,45 +1256,65 @@
 
                grand_total += final_total;
 
+               let raw_date = new Date(row.pos_checkout_date);
+               let formatted_date = isNaN(raw_date)
+                  ? row.pos_checkout_date
+                  : raw_date.toLocaleDateString('en-PH', {
+                     month: 'short',
+                     day: 'numeric',
+                     year: 'numeric'
+                  }) + ' · ' +
+                  raw_date.toLocaleTimeString('en-PH', {
+                     hour: 'numeric',
+                     minute: '2-digit'
+                  });
+
                let status_badge = '';
                switch (row.pos_checkout_status) {
                case '1':
-                  status_badge = `<span class="badge bg-success">Completed</span>`;
+                  status_badge = `<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>`;
                   break;
                case '2':
-                  status_badge = `<span class="badge bg-danger">Voided</span>`;
+                  status_badge = `<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Voided</span>`;
                   break;
                case '3':
-                  status_badge = `<span class="badge bg-warning text-dark">Pending</span>`;
+                  status_badge = `<span class="badge rounded-pill bg-warning-subtle text-warning fw-normal px-2">Pending</span>`;
                   break;
                default:
-                  status_badge = `<span class="badge bg-secondary">${row.pos_checkout_status}</span>`;
+                  status_badge = `<span class="badge rounded-pill bg-secondary-subtle text-secondary fw-normal px-2">${row.pos_checkout_status}</span>`;
                }
 
                container.append(`
-                          <tr>
-                              <td>${index + 1}</td>
-                              <td>${row.pos_checkout_code}</td>
-                              <td>${row.total_items}</td>
-                              <td>${row.total_quantity}</td>
-                              <td>₱${discount.toFixed(2)}</td>
-                              <td class="fw-semibold text-success">₱${final_total.toFixed(2)}</td>
-                              <td>Cash</td>
-                              <td>${row.cashier_name ?? 'Unknown'}</td>
-                              <td>${status_badge}</td>
-                              <td>${row.pos_checkout_date}</td>
+                          <tr class="border-top">
+                              <td class="ps-3 text-muted">${index + 1}</td>
                               <td>
+                                 <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
+                                    ${row.pos_checkout_code}
+                                 </span>
+                              </td>
+                              <td class="text-muted">${row.total_items}</td>
+                              <td class="fw-medium">${row.total_quantity}</td>
+                              <td class="${discount > 0 ? 'text-danger' : 'text-muted'}">
+                                 ${discount > 0 ? '−₱' + discount.toFixed(2) : '—'}
+                              </td>
+                              <td class="fw-semibold text-success">₱${final_total.toFixed(2)}</td>
+                              <td class="text-muted">Cash</td>
+                              <td class="text-muted">${row.cashier_name ?? 'Unknown'}</td>
+                              <td>${status_badge}</td>
+                              <td class="text-muted" style="font-size:11px; white-space:nowrap;">${formatted_date}</td>
+                              <td class="pe-3">
                                  <button 
                                     type="button" 
-                                    class="btn btn-sm btn-outline-primary view_receipt_activator"
+                                    class="btn btn-sm btn-outline-primary view_receipt_activator rounded-pill px-2"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#receipt_modal"
                                     data-sale-code="${row.pos_checkout_code}">
-                                    <i class="bi bi-eye"></i>
+                                    <i class="bi bi-eye" style="font-size:11px;"></i>
                                  </button>
                               </td>
                           </tr>
                `);
             });
-              console.log(pos_sales_report_data)
 
               $('#pos_sales_report_total').text('₱' + grand_total.toFixed(2));
            },
@@ -1348,26 +1364,34 @@
 
                grand_total += row_total;
 
+               let raw_date = new Date(row.pos_restocking_date);
+               let formatted_date = isNaN(raw_date)
+                  ? row.pos_restocking_date
+                  : raw_date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+                    + ' · '
+                    + raw_date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
+
                container.append(`
-                  <tr>
-                     <td>${index + 1}</td>
-                     <td>${row.pos_restocking_code}</td>
-                     <td>${row.pos_item_code}</td>
-                     <td class="text-start">${row.pos_item_name}</td>
-                     <td>₱${price.toFixed(2)}</td>
-                     <td>${quantity}</td>
-                     <td>${row.pos_item_unit}</td>
-                     <td class="fw-semibold text-success">
-                        ₱${row_total.toFixed(2)}
+                  <tr class="border-top">
+                     <td class="ps-3 text-muted">${index + 1}</td>
+                     <td>
+                        <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
+                           ${row.pos_restocking_code}
+                        </span>
                      </td>
-                     <td>${row.pos_restocking_date}</td>
+                     <td class="text-muted font-monospace" style="font-size:11px;">${row.pos_item_code}</td>
+                     <td class="text-start fw-medium">${row.pos_item_name}</td>
+                     <td class="text-muted">₱${price.toFixed(2)}</td>
+                     <td class="fw-medium">${quantity}</td>
+                     <td class="text-muted">${row.pos_item_unit}</td>
+                     <td class="fw-semibold text-success">₱${row_total.toFixed(2)}</td>
+                     <td class="text-muted pe-3" style="font-size:11px; white-space:nowrap;">${formatted_date}</td>
                   </tr>
                `);
             });
 
-            console.log(pos_restocking_report_data);
-
             $('#pos_restocking_report_total').text('₱' + grand_total.toFixed(2));
+            $('#pos_restocking_report_total_foot').text('₱' + grand_total.toFixed(2));
          },
          error: function () {
             $('#pos_restocking_report_container')
@@ -1454,12 +1478,12 @@
                if (res.data.length) {
                    res.data.forEach((row, index) => {
                        const tr = `
-                           <tr>
-                               <td>${index + 1}</td>
+                           <tr class="border-top">
+                               <td class="ps-3 text-muted">${index + 1}</td>
                                <td>${row.pos_activity_type}</td>
                                <td class="text-start">${row.pos_code}</td>
                                <td class="text-start">${row.pos_activity}</td>
-                               <td>${format_date_time(row.timestamp)}</td>
+                               <td class="text-muted pe-3" style="font-size:11px; white-space:nowrap;">${format_date_time(row.timestamp)}</td>
                            </tr>
                        `;
                        $tbody.append(tr);
@@ -1467,7 +1491,7 @@
                } else {
                    $tbody.html(`
                        <tr>
-                           <td colspan="5" class="text-center text-muted">No logs found</td>
+                           <td colspan="5" class="text-center text-muted py-3">No logs found</td>
                        </tr>
                    `);
                }
@@ -1525,18 +1549,18 @@
         dataType: 'json',
         success: function(response) {
             let html = '';
-            if(response.data.length > 0) {  // <-- access response.data
+            if(response.data.length > 0) {
                 $.each(response.data, function(index, item) {
-                    html += '<tr>';
-                    html += '<td>' + (index + 1) + '</td>';
-                    html += '<td>' + item.pos_item_name + '</td>';
-                    html += '<td>' + item.pos_item_code + '</td>';
-                    html += '<td>' + item.pos_item_stock + '</td>';
-                    html += '<td>' + item.pos_item_low + '</td>';
+                    html += '<tr class="border-top">';
+                    html += '<td class="ps-3 text-muted">' + (index + 1) + '</td>';
+                    html += '<td class="text-start fw-medium">' + item.pos_item_name + '</td>';
+                    html += '<td class="text-muted font-monospace" style="font-size:11px;">' + item.pos_item_code + '</td>';
+                    html += '<td class="fw-semibold text-warning">' + item.pos_item_stock + '</td>';
+                    html += '<td class="text-muted pe-3">' + item.pos_item_low + '</td>';
                     html += '</tr>';
                 });
             } else {
-                html = '<tr><td colspan="5">No low stock items found.</td></tr>';
+                html = '<tr><td colspan="5" class="text-center text-muted py-3">No low stock items found.</td></tr>';
             }
             $('#pos_low_stocks_container').html(html);
         },
@@ -1668,122 +1692,195 @@
          data: { sale_code: sale_code },
          dataType: 'json',
          success: function(res) {
-
             if (res.status !== 'success') {
-               $('#receipt_items').html('<tr><td colspan="4">Failed to load receipt</td></tr>');
+               $('#receipt_items').html('<tr><td colspan="6" class="text-center text-muted">Failed to load receipt</td></tr>');
                return;
             }
-
             let data = res.data;
-
             if (data.length === 0) {
-               $('#receipt_items').html('<tr><td colspan="4">No items found</td></tr>');
+               $('#receipt_items').html('<tr><td colspan="6" class="text-center text-muted">No items found</td></tr>');
                return;
             }
 
-            let first = data[0];
+            let first    = data[0];
             let subtotal = 0;
             let discount = parseFloat(first.pos_discount_value) || 0;
-            let discount_type_map = {
-               'senior': 'Senior Citizen',
-               'pwd': 'PWD',
-               'promo': 'Promo Discount',
-               'other': 'Custom Discount',
-               'none': 'No Discount'
-            };
 
-            let discount_label = discount_type_map[first.pos_discount_type] || 'No Discount';
-            let discount_rate_display = (parseFloat(first.pos_discount_value) || 0) * 100;
+            // Format date
+            let raw_date       = new Date(first.pos_checkout_date);
+            let formatted_date = isNaN(raw_date)
+               ? first.pos_checkout_date
+               : raw_date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+                 + ' · '
+                 + raw_date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
+
+            let is_sale_voided = parseInt(first.pos_checkout_status) === 2;
 
             $('#receipt_info').html(`
-               <small>Sale Code: <strong>${first.pos_checkout_code}</strong></small><br>
-               <small>Date: <strong>${first.pos_checkout_date}</strong></small><br>
-               <small>Cashier: <strong>${first.cashier_name ?? 'Unknown'}</strong></small><br>
-               <small>Discount Type: <strong>${discount_label} (${discount_rate_display}%)</strong></small>
+                <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
+                    <span class="text-muted">Sale Code</span>
+                    <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
+                        ${first.pos_checkout_code}
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
+                    <span class="text-muted">Date</span>
+                    <span>${formatted_date}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
+                    <span class="text-muted">Cashier</span>
+                    <span>${first.cashier_name ?? 'Unknown'}</span>
+                </div>
+                <div class="d-flex justify-content-between" style="font-size: 0.8em;">
+                    <span class="text-muted">Status</span>
+                    ${is_sale_voided
+                        ? '<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Voided</span>'
+                        : '<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>'
+                    }
+                </div>
             `);
 
+            // Show/hide print button based on sale status
+            if (is_sale_voided) {
+               $('#print_receipt_btn').hide();
+            } else {
+               $('#print_receipt_btn').show();
+            }
+
             let items_html = '';
-
-            let subtotal_net_vat = 0;
-            let total_vat = 0;
-            let total_discount = 0;
-            let gross_total = 0;
-
-            let discount_rate = parseFloat(first.pos_discount_value) || 0;
-
             data.forEach(item => {
+               let unit_price = parseFloat(item.pos_item_price);
+               let item_total = unit_price * parseFloat(item.pos_item_quantity);
+               let is_item_voided = parseInt(item.pos_checkout_status) === 2;
 
-               let price = parseFloat(item.pos_item_price);
-               let qty = parseFloat(item.pos_item_quantity);
+               // Only add to subtotal if item is not voided
+               if (!is_item_voided) {
+                  subtotal += item_total;
+               }
 
-               let item_gross = price * qty;
+               let action_dropdown = `
+                  <div class="dropdown dropstart">
+                     <button class="btn btn-sm btn-light rounded-pill px-2"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <i class="bi bi-three-dots" style="font-size:11px;"></i>
+                     </button>
+                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 py-1">
+                        ${!is_item_voided ? `
+                        <li>
+                           <button type="button"
+                              class="dropdown-item small void_receipt_item d-flex align-items-center gap-2"
+                              data-pos_item_id="${item.pos_item_id}"
+                              data-pos_item_name="${item.pos_item_name}"
+                              data-pos_checkout_code="${item.pos_checkout_code}">
+                              <i class="bi bi-x-circle text-danger" style="font-size:12px;"></i>
+                              Void item
+                           </button>
+                        </li>` : `
+                        <li>
+                           <button type="button"
+                              class="dropdown-item small restore_receipt_item d-flex align-items-center gap-2"
+                              data-pos_item_id="${item.pos_item_id}"
+                              data-pos_item_name="${item.pos_item_name}"
+                              data-pos_checkout_code="${item.pos_checkout_code}">
+                              <i class="bi bi-arrow-counterclockwise text-success" style="font-size:12px;"></i>
+                              Restore item
+                           </button>
+                        </li>`}
+                     </ul>
+                  </div>
+               `;
+               action_dropdown = '';
 
-               // accumulate gross
-               gross_total += item_gross;
-
-               // discount per item (based on gross)
-               let item_discount = item_gross * discount_rate;
-               let discounted = item_gross - item_discount;
-
-               // VAT from discounted price
-               let vat_rate = 0.12;
-               let item_vat = discounted * vat_rate / (1 + vat_rate);
-
-               // net of VAT
-               let item_net = discounted - item_vat;
-
-               // totals
-               total_discount += item_discount;
-               total_vat += item_vat;
-               subtotal_net_vat += item_net;
-
+               // Voided items get no-print so they are excluded when printing
                items_html += `
-                  <tr>
-                     <td class="text-start">${item.pos_item_name}</td>
-                     <td>${qty}</td>
-                     <td>${item.pos_item_unit}</td>
-                     <td class="text-end">₱${item_gross.toFixed(2)}</td>
+                  <tr class="border-top ${is_item_voided ? 'opacity-50 text-decoration-line-through no-print' : ''}">
+                     <td class="text-start ps-0">
+                        ${item.pos_item_name}
+                        ${is_item_voided ? '<span class="badge bg-danger-subtle text-danger rounded-pill ms-1" style="font-size:9px;">Voided</span>' : ''}
+                     </td>
+                     <td class="text-center">${item.pos_item_quantity}</td>
+                     <td class="text-center text-muted">${item.pos_item_unit}</td>
+                     <td class="text-end text-muted">₱${unit_price.toFixed(2)}</td>
+                     <td class="text-end">${is_item_voided ? '<s>₱' + item_total.toFixed(2) + '</s>' : '₱' + item_total.toFixed(2)}</td>
+                     <td class="text-end pe-0 no-print">${action_dropdown}</td>
                   </tr>
                `;
             });
-
             $('#receipt_items').html(items_html);
 
-            let total = gross_total - total_discount;
-
+            let final_total = subtotal - discount;
             $('#receipt_totals').html(`
-               <div class="d-flex justify-content-between mb-1">
-                  <span>Gross Total:</span>
-                  <span>₱${gross_total.toFixed(2)}</span>
+               <div class="d-flex justify-content-between mb-1 small">
+                  <span class="text-muted">Subtotal</span>
+                  <span>₱${subtotal.toFixed(2)}</span>
                </div>
-
-               <div class="d-flex justify-content-between mb-1">
-                  <span>Discount:</span>
-                  <span>-₱${total_discount.toFixed(2)}</span>
+               ${discount > 0 ? `
+               <div class="d-flex justify-content-between mb-1 small">
+                  <span class="text-danger">Discount</span>
+                  <span class="text-danger">−₱${discount.toFixed(2)}</span>
+               </div>` : ''}
+               <div class="d-flex justify-content-between fw-semibold">
+                  <span>Total</span>
+                  <span class="text-success">₱${final_total.toFixed(2)}</span>
                </div>
-
-               <div class="d-flex justify-content-between mb-1">
-                  <span>VAT (Included):</span>
-                  <span>₱${total_vat.toFixed(2)}</span>
-               </div>
-
-               <div class="d-flex justify-content-between mb-1">
-                  <span>Net of VAT:</span>
-                  <span>₱${subtotal_net_vat.toFixed(2)}</span>
-               </div>
-
-               <div class="d-flex justify-content-between mb-3 fw-bold">
-                  <span>Total:</span>
-                  <span>₱${total.toFixed(2)}</span>
-               </div>
-
-               <div class="d-flex justify-content-between mb-3">
-                  <span>Payment:</span>
+               <div class="d-flex justify-content-between small text-muted mt-1">
+                  <span>Payment</span>
                   <span>Cash</span>
                </div>
             `);
-            let modal = new bootstrap.Modal(document.getElementById('receipt_modal'));
-            modal.show();
+
+            // Void item handler
+            $('.void_receipt_item')
+            .off('click')
+            .on('click', function () {
+               let pos_item_id       = $(this).data('pos_item_id');
+               let pos_item_name     = $(this).data('pos_item_name');
+               let pos_checkout_code = $(this).data('pos_checkout_code');
+               if (!confirm(`Void "${pos_item_name}" from sale #${pos_checkout_code}?`)) return;
+               $.ajax({
+                  url: '<?php echo base_url();?>i.php/sys_control/void_pos_checkout_item',
+                  method: 'POST',
+                  data: { pos_item_id: pos_item_id, pos_checkout_code: pos_checkout_code },
+                  dataType: 'json',
+                  success: function(res) {
+                     if (res.status === 'success') {
+                        alert(`"${pos_item_name}" successfully voided.`);
+                        load_pos_inventory(current_page);
+                        load_pos_checkout_receipt(pos_checkout_code);
+                     } else {
+                        alert(res.message);
+                     }
+                  },
+                  error: function() { alert('Server error'); }
+               });
+            });
+
+            $('.restore_receipt_item')
+            .off('click')
+            .on('click', function () {
+               let pos_item_id       = $(this).data('pos_item_id');
+               let pos_item_name     = $(this).data('pos_item_name');
+               let pos_checkout_code = $(this).data('pos_checkout_code');
+               if (!confirm(`Restore "${pos_item_name}" in sale #${pos_checkout_code}?`)) return;
+               $.ajax({
+                  url: '<?php echo base_url();?>i.php/sys_control/restore_pos_checkout_item',
+                  method: 'POST',
+                  data: { pos_item_id: pos_item_id, pos_checkout_code: pos_checkout_code },
+                  dataType: 'json',
+                  success: function(res) {
+                     if (res.status === 'success') {
+                        alert(`"${pos_item_name}" successfully restored.`);
+                        load_pos_inventory(current_page);
+                        load_pos_checkout_receipt(pos_checkout_code);
+                     } else {
+                        alert(res.message);
+                     }
+                  },
+                  error: function() { alert('Server error'); }
+               });
+            });            
          },
          error: function() {
             $('#receipt_items').html('<tr><td colspan="4">Server error</td></tr>');
@@ -1795,48 +1892,94 @@
       load_pos_checkout_receipt(sale_code);
    });
 
-   $('#print_receipt_btn').on('click', function() {
-      let content = document.getElementById('receipt_content').innerHTML;
+   $('#print_receipt_btn').on('click', function () {
+      let clone = document.getElementById('receipt_content').cloneNode(true);
+      clone.querySelectorAll('.no-print').forEach(el => el.remove());
+      let content = clone.innerHTML;
       let printWindow = window.open('', '', 'width=1000,height=600');
       printWindow.document.write(`
-         <html>
-         <head>
+        <html>
+        <head>
             <title>Print Receipt</title>
             <style>
-               h5 {
-                  font-family: Arial, sans-serif;
-                  margin: 0;
-                  padding: 5px;
-                  font-size: 18px;
-               }
-               body {
-                  font-family: Arial, sans-serif;
-                  width: 58mm;
-                  margin: 0;
-                  padding: 5px;
-                  font-size: 10px;
-               }
-               table {
-                  width: 100%;
-                  border-collapse: collapse;
-                  font-size: 12px !important;
-               }
-               hr {
-                  border-top: 1px dashed #000;
-                  margin: 5px 0;
-               }
-               .text-end { text-align: right; }
-               .text-center { text-align: center; }
+                * { box-sizing: border-box; }
+                @page {
+                    size: 80mm auto;
+                    margin: 0;
+                }
+                body {
+                    font-family: Arial, sans-serif;
+                    width: 80mm;
+                    margin: 0 auto;
+                    padding: 6px 8px;
+                    font-size: 11px;
+                }
+                .fs-5, .fw-bold {
+                    font-size: 15px;
+                    font-weight: bold;
+                    margin: 0;
+                    padding: 4px 0;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 8.8px; /* 20% smaller than 11px */
+                }
+                thead tr th {
+                    font-size: 8px; /* 20% smaller than 10px */
+                    text-transform: uppercase;
+                    letter-spacing: 0.03em;
+                    padding-bottom: 4px;
+                    border-bottom: 1px dashed #000;
+                }
+                td { padding: 2px 0; } /* slightly tighter rows to match smaller text */
+                th { padding: 2px 0; }
+                hr {
+                    border: none;
+                    border-top: 1px dashed #000;
+                    margin: 6px 0;
+                }
+                .text-end    { text-align: right; }
+                .text-start  { text-align: left; }
+                .text-center { text-align: center; }
+                .text-muted  { color: #555; }
+                .text-success, .text-danger { color: #000; }
+                .fw-semibold, .fw-bold { font-weight: bold; }
+                .mb-1 { margin-bottom: 3px; }
+                .mb-2 { margin-bottom: 5px; }
+                .mb-3 { margin-bottom: 8px; }
+                .my-2 { margin: 6px 0; }
+                .ps-0 { padding-left: 0; }
+                .pe-0 { padding-right: 0; }
+                .py-1 { padding: 3px 0; }
+                .mt-1 { margin-top: 3px; }
+                .small, small { font-size: 10px; }
+                .d-flex {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: baseline;
+                }
+                .badge {
+                    background: none !important;
+                    color: #000 !important;
+                    padding: 0;
+                    font-weight: bold;
+                    font-size: inherit;
+                }
+                .border-top { border-top: 1px solid #ccc; }
+                td:first-child {
+                    max-width: 28mm;
+                    word-break: break-word;
+                }
             </style>
-         </head>
-         <body onload="window.print(); window.close();">
+        </head>
+        <body onload="window.print(); window.close();">
             ${content}
-         </body>
-         </html>
+        </body>
+        </html>
       `);
-
       printWindow.document.close();
-   });
+      });
 
    $(document).ready(function(){
       $('#posItemForm').on('submit', function(e){
@@ -1868,21 +2011,6 @@
          $('#other_discount').val('');
       }
    });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
    $(function () {
       $('.overflow-tooltip').each(function () {

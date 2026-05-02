@@ -76,15 +76,23 @@
 					else if (user_type == 2) {
 						page = 'sales';
 					}
-					else if (user_type == 3) {
-						alert("Unknown error. Please call the developer and refrain from using the system.")
+					else if (user_type == 8) {
+						page = 'inventory';
 					}
+					else {
+						alert("Unknown error. Please call the developer and refrain from using the system.");
+						return;
+					}
+
 					if (gender == 'male') {
 						address_text = 'Mr. '+last_name;
 					}
 					else if (gender == 'female') {
 						address_text = 'Ms. '+last_name;
 					}	
+					else {
+						address_text = last_name;
+					}
 					var address_element = `
 					    <span class="text-success fw-semibold">
 					        ${address_text}
@@ -99,11 +107,17 @@
 				  		window.location.replace('<?php echo base_url();?>i.php/sys_control/'+page);
 				  	}, 2500);
 				}
+				else if (status == 'inactive') {
+				    title = "Account Disabled";
+				    message = "Your account has been deactivated. Please contact the administrator.";
+				    status = "error";
+				    load_notification(title, message, status);
+				}
 				else if (status == 'error') {
-					title = "Login Failed";
-					message = `The login credentials you provided were invalid.`;	
-					status = "error";
-					load_notification(title, message, status);
+				    title = "Login Failed";
+				    message = "Invalid username or password.";
+				    status = "error";
+				    load_notification(title, message, status);
 				}
 			})
 			.fail(function() {
