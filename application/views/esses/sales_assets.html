@@ -61,6 +61,12 @@
                   <span class="text-muted small">Grand Total:</span>
                   <span class="badge bg-success-subtle text-success fs-6 fw-semibold px-3 py-2" id="pos_restocking_report_total">₱0.00</span>
                </div>
+               <div class="input-group input-group-sm mb-2" style="width: 250px;">
+                  <span class="input-group-text">
+                     <i class="bi bi-search"></i>
+                  </span>
+                  <input type="text" class="form-control" id="pos_restocking_search" placeholder="Search restocking...">
+               </div>
             </div>
             <div class="table-responsive rounded-3 border">
                <table class="table table-sm align-middle mb-0 sortable">
@@ -117,6 +123,12 @@
                <div class="d-flex align-items-center gap-2">
                   <span class="text-muted small">Grand Total:</span>
                   <span class="badge bg-success-subtle text-success fs-6 fw-semibold px-3 py-2" id="pos_sales_report_total">₱0.00</span>
+               </div>
+               <div class="input-group input-group-sm mb-2" style="width: 250px;">
+                  <span class="input-group-text">
+                     <i class="bi bi-search"></i>
+                  </span>
+                  <input type="text" class="form-control" id="pos_sales_search" placeholder="Search sales...">
                </div>
             </div>
             <div class="table-responsive rounded-3 border">
@@ -181,22 +193,22 @@
 
 <!-- Low Stock Items Modal -->
 <div class="modal fade" id="pos_stocks_report_modal" tabindex="-1" aria-labelledby="pos_stocks_report_title" aria-hidden="true">
-   <div class="modal-dialog modal-lg modal-dialog-scrollable">
+   <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
       <div class="modal-content border-0">
          <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
             <div>
-               <h1 class="modal-title fs-5 fw-semibold" id="pos_stocks_report_title">
+               <h5 class="modal-title fw-semibold" id="pos_stocks_report_title">
                   <i class="bi bi-exclamation-triangle me-2 text-warning"></i>Low Stock Items
-               </h1>
+               </h5>
                <p class="text-muted small mb-0 mt-1">Items that have fallen below their stock threshold</p>
             </div>
             <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
-         <div class="modal-body px-4 pt-3">
+         <div class="modal-body px-4 pt-3 pb-2">
             <div class="table-responsive rounded-3 border">
-               <table class="table table-sm align-middle mb-0 sortable">
+               <table class="table table-sm align-middle mb-0">
                   <thead style="background: var(--bs-tertiary-bg);">
-                     <tr class="text-center small text-muted pointered" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
+                     <tr class="text-center text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
                         <th class="fw-semibold ps-3" style="width:40px;">#</th>
                         <th class="fw-semibold text-start">Item Name</th>
                         <th class="fw-semibold">POS Code</th>
@@ -208,6 +220,8 @@
                   </tbody>
                </table>
             </div>
+         </div>
+         <div class="modal-footer border-top-0 px-4 pb-4 pt-2">
          </div>
       </div>
    </div>
@@ -294,7 +308,7 @@
          <div class="modal-body px-4 pt-3">
             <form id="pos_sales_form" enctype="multipart/form-data">
                <div class="row g-3 mb-3">
-                 <div class="col-6">
+                 <div class="col-4">
                    <label class="form-label small fw-semibold">Discount Type</label>
                    <select class="form-select form-select-sm"
                            id="discount_type"
@@ -543,7 +557,7 @@
    </div>
 </div>
 
-<!-- <!-- FAB Dropdown (kept commented out as in original) -->
+<!-- FAB Dropdown (kept commented out as in original) -->
 <!-- <div class="dropup position-fixed bottom-0 end-0 m-4">
    ...
 </div> -->
@@ -625,6 +639,12 @@
                      item.pos_item_code.toLowerCase().includes(search_val)
                   );
 
+                  let box_icon_class = pos_item_stock <= 0
+                  ? 'text-danger opacity-60'
+                  : (pos_item_low > 0 && pos_item_stock <= pos_item_low)
+                  ? 'text-warning opacity-60'
+                  : 'text-secondary opacity-60';
+
                   let low_stock_badge = pos_item_stock <= 0
                    ? `<span class="position-absolute top-0 end-0 m-1 badge bg-danger text-white" style="font-size:10px;">Out of Stock</span>`
                    : (pos_item_low > 0 && pos_item_stock <= pos_item_low)
@@ -637,16 +657,7 @@
 
                         <div class="position-relative img-hover-wrapper d-flex justify-content-center align-items-center rounded-top"
                            style="aspect-ratio:5/2; background: var(--bs-tertiary-bg);">
-                           <i class="bi bi-box2 text-secondary opacity-50" style="font-size:2.5rem;"></i>
-                           ${low_stock_badge}
-                           <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer rounded-top d-flex justify-content-center align-items-center gap-2">
-                              <button type="button" class="btn btn-sm btn-light rounded-pill px-3 hover-btn pos_item_update_activator">
-                                 <i class="bi bi-pencil me-1" style="font-size:11px;"></i>Edit
-                              </button>
-                              <button type="button" class="btn btn-sm btn-light rounded-pill px-3 hover-btn pos_item_barcodes_activator">
-                                 <i class="bi bi-upc-scan me-1" style="font-size:11px;"></i>Barcode
-                              </button>
-                           </div>
+                           <i class="bi bi-box2 ${box_icon_class}" style="font-size:2.5rem;"></i>                           ${low_stock_badge}
                         </div>
 
                         <div class="card-body px-3 pt-2 pb-2">
@@ -676,14 +687,19 @@
             else {
                $container.html('<p class="text-center">No items found.</p>');
             }
+            update_navigator(response, page);
 
-         // Update page info
-            const total_pages = Math.ceil(response.total / items_per_page);
-            $('#page_info').text(`Page ${page} of ${total_pages}`);
+            $('#prev_page').off('click').on('click', function() {
+               if (current_page > 1) {
+                  current_page--;
+                  load_pos_inventory(current_page);
+               }
+            });
 
-         // Disable buttons if needed
-            $('#prev_page').prop('disabled', page <= 1);
-            $('#next_page').prop('disabled', page >= total_pages);
+            $('#next_page').off('click').on('click', function() {
+               current_page++;
+               load_pos_inventory(current_page);
+            });
          },
          error: function() {
             $('#item_cards').html('<p class="text-center text-danger">Failed to load items.</p>');
@@ -692,6 +708,22 @@
    }
 
    load_pos_inventory(current_page);
+
+   function update_navigator(response, page) {
+      const total_pages = Math.ceil(response.total / items_per_page);
+      $('#page_info').text(`Page ${page} of ${total_pages}`);
+
+      const at_first = page <= 1;
+      const at_last = page >= total_pages;
+
+      $('#prev_page').prop('disabled', at_first)
+      .removeClass('btn-outline-secondary btn-outline-primary')
+      .addClass(at_first ? 'btn-outline-secondary' : 'btn-outline-primary');
+
+      $('#next_page').prop('disabled', at_last)
+      .removeClass('btn-outline-secondary btn-outline-primary')
+      .addClass(at_last ? 'btn-outline-secondary' : 'btn-outline-primary');
+   }
 
    setTimeout(() => {
       let firstMatch = $('#pos_item_cards_container .border-warning').first();
@@ -719,22 +751,6 @@
          $(this).val('');
          load_pos_inventory(1);
       }
-   });
-
-   $('#prev_page').click(function() {
-      if (current_page > 1) {
-         current_page--;
-         load_pos_inventory(current_page);
-      }
-   });
-
-   $('#next_page').click(function() {
-      current_page++;
-      load_pos_inventory(current_page);
-   });
-
-   $(function() {
-      
    });
 
    function render_pos_sales_cart() {
@@ -1220,6 +1236,28 @@
    });
 
    let pos_sales_report_data = {};
+   function compute_pos_sales_report_total() {
+       let grand_total = 0;
+       $('#pos_sales_report_container tr:visible').each(function () {
+           if (!$(this).hasClass('opacity-50')) {
+               let total_text = $(this).find('td:nth-child(6)').text().replace('₱', '').trim();
+               let total = parseFloat(total_text) || 0;
+               grand_total += total;
+           }
+       });
+       $('#pos_sales_report_total').text('₱' + grand_total.toFixed(2));
+   }
+   function compute_pos_restocking_report_total() {
+       let grand_total = 0;
+       $('#pos_restocking_report_container tr:visible').each(function () {
+           if (!$(this).hasClass('opacity-50')) {
+               let total_text = $(this).find('td:nth-child(8)').text().replace('₱', '').trim();
+               let total = parseFloat(total_text) || 0;
+               grand_total += total;
+           }
+       });
+       $('#pos_restocking_report_total').text('₱' + grand_total.toFixed(2));
+   }
    function load_pos_sales_report(report_date = '') {
       $.ajax({
           url: '<?php echo base_url();?>i.php/sys_control/load_pos_sales_report',
@@ -1269,23 +1307,32 @@
                      minute: '2-digit'
                   });
 
+               let voided_count = parseInt(row.voided_count) || 0;
+               let total_count = parseInt(row.total_count) || 0;
+               let is_partially_voided = voided_count > 0 && voided_count < total_count;
+
                let status_badge = '';
-               switch (row.pos_checkout_status) {
-               case '1':
-                  status_badge = `<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>`;
-                  break;
-               case '2':
-                  status_badge = `<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Voided</span>`;
-                  break;
-               case '3':
-                  status_badge = `<span class="badge rounded-pill bg-warning-subtle text-warning fw-normal px-2">Pending</span>`;
-                  break;
-               default:
-                  status_badge = `<span class="badge rounded-pill bg-secondary-subtle text-secondary fw-normal px-2">${row.pos_checkout_status}</span>`;
+               if (is_partially_voided) {
+                   status_badge = `<span class="badge rounded-pill bg-warning-subtle text-warning fw-normal px-2" style="color: #fd7e14 !important;">Partially Voided</span>`;
+               } else {
+                   switch (row.pos_checkout_status) {
+                       case '1':
+                           status_badge = `<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>`;
+                           break;
+                       case '2':
+                           status_badge = `<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Voided</span>`;
+                           break;
+                       case '3':
+                           status_badge = `<span class="badge rounded-pill bg-warning-subtle text-warning fw-normal px-2">Pending</span>`;
+                           break;
+                       default:
+                           status_badge = `<span class="badge rounded-pill bg-secondary-subtle text-secondary fw-normal px-2">${row.pos_checkout_status}</span>`;
+                   }
                }
+               let row_class = (row.pos_checkout_status === '2' && !is_partially_voided) ? 'text-muted opacity-50' : '';
 
                container.append(`
-                          <tr class="border-top">
+                           <tr class="border-top ${row_class}">
                               <td class="ps-3 text-muted">${index + 1}</td>
                               <td>
                                  <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
@@ -1686,206 +1733,267 @@
    });
 
    function load_pos_checkout_receipt(sale_code) {
-      $.ajax({
-         url: '<?php echo base_url();?>i.php/sys_control/load_pos_checkout_receipt',
-         method: 'POST',
-         data: { sale_code: sale_code },
-         dataType: 'json',
-         success: function(res) {
-            if (res.status !== 'success') {
-               $('#receipt_items').html('<tr><td colspan="6" class="text-center text-muted">Failed to load receipt</td></tr>');
-               return;
-            }
-            let data = res.data;
-            if (data.length === 0) {
-               $('#receipt_items').html('<tr><td colspan="6" class="text-center text-muted">No items found</td></tr>');
-               return;
-            }
-
-            let first    = data[0];
-            let subtotal = 0;
-            let discount = parseFloat(first.pos_discount_value) || 0;
-
-            // Format date
-            let raw_date       = new Date(first.pos_checkout_date);
-            let formatted_date = isNaN(raw_date)
-               ? first.pos_checkout_date
-               : raw_date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
-                 + ' · '
-                 + raw_date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
-
-            let is_sale_voided = parseInt(first.pos_checkout_status) === 2;
-
-            $('#receipt_info').html(`
-                <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
-                    <span class="text-muted">Sale Code</span>
-                    <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
-                        ${first.pos_checkout_code}
-                    </span>
-                </div>
-                <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
-                    <span class="text-muted">Date</span>
-                    <span>${formatted_date}</span>
-                </div>
-                <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
-                    <span class="text-muted">Cashier</span>
-                    <span>${first.cashier_name ?? 'Unknown'}</span>
-                </div>
-                <div class="d-flex justify-content-between" style="font-size: 0.8em;">
-                    <span class="text-muted">Status</span>
-                    ${is_sale_voided
-                        ? '<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Voided</span>'
-                        : '<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>'
-                    }
-                </div>
-            `);
-
-            // Show/hide print button based on sale status
-            if (is_sale_voided) {
-               $('#print_receipt_btn').hide();
-            } else {
-               $('#print_receipt_btn').show();
-            }
-
-            let items_html = '';
-            data.forEach(item => {
-               let unit_price = parseFloat(item.pos_item_price);
-               let item_total = unit_price * parseFloat(item.pos_item_quantity);
-               let is_item_voided = parseInt(item.pos_checkout_status) === 2;
-
-               // Only add to subtotal if item is not voided
-               if (!is_item_voided) {
-                  subtotal += item_total;
+       $.ajax({
+           url: '<?php echo base_url();?>i.php/sys_control/load_pos_checkout_receipt',
+           method: 'POST',
+           data: { sale_code: sale_code },
+           dataType: 'json',
+           success: function(res) {
+               if (res.status !== 'success') {
+                   $('#receipt_items').html('<tr><td colspan="6" class="text-center text-muted">Failed to load receipt</td></tr>');
+                   return;
+               }
+               let data = res.data;
+               if (data.length === 0) {
+                   $('#receipt_items').html('<tr><td colspan="6" class="text-center text-muted">No items found</td></tr>');
+                   return;
                }
 
-               let action_dropdown = `
-                  <div class="dropdown dropstart">
-                     <button class="btn btn-sm btn-light rounded-pill px-2"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                        <i class="bi bi-three-dots" style="font-size:11px;"></i>
-                     </button>
-                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 py-1">
-                        ${!is_item_voided ? `
-                        <li>
-                           <button type="button"
-                              class="dropdown-item small void_receipt_item d-flex align-items-center gap-2"
-                              data-pos_item_id="${item.pos_item_id}"
-                              data-pos_item_name="${item.pos_item_name}"
-                              data-pos_checkout_code="${item.pos_checkout_code}">
-                              <i class="bi bi-x-circle text-danger" style="font-size:12px;"></i>
-                              Void item
+               let first    = data[0];
+               let subtotal = 0;
+               let discount = parseFloat(first.pos_discount_value) || 0;
+
+               let raw_date       = new Date(first.pos_checkout_date);
+               let formatted_date = isNaN(raw_date)
+                   ? first.pos_checkout_date
+                   : raw_date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+                     + ' · '
+                     + raw_date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
+
+               let is_sale_voided = parseInt(first.pos_checkout_status) === 2;
+
+               $('#receipt_info').html(`
+                   <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
+                       <span class="text-muted">Sale Code</span>
+                       <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
+                           ${first.pos_checkout_code}
+                       </span>
+                   </div>
+                   <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
+                       <span class="text-muted">Date</span>
+                       <span>${formatted_date}</span>
+                   </div>
+                   <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
+                       <span class="text-muted">Cashier</span>
+                       <span>${first.cashier_name ?? 'Unknown'}</span>
+                   </div>
+                   <div class="d-flex justify-content-between" style="font-size: 0.8em;">
+                       <span class="text-muted">Status</span>
+                       ${is_sale_voided
+                           ? '<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Voided</span>'
+                           : '<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>'
+                       }
+                   </div>
+               `);
+
+               if (is_sale_voided) {
+                   $('#print_receipt_btn').hide();
+               } else {
+                   $('#print_receipt_btn').show();
+               }
+
+               let items_html = '';
+               data.forEach(item => {
+                   let unit_price       = parseFloat(item.pos_item_price);
+                   let item_total       = unit_price * parseFloat(item.pos_item_quantity);
+                   let item_status      = parseInt(item.pos_checkout_status);
+                   let is_item_voided   = item_status === 2;
+                   let is_item_pending  = item_status === 3;
+
+                   if (!is_item_voided && !is_item_pending) {
+                       subtotal += item_total;
+                   }
+
+                   let status_badge = '';
+                   if (is_item_voided) {
+                       status_badge = `<span class="badge bg-danger-subtle text-danger rounded-pill ms-1" style="font-size:9px;">Voided</span>`;
+                   } else if (is_item_pending) {
+                       status_badge = `<span class="badge bg-warning-subtle text-warning rounded-pill ms-1 no-print" style="font-size:9px;">Pending Void</span>`;
+                   }
+
+                   let row_class = '';
+                   if (is_item_voided)  row_class = 'opacity-50 text-decoration-line-through no-print';
+                   if (is_item_pending) row_class = 'opacity-75';
+
+                   let action_dropdown = `
+                       <div class="dropdown dropstart">
+                           <button class="btn btn-sm btn-light rounded-pill px-2"
+                               type="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                               <i class="bi bi-three-dots" style="font-size:11px;"></i>
                            </button>
-                        </li>` : `
-                        <li>
-                           <button type="button"
-                              class="dropdown-item small restore_receipt_item d-flex align-items-center gap-2"
-                              data-pos_item_id="${item.pos_item_id}"
-                              data-pos_item_name="${item.pos_item_name}"
-                              data-pos_checkout_code="${item.pos_checkout_code}">
-                              <i class="bi bi-arrow-counterclockwise text-success" style="font-size:12px;"></i>
-                              Restore item
-                           </button>
-                        </li>`}
-                     </ul>
-                  </div>
-               `;
-               action_dropdown = '';
+                           <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 py-1">
+                               ${!is_item_voided && !is_item_pending ? `
+                               <li>
+                                   <button type="button"
+                                       class="dropdown-item small request_void_receipt_item d-flex align-items-center gap-2"
+                                       data-pos_item_id="${item.pos_item_id}"
+                                       data-pos_item_name="${item.pos_item_name}"
+                                       data-pos_checkout_code="${item.pos_checkout_code}">
+                                       <i class="bi bi-slash-circle text-danger" style="font-size:12px;"></i>
+                                       Request Void
+                                   </button>
+                               </li>` : is_item_voided ? `
+                               <li>
+                                   <button type="button"
+                                       class="dropdown-item small restore_receipt_item d-flex align-items-center gap-2"
+                                       data-pos_item_id="${item.pos_item_id}"
+                                       data-pos_item_name="${item.pos_item_name}"
+                                       data-pos_checkout_code="${item.pos_checkout_code}">
+                                       <i class="bi bi-arrow-counterclockwise text-success" style="font-size:12px;"></i>
+                                       Restore item
+                                   </button>
+                               </li>` : `
+                               <li>
+                                   <button type="button"
+                                       class="dropdown-item small cancel_void_request d-flex align-items-center gap-2"
+                                       data-pos_item_id="${item.pos_item_id}"
+                                       data-pos_item_name="${item.pos_item_name}"
+                                       data-pos_checkout_code="${item.pos_checkout_code}">
+                                       <i class="bi bi-x-circle text-secondary" style="font-size:12px;"></i>
+                                       Cancel Request
+                                   </button>
+                               </li>`}
+                           </ul>
+                       </div>
+                   `;
 
-               // Voided items get no-print so they are excluded when printing
-               items_html += `
-                  <tr class="border-top ${is_item_voided ? 'opacity-50 text-decoration-line-through no-print' : ''}">
-                     <td class="text-start ps-0">
-                        ${item.pos_item_name}
-                        ${is_item_voided ? '<span class="badge bg-danger-subtle text-danger rounded-pill ms-1" style="font-size:9px;">Voided</span>' : ''}
-                     </td>
-                     <td class="text-center">${item.pos_item_quantity}</td>
-                     <td class="text-center text-muted">${item.pos_item_unit}</td>
-                     <td class="text-end text-muted">₱${unit_price.toFixed(2)}</td>
-                     <td class="text-end">${is_item_voided ? '<s>₱' + item_total.toFixed(2) + '</s>' : '₱' + item_total.toFixed(2)}</td>
-                     <td class="text-end pe-0 no-print">${action_dropdown}</td>
-                  </tr>
-               `;
-            });
-            $('#receipt_items').html(items_html);
-
-            let final_total = subtotal - discount;
-            $('#receipt_totals').html(`
-               <div class="d-flex justify-content-between mb-1 small">
-                  <span class="text-muted">Subtotal</span>
-                  <span>₱${subtotal.toFixed(2)}</span>
-               </div>
-               ${discount > 0 ? `
-               <div class="d-flex justify-content-between mb-1 small">
-                  <span class="text-danger">Discount</span>
-                  <span class="text-danger">−₱${discount.toFixed(2)}</span>
-               </div>` : ''}
-               <div class="d-flex justify-content-between fw-semibold">
-                  <span>Total</span>
-                  <span class="text-success">₱${final_total.toFixed(2)}</span>
-               </div>
-               <div class="d-flex justify-content-between small text-muted mt-1">
-                  <span>Payment</span>
-                  <span>Cash</span>
-               </div>
-            `);
-
-            // Void item handler
-            $('.void_receipt_item')
-            .off('click')
-            .on('click', function () {
-               let pos_item_id       = $(this).data('pos_item_id');
-               let pos_item_name     = $(this).data('pos_item_name');
-               let pos_checkout_code = $(this).data('pos_checkout_code');
-               if (!confirm(`Void "${pos_item_name}" from sale #${pos_checkout_code}?`)) return;
-               $.ajax({
-                  url: '<?php echo base_url();?>i.php/sys_control/void_pos_checkout_item',
-                  method: 'POST',
-                  data: { pos_item_id: pos_item_id, pos_checkout_code: pos_checkout_code },
-                  dataType: 'json',
-                  success: function(res) {
-                     if (res.status === 'success') {
-                        alert(`"${pos_item_name}" successfully voided.`);
-                        load_pos_inventory(current_page);
-                        load_pos_checkout_receipt(pos_checkout_code);
-                     } else {
-                        alert(res.message);
-                     }
-                  },
-                  error: function() { alert('Server error'); }
+                   items_html += `
+                       <tr class="border-top ${row_class}">
+                           <td class="text-start ps-0">
+                               ${item.pos_item_name}
+                               ${status_badge}
+                           </td>
+                           <td class="text-center">${item.pos_item_quantity}</td>
+                           <td class="text-center text-muted">${item.pos_item_unit}</td>
+                           <td class="text-end text-muted">₱${unit_price.toFixed(2)}</td>
+                           <td class="text-end">${is_item_voided ? '<s>₱' + item_total.toFixed(2) + '</s>' : '₱' + item_total.toFixed(2)}</td>
+                           <td class="text-end pe-0 no-print">${action_dropdown}</td>
+                       </tr>
+                   `;
                });
-            });
+               $('#receipt_items').html(items_html);
 
-            $('.restore_receipt_item')
-            .off('click')
-            .on('click', function () {
-               let pos_item_id       = $(this).data('pos_item_id');
-               let pos_item_name     = $(this).data('pos_item_name');
-               let pos_checkout_code = $(this).data('pos_checkout_code');
-               if (!confirm(`Restore "${pos_item_name}" in sale #${pos_checkout_code}?`)) return;
-               $.ajax({
-                  url: '<?php echo base_url();?>i.php/sys_control/restore_pos_checkout_item',
-                  method: 'POST',
-                  data: { pos_item_id: pos_item_id, pos_checkout_code: pos_checkout_code },
-                  dataType: 'json',
-                  success: function(res) {
-                     if (res.status === 'success') {
-                        alert(`"${pos_item_name}" successfully restored.`);
-                        load_pos_inventory(current_page);
-                        load_pos_checkout_receipt(pos_checkout_code);
-                     } else {
-                        alert(res.message);
-                     }
-                  },
-                  error: function() { alert('Server error'); }
+               // Discount type label
+               const discount_labels = {
+                   senior: { label: 'Senior Citizen (20%)', color: 'bg-warning-subtle text-warning' },
+                   pwd:    { label: 'PWD (20%)',             color: 'bg-warning-subtle text-warning' },
+                   promo:  { label: 'Promo (10%)',           color: 'bg-info-subtle text-info'       },
+                   other:  { label: `Custom (${(discount * 100 / subtotal).toFixed(0)}%)`, color: 'bg-secondary-subtle text-secondary' },
+               };
+               let discount_type = first.pos_discount_type ?? 'none';
+               let discount_info = discount_labels[discount_type];
+               if (discount_info && discount > 0) {
+                   $('#receipt_discount_section').removeClass('d-none');
+                   $('#receipt_discount_badge').html(`
+                       <span class="badge rounded-pill ${discount_info.color} fw-normal px-2" style="font-size: 11px;">
+                           <i class="bi bi-tag-fill me-1"></i>${discount_info.label}
+                       </span>
+                   `);
+               } else {
+                   $('#receipt_discount_section').addClass('d-none');
+               }
+
+               let final_total = subtotal - discount;
+               $('#receipt_totals').html(`
+                   <div class="d-flex justify-content-between mb-1 small">
+                       <span class="text-muted">Subtotal</span>
+                       <span>₱${subtotal.toFixed(2)}</span>
+                   </div>
+                   ${discount > 0 ? `
+                   <div class="d-flex justify-content-between mb-1 small">
+                       <span class="text-danger">Discount</span>
+                       <span class="text-danger">−₱${discount.toFixed(2)}</span>
+                   </div>` : ''}
+                   <div class="d-flex justify-content-between fw-semibold border-top pt-2 mt-1">
+                       <span>Total</span>
+                       <span class="text-success fs-6">₱${final_total.toFixed(2)}</span>
+                   </div>
+                   <div class="d-flex justify-content-between small text-muted mt-1">
+                       <span>Payment</span>
+                       <span>Cash</span>
+                   </div>
+               `);
+
+               // Request void handler
+               $('.request_void_receipt_item')
+               .off('click')
+               .on('click', function () {
+                   let pos_item_id       = $(this).data('pos_item_id');
+                   let pos_item_name     = $(this).data('pos_item_name');
+                   let pos_checkout_code = $(this).data('pos_checkout_code');
+                   if (!confirm(`Request void for "${pos_item_name}" from sale #${pos_checkout_code}?`)) return;
+                   $.ajax({
+                       url: '<?php echo base_url();?>i.php/sys_control/request_void_pos_checkout_item',
+                       method: 'POST',
+                       data: { pos_item_id: pos_item_id, pos_checkout_code: pos_checkout_code },
+                       dataType: 'json',
+                       success: function(res) {
+                           if (res.status === 'success') {
+                               alert(`Void request for "${pos_item_name}" submitted.`);
+                               load_pos_checkout_receipt(pos_checkout_code);
+                           } else {
+                               alert(res.message);
+                           }
+                       },
+                       error: function() { alert('Server error'); }
+                   });
                });
-            });            
-         },
-         error: function() {
-            $('#receipt_items').html('<tr><td colspan="4">Server error</td></tr>');
-         }
-      });
+
+               // Cancel void request handler
+               $('.cancel_void_request')
+               .off('click')
+               .on('click', function () {
+                   let pos_item_id       = $(this).data('pos_item_id');
+                   let pos_item_name     = $(this).data('pos_item_name');
+                   let pos_checkout_code = $(this).data('pos_checkout_code');
+                   if (!confirm(`Cancel void request for "${pos_item_name}"?`)) return;
+                   $.ajax({
+                       url: '<?php echo base_url();?>i.php/sys_control/cancel_void_request_pos_checkout_item',
+                       method: 'POST',
+                       data: { pos_item_id: pos_item_id, pos_checkout_code: pos_checkout_code },
+                       dataType: 'json',
+                       success: function(res) {
+                           if (res.status === 'success') {
+                               alert(`Void request for "${pos_item_name}" cancelled.`);
+                               load_pos_checkout_receipt(pos_checkout_code);
+                           } else {
+                               alert(res.message);
+                           }
+                       },
+                       error: function() { alert('Server error'); }
+                   });
+               });
+               $('.restore_receipt_item')
+               .off('click')
+               .on('click', function () {
+                  let pos_item_id       = $(this).data('pos_item_id');
+                  let pos_item_name     = $(this).data('pos_item_name');
+                  let pos_checkout_code = $(this).data('pos_checkout_code');
+                  if (!confirm(`Restore "${pos_item_name}" in sale #${pos_checkout_code}?`)) return;
+                  $.ajax({
+                     url: '<?php echo base_url();?>i.php/sys_control/restore_pos_checkout_item',
+                     method: 'POST',
+                     data: { pos_item_id: pos_item_id, pos_checkout_code: pos_checkout_code },
+                     dataType: 'json',
+                     success: function(res) {
+                        if (res.status === 'success') {
+                           alert(`"${pos_item_name}" successfully restored.`);
+                           load_pos_inventory(current_page);
+                           load_pos_checkout_receipt(pos_checkout_code);
+                        } else {
+                           alert(res.message);
+                        }
+                     },
+                     error: function() { alert('Server error'); }
+                  });
+               });  
+           },
+           error: function() {
+               $('#receipt_items').html('<tr><td colspan="4">Server error</td></tr>');
+           }
+       });
    }
    $(document).on('click', '.view_receipt_activator', function() {
       let sale_code = $(this).data('sale-code');
@@ -2113,5 +2221,25 @@
 
       // Apply sorting class
       $(this).addClass(`sorted ${ascending ? 'ascending' : 'descending'}`);
+   });
+   $('#pos_restocking_search').on('input', function () {
+      let keyword = $(this).val().toLowerCase();
+
+      $('#pos_restocking_report_container tr').filter(function () {
+         $(this).toggle(
+            $(this).text().toLowerCase().indexOf(keyword) > -1
+         );
+      });
+      compute_pos_restocking_report_total();
+   });
+   $('#pos_sales_search').on('input', function () {
+       let keyword = $(this).val().toLowerCase();
+
+       $('#pos_sales_report_container tr').filter(function () {
+           $(this).toggle(
+               $(this).text().toLowerCase().indexOf(keyword) > -1
+           );
+       });
+      compute_pos_sales_report_total();
    });
 </script>

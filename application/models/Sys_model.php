@@ -34,94 +34,92 @@ class Sys_model extends CI_Model {
 	    $username = $this->input->post('username', TRUE);
 	    $password = $this->input->post('password', TRUE);
 
-	    // Get account info
-	    $sql = "SELECT user_id, username, password
-	            FROM user_accounts
-	            WHERE username = ?";
-	    $query = $this->db->query($sql, [$username]);
+	    $sql     = "SELECT user_id, username, password FROM user_accounts WHERE username = ?";
+	    $query   = $this->db->query($sql, [$username]);
 	    $account = $query->row();
 
 	    $password_valid = false;
 
-	    // Support hashed + legacy plain text passwords
 	    if ($account) {
-
 	        if (password_verify($password, $account->password)) {
 	            $password_valid = true;
-	        }
-
-	        // ===== CHANGED =====
-	        elseif ($password === $account->password) {
+	        } elseif ($password === $account->password) {
 	            $password_valid = true;
-
-	            // Automatically upgrade old plain text password to hashed password
 	            $new_hash = password_hash($password, PASSWORD_DEFAULT);
-
 	            $this->db->query(
-	                "UPDATE user_accounts
-	                 SET password = ?
-	                 WHERE user_id = ?",
+	                "UPDATE user_accounts SET password = ? WHERE user_id = ?",
 	                [$new_hash, $account->user_id]
 	            );
 	        }
-	        // ===== END CHANGE =====
 	    }
 
 	    if ($account && $password_valid) {
-
 	        $user_id = $account->user_id;
 
-	        // Get user details
-	        $sql = "SELECT user_type, last_name, gender, user_status
-	                FROM user_info
-	                WHERE user_id = ?";
+	        $sql   = "SELECT first_name, last_name, gender, user_type, user_status FROM user_info WHERE user_id = ?";
 	        $query = $this->db->query($sql, [$user_id]);
-	        $user = $query->row();
+	        $user  = $query->row();
 
 	        if ($user) {
-
-	            // Prevent inactive users from logging in
 	            if ($user->user_status == 0) {
-	                $attempt_response = array(
-	                    'status'    => 'inactive',
-	                    'user_type' => '',
-	                    'last_name' => '',
-	                    'gender'    => '',
-	                    'message'   => 'Account is inactive'
-	                );
-	            }
-	            else {
-	                // Create session only for active users
-	                $_SESSION['active_user'] = $user_id;
+	                $attempt_response = [
+	                    'status'  => 'inactive',
+	                    'message' => 'Account is inactive'
+	                ];
+	            } else {
+	                // Determine redirect based on user type
+	                switch ((int) $user->user_type) {
+	                    case 8: // Superadmin — access all
+	                        $redirect = 'dashboard';
+	                        break;
+	                    case 1: // Inventory admin
+	                        $redirect = 'inventory';
+	                        break;
+	                    case 2: // Sales / cashier
+	                        $redirect = 'sales';
+	                        break;
+	                    default:
+	                        $redirect = 'login';
+	                        break;
+	                }
 
-	                $attempt_response = array(
+	                // Core identity
+	                $_SESSION['active_user']      = $user_id;
+	                $_SESSION['active_username']  = $account->username;
+	                $_SESSION['active_user_type'] = (int) $user->user_type;
+	                $_SESSION['active_status']    = $user->user_status;
+
+	                // Display info
+	                $_SESSION['active_first_name'] = $user->first_name;
+	                $_SESSION['active_last_name']  = $user->last_name;
+	                $_SESSION['active_gender']     = $user->gender;
+	                $_SESSION['active_full_name']  = trim($user->first_name . ' ' . $user->last_name);
+
+	                // Security
+	                $_SESSION['session_token']   = bin2hex(random_bytes(32));
+	                $_SESSION['session_started'] = time();
+	                $_SESSION['session_ip']      = $_SERVER['REMOTE_ADDR'];
+	                $_SESSION['session_ua']      = $_SERVER['HTTP_USER_AGENT'];
+
+	                $attempt_response = [
 	                    'status'    => 'success',
 	                    'user_type' => $user->user_type,
 	                    'last_name' => $user->last_name,
-	                    'gender'    => $user->gender
-	                );
+	                    'gender'    => $user->gender,
+	                    'redirect'  => $redirect
+	                ];
 	            }
-
+	        } else {
+	            $attempt_response = [
+	                'status'  => 'error',
+	                'message' => 'User info not found'
+	            ];
 	        }
-	        else {
-	            $attempt_response = array(
-	                'status'    => 'error',
-	                'user_type' => '',
-	                'last_name' => '',
-	                'gender'    => '',
-	                'message'   => 'User info not found'
-	            );
-	        }
-
-	    }
-	    else {
-	        $attempt_response = array(
-	            'status'    => 'error',
-	            'user_type' => '',
-	            'last_name' => '',
-	            'gender'    => '',
-	            'message'   => 'Invalid username or password'
-	        );
+	    } else {
+	        $attempt_response = [
+	            'status'  => 'error',
+	            'message' => 'Invalid username or password'
+	        ];
 	    }
 
 	    header('Content-Type: application/json');
@@ -431,83 +429,74 @@ class Sys_model extends CI_Model {
 	}
 	public function process_restocking()
 	{
-	    $pos_restocking_code = $_POST['pos_restocking_code'];
 	    $pos_restocking_date = $_POST['pos_restocking_date'];
 	    $items = json_decode($_POST['items'], true);
-
 	    header('Content-Type: application/json');
-
 	    if (empty($items)) {
 	        echo json_encode([
-	            'status' => 'error',
+	            'status'  => 'error',
 	            'message' => 'No items to restock'
 	        ]);
 	        exit;
 	    }
-
 	    $this->db->trans_start();
-
+	    // Generate restocking code: R{sequence}_{MM}_{YYYY}
+	    $month = date('m');
+	    $year  = date('Y');
+	    $sql   = "SELECT IFNULL(MAX(CAST(SUBSTRING_INDEX(SUBSTRING(pos_restocking_code, 2), '_', 1) AS UNSIGNED)), 0) + 1 AS next_seq
+	              FROM pos_restocking
+	              WHERE pos_restocking_code LIKE ?";
+	    $next_seq            = $this->db->query($sql, ["R%_{$month}_{$year}"])->row()->next_seq;
+	    $pos_restocking_code = 'R' . str_pad($next_seq, 2, '0', STR_PAD_LEFT) . "_{$month}_{$year}";
 	    foreach ($items as $item) {
-
 	        $total = $item['pos_item_price'] * $item['pos_item_quantity'];
-
-	        $sql = "INSERT INTO pos_restocking 
-	                (pos_restocking_code, pos_item_id, pos_item_code, pos_item_name, 
-	                 pos_item_price, pos_item_quantity, pos_item_unit, pos_restocking_total, pos_restocking_date)
-	                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-	        $this->db->query($sql, [
-	            $pos_restocking_code,
-	            $item['pos_item_id'],
-	            $item['pos_item_code'],
-	            $item['pos_item_name'],
-	            $item['pos_item_price'],
-	            $item['pos_item_quantity'],
-	            $item['pos_item_unit'],
-	            $total,
-	            $pos_restocking_date
-	        ]);
-
-	        $sql = "UPDATE pos_inventory 
-	                SET pos_item_stock = pos_item_stock + ?
-	                WHERE pos_item_id = ?";
-
-	        $this->db->query($sql, [
-	            $item['pos_item_quantity'],
-	            $item['pos_item_id']
-	        ]);
-
-	        $activity_type = "Restocking";
-	        $pos_code = "Item ID: " . $item['pos_item_id'];
-
-	        $activity = "<strong>Restocked:</strong><br>"
-	                  . $item['pos_item_name']
-	                  . " (+" . $item['pos_item_quantity'] . " " . $item['pos_item_unit'] . ")";
-
+	        $this->db->query(
+	            "INSERT INTO pos_restocking 
+	             (pos_restocking_code, pos_item_id, pos_item_code, pos_item_name, 
+	              pos_item_price, pos_item_quantity, pos_item_unit, pos_restocking_total, pos_restocking_date)
+	             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+	            [
+	                $pos_restocking_code,
+	                $item['pos_item_id'],
+	                $item['pos_item_code'],
+	                $item['pos_item_name'],
+	                $item['pos_item_price'],
+	                $item['pos_item_quantity'],
+	                $item['pos_item_unit'],
+	                $total,
+	                $pos_restocking_date
+	            ]
+	        );
+	        $this->db->query(
+	            "UPDATE pos_inventory 
+	             SET pos_item_stock = pos_item_stock + ?
+	             WHERE pos_item_id = ?",
+	            [$item['pos_item_quantity'], $item['pos_item_id']]
+	        );
 	        $this->db->query(
 	            "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) 
 	             VALUES (?, ?, ?)",
-	            [$activity_type, $pos_code, $activity]
+	            [
+	                "Restocking",
+	                $pos_restocking_code,
+	                "<strong>Restocked:</strong><br>" . $item['pos_item_name']
+	                    . " (+" . $item['pos_item_quantity'] . " " . $item['pos_item_unit'] . ")"
+	            ]
 	        );
 	    }
-
 	    $this->db->trans_complete();
-
 	    if ($this->db->trans_status() === FALSE) {
-
 	        echo json_encode([
-	            'status' => 'error',
+	            'status'  => 'error',
 	            'message' => 'Restocking failed (rolled back)'
 	        ]);
-
 	    } else {
-
 	        echo json_encode([
-	            'status' => 'success',
-	            'message' => 'Restocking completed successfully'
+	            'status'             => 'success',
+	            'message'            => 'Restocking completed successfully',
+	            'pos_restocking_code' => $pos_restocking_code
 	        ]);
 	    }
-
 	    exit;
 	}
 	public function load_pos_restocking_report()
@@ -706,53 +695,40 @@ class Sys_model extends CI_Model {
 	public function load_pos_sales_report()
 	{
 	    $report_date = $_POST['report_date'];
-
 	    header('Content-Type: application/json');
-
 	    $params = [];
-
 	    $sql = "
 	        SELECT 
 	            pc.pos_checkout_code,
-
 	            COUNT(DISTINCT pc.pos_item_id) AS total_items,
 	            SUM(pc.pos_item_quantity) AS total_quantity,
-
 	            IFNULL(MAX(pc.pos_discount_value), 0) AS pos_discount_value,
-
 	            SUM(pc.pos_item_price * pc.pos_item_quantity) AS pos_checkout_total,
-
 	            MAX(pc.pos_checkout_status) AS pos_checkout_status,
 	            MAX(pc.pos_checkout_date) AS pos_checkout_date,
-
-	            -- Proper name formatting
+	            SUM(CASE WHEN pc.pos_checkout_status = '2' THEN 1 ELSE 0 END) AS voided_count,
+	            COUNT(*) AS total_count,
 	            CONCAT(
 	                ui.first_name, ' ',
 	                IFNULL(CONCAT(LEFT(ui.middle_name, 1), '. '), ''),
 	                ui.last_name
 	            ) AS cashier_name
-
 	        FROM pos_checkouts pc
 	        LEFT JOIN user_info ui ON ui.user_id = pc.user_id
 	    ";
-
 	    if (!empty($report_date)) {
 	        $sql .= " WHERE DATE(pc.pos_checkout_date) = ? ";
 	        $params[] = $report_date;
 	    }
-
 	    $sql .= "
 	        GROUP BY pc.pos_checkout_code
 	        ORDER BY pos_checkout_date DESC
 	    ";
-
 	    $query = $this->db->query($sql, $params);
-
 	    echo json_encode([
 	        'status' => 'success',
 	        'data' => $query->result_array()
 	    ]);
-
 	    exit;
 	}
 	public function load_pos_checkout_receipt()
@@ -1018,6 +994,12 @@ class Sys_model extends CI_Model {
 	        [$user_id]
 	    )->row();
 
+	    // Prevent modifying superadmin status
+	    if ((int) $old->user_type === 8) {
+	        $user_status = $old->user_status;
+	        $user_type = $old->user_type;
+	    }
+
 	    $this->db->query(
 	        "UPDATE user_info
 	         SET first_name = ?, middle_name = ?, last_name = ?, gender = ?,
@@ -1039,6 +1021,15 @@ class Sys_model extends CI_Model {
 	        );
 	    }
 
+	    // Type label helper
+	    function get_type_label($type) {
+	        switch ((int) $type) {
+	            case 8:  return 'Superadmin';
+	            case 1:  return 'Admin';
+	            default: return 'Cashier';
+	        }
+	    }
+
 	    // Build change list for log
 	    $changes = [];
 	    if ($old->first_name . ' ' . $old->last_name !== $first_name . ' ' . $last_name)
@@ -1046,7 +1037,7 @@ class Sys_model extends CI_Model {
 	    if ($old->username !== $username)
 	        $changes[] = 'Username: @' . $old->username . ' → @' . $username;
 	    if ($old->user_type != $user_type)
-	        $changes[] = 'Type: ' . ($old->user_type == 1 ? 'Admin' : 'Cashier') . ' → ' . ($user_type == 1 ? 'Admin' : 'Cashier');
+	        $changes[] = 'Type: ' . get_type_label($old->user_type) . ' → ' . get_type_label($user_type);
 	    if ($old->user_status != $user_status)
 	        $changes[] = 'Status: ' . ($old->user_status == 1 ? 'Active' : 'Inactive') . ' → ' . ($user_status == 1 ? 'Active' : 'Inactive');
 	    if (!empty($password))
@@ -1269,9 +1260,9 @@ class Sys_model extends CI_Model {
 	    }
 
 	    $sql = "UPDATE pos_checkouts
-	            SET pos_checkout_status = 1
-	            WHERE pos_checkout_code = ? AND pos_checkout_status = 2";
-	    $this->db->query($sql, [$pos_checkout_code]);
+		        SET pos_checkout_status = 1
+		        WHERE pos_checkout_code = ? AND pos_checkout_status IN (2, 3)";
+		$this->db->query($sql, [$pos_checkout_code]);
 
 	    if ($this->db->affected_rows() == 0) {
 	        echo json_encode(['status' => 'error', 'message' => 'No changes made']);
@@ -1280,14 +1271,18 @@ class Sys_model extends CI_Model {
 
 	    $item_lines = [];
 	    foreach ($rows as $row) {
-	        if ($row->pos_checkout_status == 2) {
-	            $this->db->query(
-	                "UPDATE pos_inventory SET pos_item_stock = pos_item_stock - ? WHERE pos_item_id = ?",
-	                [$row->pos_item_quantity, $row->pos_item_id]
-	            );
-	            $item_lines[] = $row->pos_item_name . ' (x' . $row->pos_item_quantity . ' ' . $row->pos_item_unit . ')';
-	        }
-	    }
+		    if ($row->pos_checkout_status == 2) {
+		        // Was fully voided — restore stock
+		        $this->db->query(
+		            "UPDATE pos_inventory SET pos_item_stock = pos_item_stock - ? WHERE pos_item_id = ?",
+		            [$row->pos_item_quantity, $row->pos_item_id]
+		        );
+		        $item_lines[] = $row->pos_item_name . ' (x' . $row->pos_item_quantity . ' ' . $row->pos_item_unit . ')';
+		    } else if ($row->pos_checkout_status == 3) {
+		        // Was pending void — just reset status, no stock change needed
+		        $item_lines[] = $row->pos_item_name . ' (x' . $row->pos_item_quantity . ' ' . $row->pos_item_unit . ') [void request cancelled]';
+		    }
+		}
 
 	    $this->db->query(
 	        "INSERT INTO pos_logs (pos_activity_type, pos_code, pos_activity) VALUES (?, ?, ?)",
@@ -1299,6 +1294,94 @@ class Sys_model extends CI_Model {
 	    );
 
 	    echo json_encode(['status' => 'success', 'message' => 'Sale restored']);
+	}
+	public function request_void_pos_checkout_item()
+	{
+	    $pos_item_id       = $_POST['pos_item_id'];
+	    $pos_checkout_code = $_POST['pos_checkout_code'];
+	    header('Content-Type: application/json');
+	    if (empty($pos_item_id) || empty($pos_checkout_code)) {
+	        echo json_encode([
+	            'status'  => 'error',
+	            'message' => 'Missing required fields'
+	        ]);
+	        exit;
+	    }
+	    $this->db->query(
+	        "UPDATE pos_checkouts
+	         SET pos_checkout_status = 3
+	         WHERE pos_item_id = ? AND pos_checkout_code = ?",
+	        [$pos_item_id, $pos_checkout_code]
+	    );
+	    if ($this->db->affected_rows() > 0) {
+	        echo json_encode([
+	            'status'  => 'success',
+	            'message' => 'Void request submitted successfully'
+	        ]);
+	    } else {
+	        echo json_encode([
+	            'status'  => 'error',
+	            'message' => 'Item not found'
+	        ]);
+	    }
+	    exit;
+	}
+	public function cancel_void_request_pos_checkout_item()
+	{
+	    $pos_item_id       = $_POST['pos_item_id'];
+	    $pos_checkout_code = $_POST['pos_checkout_code'];
+	    header('Content-Type: application/json');
+	    if (empty($pos_item_id) || empty($pos_checkout_code)) {
+	        echo json_encode([
+	            'status'  => 'error',
+	            'message' => 'Missing required fields'
+	        ]);
+	        exit;
+	    }
+	    $this->db->query(
+	        "UPDATE pos_checkouts
+	         SET pos_checkout_status = 1
+	         WHERE pos_item_id = ? AND pos_checkout_code = ? AND pos_checkout_status = 3",
+	        [$pos_item_id, $pos_checkout_code]
+	    );
+	    if ($this->db->affected_rows() > 0) {
+	        echo json_encode([
+	            'status'  => 'success',
+	            'message' => 'Void request cancelled successfully'
+	        ]);
+	    } else {
+	        echo json_encode([
+	            'status'  => 'error',
+	            'message' => 'Item not found or not pending void'
+	        ]);
+	    }
+	    exit;
+	}
+	public function load_pos_voiding_requests()
+	{
+	    header('Content-Type: application/json');
+	    $data = $this->db->query(
+	        "SELECT 
+	            c.pos_checkout_id,
+	            c.pos_checkout_code,
+	            c.pos_item_id,
+	            c.pos_item_name,
+	            c.pos_item_price,
+	            c.pos_item_quantity,
+	            c.pos_item_unit,
+	            c.pos_checkout_total,
+	            c.pos_checkout_date,
+	            CONCAT(u.first_name, ' ', u.last_name) AS cashier_name
+	         FROM pos_checkouts c
+	         LEFT JOIN user_info u ON u.user_id = c.user_id
+	         WHERE c.pos_checkout_status = 3
+	         ORDER BY c.pos_checkout_date DESC"
+	    )->result_array();
+	    echo json_encode([
+	        'status' => 'success',
+	        'data'   => $data
+	    ]);
+	    exit;
 	}
 
 

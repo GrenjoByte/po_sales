@@ -40,19 +40,22 @@
 
 </style>
 <div class="modal fade" tabindex="-1" id="notification_modal">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="notification_title">Notification Title</h5>
-                <button type="button" tabindex="-1" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 360px;">
+        <div class="modal-content border-0">
+            <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                <div>
+                    <h5 class="modal-title fw-semibold" id="notification_title">Notification</h5>
+                    <p class="text-muted small mb-0 mt-1">Please wait...</p>
+                </div>
+                <button type="button" tabindex="-1" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <p class="text-center" id="notification_body"></p>
-                <div class="d-flex justify-content-center" id="notification_spinner">
-                    <div class="spinner-grow spinner-lg" role="status" id="notification_status">
+            <div class="modal-body px-4 pt-3 pb-4 text-center">
+                <div class="mb-3" id="notification_spinner">
+                    <div class="spinner-grow text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
+                <p class="text-muted small mb-0" id="notification_body"></p>
             </div>
         </div>
     </div>

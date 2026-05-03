@@ -1,56 +1,110 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<script type="text/javascript" src="<?php echo base_url();?>darken/shader.js"></script>
-	<title>Login</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-	<style>
-		.vh-80 {
-		  	height: 80vh !important;
-		}
-	</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" src="<?php echo base_url();?>darken/shader.js"></script>
+    <title>Login — Saki Mart</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bs-tertiary-bg);
+        }
+        .login-card {
+            width: 100%;
+            max-width: 380px;
+            border: none;
+            border-radius: 16px;
+        }
+        .brand-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+        }
+    </style>
 </head>
 <body>
-	<header>
-		<?php include 'esses/assets.php';?>
-	</header>
-	<main>
-		<div class="container-fluid vh-80 d-flex align-items-center justify-content-center">
-		    <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
-				<h2 class="text-center mb-3">SAKI MART</h2>
-		        <h2 class="text-center mb-3">Login</h2>
-		        <form class="needs-validation" novalidate id="login_form">
-		            <div class="mb-3">
-		                <label class="form-label">Username</label>
-		                <input id="username" name="username" type="text" class="form-control" placeholder="Enter username">
-		            </div>
-		            <div class="mb-3">
-		                <label class="form-label">Password</label>
-		                <input id="password" name="password" type="password" class="form-control" placeholder="Enter password">
-		            </div>
+    <header>
+        <?php include 'esses/assets.php';?>
+    </header>
+    <main class="w-100 px-3">
+        <div class="card shadow-sm p-4 pt-5 pb-5 login-card mx-auto">
 
-		            <button type="button" class="btn btn-primary w-100" id="login_button">
-		                Sign In
-		            </button>
-		        </form>
-		    </div>
-		</div>
-	</main>
-	<footer>
-	</footer>
+            <!-- Brand -->
+            <div class="text-center mb-4">
+                <div class="brand-title text-primary mb-1">SAKI MART</div>
+                <h5 class="fw-semibold mb-0">Welcome back</h5>
+                <p class="text-muted small mb-0">Sign in to continue</p>
+            </div>
+
+            <form novalidate id="login_form">
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold" for="username">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-body border-end-0">
+                            <i class="bi bi-person text-muted" style="font-size:14px;"></i>
+                        </span>
+                        <input id="username" name="username" type="text"
+                            class="form-control border-start-0 shadow-none"
+                            placeholder="Enter username"
+                            autocomplete="username">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold" for="password">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-body border-end-0">
+                            <i class="bi bi-lock text-muted" style="font-size:14px;"></i>
+                        </span>
+                        <input id="password" name="password" type="password"
+                            class="form-control border-start-0 shadow-none"
+                            placeholder="Enter password"
+                            autocomplete="current-password">
+                        <button class="btn border-start-0 shadow-none"
+                            type="button" id="toggle_password" tabindex="-1">
+                            <i class="bi bi-eye" style="font-size:14px;"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary w-100 rounded-pill" id="login_button">
+                    Sign In
+                </button>
+            </form>
+
+        </div>
+        <p class="text-center text-muted small mt-3">Saki Mart POS &copy; <?php echo date('Y'); ?></p>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+</html>
 <script type="text/javascript">
-	// $('#login_button').on('click', function() {
-	// 	title = "Login Successful";
-	// 	message = "Please wait while we redirect you to your user page";	
-	// 	status = "success";
-	// 	load_notification(title, message, status);
-	// });
 	$('#login_button').on('click', function() {
 		attempt_login();
 	})
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('login_button').click();
+        }
+    });
+
+    document.getElementById('toggle_password').addEventListener('click', function () {
+        let input = document.getElementById('password');
+        let icon  = this.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
+        }
+    });
 	function attempt_login() {
 		var ajax = $.ajax({
 			method: 'POST',

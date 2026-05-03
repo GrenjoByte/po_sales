@@ -52,7 +52,7 @@
                   <span class="input-group-text bg-transparent border-end-0">
                      <i class="bi bi-calendar3 text-muted" style="font-size:12px;"></i>
                   </span>
-                  <input type="date" id="pos_restocking_report_date" class="form-control border-start-0 ps-0">
+                  <input type="date" id="pos_restocking_report_date" class="form-control border-start-0 ps-0" value="<?php echo date('Y-m-d'); ?>" >
                </div>
                <div class="d-flex align-items-center gap-2">
                   <span class="text-muted small">Grand Total:</span>
@@ -111,7 +111,7 @@
                   <span class="input-group-text bg-transparent border-end-0">
                      <i class="bi bi-calendar3 text-muted" style="font-size:12px;"></i>
                   </span>
-                  <input type="date" id="pos_sales_report_date" class="form-control border-start-0 ps-0">
+                  <input type="date" id="pos_sales_report_date" class="form-control border-start-0 ps-0"  value="<?php echo date('Y-m-d'); ?>" >
                </div>
                <div class="d-flex align-items-center gap-2">
                   <span class="text-muted small">Grand Total:</span>
@@ -152,22 +152,22 @@
    </div>
 </div>
 <div class="modal fade" id="pos_logs_modal" tabindex="-1" aria-labelledby="pos_logs_title" aria-hidden="true">
-   <div class="modal-dialog modal-lg modal-dialog-scrollable">
+   <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
       <div class="modal-content border-0">
          <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
             <div>
-               <h1 class="modal-title fs-5 fw-semibold" id="pos_logs_title">
+               <h5 class="modal-title fw-semibold" id="pos_logs_title">
                   <i class="bi bi-journal-text me-2 text-primary"></i>Activity Log
-               </h1>
+               </h5>
                <p class="text-muted small mb-0 mt-1">System activity and event history</p>
             </div>
             <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
-         <div class="modal-body px-4 pt-3">
+         <div class="modal-body px-4 pt-3 pb-2">
             <div class="table-responsive rounded-3 border">
                <table class="table table-sm align-middle mb-0">
                   <thead style="background: var(--bs-tertiary-bg);">
-                     <tr class="text-center small text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
+                     <tr class="text-center text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
                         <th class="fw-semibold ps-3" style="width:40px;">#</th>
                         <th class="fw-semibold">Activity Type</th>
                         <th class="fw-semibold text-start">POS Code</th>
@@ -180,27 +180,30 @@
                </table>
             </div>
          </div>
+         <div class="modal-footer border-top-0 px-4 pb-4 pt-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Close</button>
+         </div>
       </div>
    </div>
 </div>
 
 <div class="modal fade" id="pos_stocks_report_modal" tabindex="-1" aria-labelledby="pos_stocks_report_title" aria-hidden="true">
-   <div class="modal-dialog modal-lg modal-dialog-scrollable">
+   <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
       <div class="modal-content border-0">
          <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
             <div>
-               <h1 class="modal-title fs-5 fw-semibold" id="pos_stocks_report_title">
+               <h5 class="modal-title fw-semibold" id="pos_stocks_report_title">
                   <i class="bi bi-exclamation-triangle me-2 text-warning"></i>Low Stock Items
-               </h1>
+               </h5>
                <p class="text-muted small mb-0 mt-1">Items that have fallen below their stock threshold</p>
             </div>
             <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
-         <div class="modal-body px-4 pt-3">
+         <div class="modal-body px-4 pt-3 pb-2">
             <div class="table-responsive rounded-3 border">
-               <table class="table table-sm align-middle mb-0 sortable">
+               <table class="table table-sm align-middle mb-0">
                   <thead style="background: var(--bs-tertiary-bg);">
-                     <tr class="text-center small text-muted pointered" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
+                     <tr class="text-center text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
                         <th class="fw-semibold ps-3" style="width:40px;">#</th>
                         <th class="fw-semibold text-start">Item Name</th>
                         <th class="fw-semibold">POS Code</th>
@@ -212,6 +215,54 @@
                   </tbody>
                </table>
             </div>
+         </div>
+         <div class="modal-footer border-top-0 px-4 pb-4 pt-2">
+         </div>
+      </div>
+   </div>
+</div>
+<div class="modal fade" id="pos_voiding_modal" tabindex="-1" aria-labelledby="pos_voiding_modal_title" aria-hidden="true">
+   <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+      <div class="modal-content border-0">
+         <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+            <div>
+               <h5 class="modal-title fw-semibold" id="pos_voiding_modal_title">
+                  <i class="bi bi-slash-circle-fill me-2 text-danger"></i>Voiding Requests
+               </h5>
+               <p class="text-muted small mb-0 mt-1">Items pending void approval</p>
+            </div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body px-4 pt-3 pb-2">
+            <div class="d-flex justify-content-end mb-2">
+                <div class="input-group input-group-sm" style="width: 250px;">
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control" id="pos_voiding_search" placeholder="Search...">
+                </div>
+            </div>
+            <div class="table-responsive rounded-3 border">
+               <table class="table table-sm align-middle mb-0">
+                  <thead style="background: var(--bs-tertiary-bg);">
+                     <tr class="text-center text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
+                        <th class="fw-semibold ps-3" style="width:40px;">#</th>
+                        <th class="fw-semibold text-start">Item Name</th>
+                        <th class="fw-semibold">Sale Code</th>
+                        <th class="fw-semibold">Qty</th>
+                        <th class="fw-semibold">Unit Price</th>
+                        <th class="fw-semibold">Total</th>
+                        <th class="fw-semibold">Cashier</th>
+                        <th class="fw-semibold pe-3">Actions</th>
+                     </tr>
+                  </thead>
+                  <tbody class="text-center small" id="pos_voiding_requests_container">
+                  </tbody>
+               </table>
+            </div>
+         </div>
+         <div class="modal-footer border-top-0 px-4 pb-4 pt-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Close</button>
          </div>
       </div>
    </div>
@@ -294,16 +345,9 @@
          <div class="modal-body px-4 pt-3">
             <form id="pos_restocking_form" enctype="multipart/form-data">
                <div class="row g-3 mb-3">
-                  <div class="col-6">
-                     <label for="pos_restocking_code" class="form-label small fw-semibold">Restock Code</label>
-                     <input type="text" class="form-control form-control-sm"
-                        id="pos_restocking_code" name="pos_restocking_code"
-                        maxlength="200" placeholder="e.g. RS-0001" required>
-                  </div>
-                  <div class="col-6">
-                     <label for="pos_restocking_date" class="form-label small fw-semibold">Restock Date</label>
-                     <input type="date" class="form-control form-control-sm"
-                        id="pos_restocking_date" name="pos_restocking_date" required>
+                  <div class="col-4">
+                     <label for="pos_restocking_date" class="form-label small fw-semibold">Restocking Date</label>
+                     <input type="date" class="form-control form-control-sm" id="pos_restocking_date" name="pos_restocking_date" value="<?php echo date('Y-m-d'); ?>" required>
                   </div>
                </div>
             </form>
@@ -483,7 +527,7 @@
    </div>
 </div>
 
-<div class="dropup position-fixed bottom-0 end-0 m-4">
+<div class="dropup position-fixed bottom-0 end-0 m-4" style="z-index: 9999;">
    <button type="button"
       class="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center dropdown-toggle"
       data-bs-toggle="dropdown"
@@ -839,7 +883,12 @@
                      item.pos_item_code.toLowerCase().includes(search_val)
                   );
 
-                  // Low stock badge: show if stock <= pos_item_low
+                  let box_icon_class = pos_item_stock <= 0
+                  ? 'text-danger opacity-60'
+                  : (pos_item_low > 0 && pos_item_stock <= pos_item_low)
+                  ? 'text-warning opacity-60'
+                  : 'text-secondary opacity-60';
+
                   let low_stock_badge = pos_item_stock <= 0
                    ? `<span class="position-absolute top-0 end-0 m-1 badge bg-danger text-white" style="font-size:10px;">Out of Stock</span>`
                    : (pos_item_low > 0 && pos_item_stock <= pos_item_low)
@@ -852,8 +901,7 @@
 
                         <div class="position-relative img-hover-wrapper d-flex justify-content-center align-items-center rounded-top"
                            style="aspect-ratio:5/2; background: var(--bs-tertiary-bg);">
-                           <i class="bi bi-box2 text-secondary opacity-50" style="font-size:2.5rem;"></i>
-                           ${low_stock_badge}
+                           <i class="bi bi-box2 ${box_icon_class}" style="font-size:2.5rem;"></i>                           ${low_stock_badge}
                            <div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer rounded-top d-flex justify-content-center align-items-center gap-2">
                               <button type="button" class="btn btn-sm btn-light rounded-pill px-3 hover-btn pos_item_update_activator">
                                  <i class="bi bi-pencil me-1" style="font-size:11px;"></i>Edit
@@ -870,6 +918,11 @@
                            </div>
                            <div class="text-muted text-truncate" style="font-size:0.75rem;">
                               ${pos_item_code}
+                           </div>
+                           <div class="d-flex align-items-center gap-1 mt-1">
+                              <div class="fw-semibold text-truncate overflow-tooltip" style="font-size:0.875rem;" role="button">
+                                 ₱${pos_item_price}
+                              </div>
                            </div>
                            <div class="d-flex align-items-center gap-1 mt-1">
                               <span class="fw-semibold" style="font-size:0.85rem;">${pos_item_stock}</span>
@@ -982,11 +1035,19 @@
             } else {
                $container.html('<p class="text-center">No items found.</p>');
             }
+            update_navigator(response, page)
+            
+            $('#prev_page').off('click').on('click', function() {
+               if (current_page > 1) {
+                  current_page--;
+                  load_pos_inventory(current_page);
+               }
+            });
 
-            const total_pages = Math.ceil(response.total / items_per_page);
-            $('#page_info').text(`Page ${page} of ${total_pages}`);
-            $('#prev_page').prop('disabled', page <= 1);
-            $('#next_page').prop('disabled', page >= total_pages);
+            $('#next_page').off('click').on('click', function() {
+               current_page++;
+               load_pos_inventory(current_page);
+            });
          },
          error: function() {
             $('#pos_item_cards_container').html('<p class="text-center text-danger">Failed to load items.</p>');
@@ -995,6 +1056,22 @@
    }
 
    load_pos_inventory(current_page);
+
+   function update_navigator(response, page) {
+      const total_pages = Math.ceil(response.total / items_per_page);
+      $('#page_info').text(`Page ${page} of ${total_pages}`);
+
+      const at_first = page <= 1;
+      const at_last = page >= total_pages;
+
+      $('#prev_page').prop('disabled', at_first)
+      .removeClass('btn-outline-secondary btn-outline-primary')
+      .addClass(at_first ? 'btn-outline-secondary' : 'btn-outline-primary');
+
+      $('#next_page').prop('disabled', at_last)
+      .removeClass('btn-outline-secondary btn-outline-primary')
+      .addClass(at_last ? 'btn-outline-secondary' : 'btn-outline-primary');
+   }
 
    setTimeout(() => {
       let firstMatch = $('#pos_item_cards_container .border-warning').first();
@@ -1022,18 +1099,6 @@
          $(this).val('');
          load_pos_inventory(1);
       }
-   });
-
-   $('#prev_page').click(function() {
-      if (current_page > 1) {
-         current_page--;
-         load_pos_inventory(current_page);
-      }
-   });
-
-   $('#next_page').click(function() {
-      current_page++;
-      load_pos_inventory(current_page);
    });
 
    $(function() {
@@ -1107,7 +1172,7 @@
                let row = `
                <tr data-pos_item_id="${pos_item_id}" data-barcode_value="${code}">
                   <td class="text-center align-middle">
-                     <svg class="barcode-svg" id="barcode_${index}"></svg>
+                     <svg class="barcode-svg w-100" id="barcode_${index}"></svg>
                   </td>
                   <td class="text-end">
                      <div class="dropdown dropstart">
@@ -1135,7 +1200,14 @@
                   format: "CODE128",
                   width: 1.6,
                   height: 40,
-                  displayValue: true
+                  displayValue: true,
+                  margin: 0
+               });
+
+// Stretch SVG to fill container after generation
+               $(`#barcode_${index}`).attr({
+                  width: '100%',
+                  height: 'auto'
                });
             });
          },
@@ -1250,54 +1322,72 @@
        });
        $('#pos_sales_report_total').text('₱' + grand_total.toFixed(2));
    }
+   function compute_pos_restocking_report_total() {
+       let grand_total = 0;
+       $('#pos_restocking_report_container tr:visible').each(function () {
+           if (!$(this).hasClass('opacity-50')) {
+               let total_text = $(this).find('td:nth-child(8)').text().replace('₱', '').trim();
+               let total = parseFloat(total_text) || 0;
+               grand_total += total;
+           }
+       });
+       $('#pos_restocking_report_total').text('₱' + grand_total.toFixed(2));
+   }
 
    function load_pos_sales_report(report_date = '') {
-       $.ajax({
-           url: '<?php echo base_url();?>i.php/sys_control/load_pos_sales_report',
-           method: 'POST',
-           data: {
-               report_date: report_date
-           },
-           dataType: 'json',
-           success: function (res) {
+      $.ajax({
+         url: '<?php echo base_url();?>i.php/sys_control/load_pos_sales_report',
+         method: 'POST',
+         data: {
+            report_date: report_date
+         },
+         dataType: 'json',
+         success: function(res) {
 
-               let container = $('#pos_sales_report_container');
-               container.empty();
+            let container = $('#pos_sales_report_container');
+            container.empty();
 
-               if (res.status !== 'success') {
-                   container.append(`<tr><td colspan="11">Failed to load data</td></tr>`);
-                   return;
-               }
+            if (res.status !== 'success') {
+               container.append(`<tr><td colspan="11">Failed to load data</td></tr>`);
+               return;
+            }
 
-               pos_sales_report_data = {};
+            pos_sales_report_data = {};
 
-               if (res.data.length === 0) {
-                   container.append(`<tr><td colspan="11">No records found</td></tr>`);
-                   $('#pos_sales_report_total').text('₱0.00');
-                   return;
-               }
+            if (res.data.length === 0) {
+               container.append(`<tr><td colspan="11">No records found</td></tr>`);
+               $('#pos_sales_report_total').text('₱0.00');
+               return;
+            }
 
-               res.data.forEach((row, index) => {
-                   pos_sales_report_data[row.pos_checkout_code] = row;
+            res.data.forEach((row, index) => {
+               pos_sales_report_data[row.pos_checkout_code] = row;
 
-                   let subtotal    = parseFloat(row.pos_checkout_total);
-                   let discount    = parseFloat(row.pos_discount_value) || 0;
-                   let final_total = subtotal - discount;
+               let subtotal    = parseFloat(row.pos_checkout_total);
+               let discount    = parseFloat(row.pos_discount_value) || 0;
+               let final_total = subtotal - discount;
 
-                   let raw_date       = new Date(row.pos_checkout_date);
-                   let formatted_date = isNaN(raw_date)
-                       ? row.pos_checkout_date
-                       : raw_date.toLocaleDateString('en-PH', {
-                           month: 'short',
-                           day:   'numeric',
-                           year:  'numeric'
-                       }) + ' · ' +
-                       raw_date.toLocaleTimeString('en-PH', {
-                           hour:   'numeric',
-                           minute: '2-digit'
-                       });
+               let raw_date       = new Date(row.pos_checkout_date);
+               let formatted_date = isNaN(raw_date)
+                  ? row.pos_checkout_date
+                  : raw_date.toLocaleDateString('en-PH', {
+                       month: 'short',
+                       day: 'numeric',
+                       year: 'numeric'
+                    }) + ' · ' +
+                    raw_date.toLocaleTimeString('en-PH', {
+                       hour: 'numeric',
+                       minute: '2-digit'
+                    });
 
-                   let status_badge = '';
+               let voided_count = parseInt(row.voided_count) || 0;
+               let total_count = parseInt(row.total_count) || 0;
+               let is_partially_voided = voided_count > 0 && voided_count < total_count;
+
+               let status_badge = '';
+               if (is_partially_voided) {
+                   status_badge = `<span class="badge rounded-pill bg-warning-subtle text-warning fw-normal px-2" style="color: #fd7e14 !important;">Partially Voided</span>`;
+               } else {
                    switch (row.pos_checkout_status) {
                        case '1':
                            status_badge = `<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>`;
@@ -1311,147 +1401,159 @@
                        default:
                            status_badge = `<span class="badge rounded-pill bg-secondary-subtle text-secondary fw-normal px-2">${row.pos_checkout_status}</span>`;
                    }
+               }
 
-                   let row_class = row.pos_checkout_status === '2' ? 'text-muted opacity-50' : '';
+               let row_class = (row.pos_checkout_status === '2' && !is_partially_voided) ? 'text-muted opacity-50' : '';
 
-                   container.append(`
-                       <tr class="border-top ${row_class}">
-                           <td class="ps-3 text-muted">${index + 1}</td>
-                           <td>
-                               <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
-                                   ${row.pos_checkout_code}
-                               </span>
-                           </td>
-                           <td class="text-muted">${row.total_items}</td>
-                           <td class="fw-medium">${row.total_quantity}</td>
-                           <td class="${discount > 0 ? 'text-danger' : 'text-muted'}">
-                               ${discount > 0 ? '−₱' + discount.toFixed(2) : '—'}
-                           </td>
-                           <td class="fw-semibold ${row.pos_checkout_status === '2' ? 'text-muted' : 'text-success'}">
-                               ₱${final_total.toFixed(2)}
-                           </td>
-                           <td class="text-muted">Cash</td>
-                           <td class="text-muted">${row.cashier_name ?? 'Unknown'}</td>
-                           <td>${status_badge}</td>
-                           <td class="text-muted" style="font-size:11px; white-space:nowrap;">
-                               ${formatted_date}
-                           </td>
-                           <td class="pe-3">
-                               <div class="d-flex gap-1 justify-content-end">
-                                   <button
-                                       type="button"
-                                       class="btn btn-sm btn-outline-primary view_receipt_activator rounded-pill px-2"
-                                       data-bs-toggle="modal"
-                                       data-bs-target="#receipt_modal"
-                                       data-sale-code="${row.pos_checkout_code}"
-                                       title="View receipt">
-                                       <i class="bi bi-eye" style="font-size:11px;"></i>
-                                   </button>
+               container.append(`
+                  <tr class="border-top ${row_class}">
+                     <td class="ps-3 text-muted">${index + 1}</td>
+                     <td>
+                        <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
+                           ${row.pos_checkout_code}
+                        </span>
+                     </td>
+                     <td class="text-muted">${row.total_items}</td>
+                     <td class="fw-medium">${row.total_quantity}</td>
+                     <td class="${discount > 0 ? 'text-danger' : 'text-muted'}">
+                        ${discount > 0 ? '−₱' + discount.toFixed(2) : '—'}
+                     </td>
+                     <td class="fw-semibold ${row.pos_checkout_status === '2' ? 'text-muted' : 'text-success'}">
+                        ₱${final_total.toFixed(2)}
+                     </td>
+                     <td class="text-muted">Cash</td>
+                     <td class="text-muted">${row.cashier_name ?? 'Unknown'}</td>
+                     <td>${status_badge}</td>
+                     <td class="text-muted" style="font-size:11px; white-space:nowrap;">
+                        ${formatted_date}
+                     </td>
+                     <td class="pe-3">
+                        <div class="d-flex gap-1 justify-content-end">
+                           <button
+                              type="button"
+                              class="btn btn-sm btn-outline-primary view_receipt_activator rounded-pill px-2"
+                              data-bs-toggle="modal"
+                              data-bs-target="#receipt_modal"
+                              data-sale-code="${row.pos_checkout_code}"
+                              title="View receipt">
+                              <i class="bi bi-eye" style="font-size:11px;"></i>
+                           </button>
 
-                                   <div class="dropdown dropstart">
+                           <div class="dropdown dropstart">
+                              <button
+                                 class="btn btn-sm btn-light rounded-pill px-2"
+                                 type="button"
+                                 data-bs-toggle="dropdown"
+                                 aria-expanded="false">
+                                 <i class="bi bi-three-dots" style="font-size:11px;"></i>
+                              </button>
+                              <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 py-1">
+                                 ${parseInt(row.pos_checkout_status) !== 2 ? `
+                                    <li>
                                        <button
-                                           class="btn btn-sm btn-light rounded-pill px-2"
-                                           type="button"
-                                           data-bs-toggle="dropdown"
-                                           aria-expanded="false">
-                                           <i class="bi bi-three-dots" style="font-size:11px;"></i>
+                                          type="button"
+                                          class="dropdown-item small void_sale d-flex align-items-center gap-2"
+                                          data-pos_checkout_code="${row.pos_checkout_code}">
+                                          <i class="bi bi-x-circle text-danger" style="font-size:12px;"></i>
+                                          Void sale
                                        </button>
-                                       <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 py-1">
-                                           ${parseInt(row.pos_checkout_status) !== 2 ? `
-                                               <li>
-                                                   <button
-                                                       type="button"
-                                                       class="dropdown-item small void_sale d-flex align-items-center gap-2"
-                                                       data-pos_checkout_code="${row.pos_checkout_code}">
-                                                       <i class="bi bi-x-circle text-danger" style="font-size:12px;"></i>
-                                                       Void sale
-                                                   </button>
-                                               </li>
-                                           ` : `
-                                               <li>
-                                                   <button
-                                                       type="button"
-                                                       class="dropdown-item small restore_sale d-flex align-items-center gap-2"
-                                                       data-pos_checkout_code="${row.pos_checkout_code}">
-                                                       <i class="bi bi-arrow-counterclockwise text-success" style="font-size:12px;"></i>
-                                                       Restore sale
-                                                   </button>
-                                               </li>
-                                           `}
-                                       </ul>
-                                   </div>
-                               </div>
-                           </td>
-                       </tr>
-                   `);
-               });
+                                    </li>
+                                 ` : `
+                                    <li>
+                                       <button
+                                          type="button"
+                                          class="dropdown-item small restore_sale d-flex align-items-center gap-2"
+                                          data-pos_checkout_code="${row.pos_checkout_code}">
+                                          <i class="bi bi-arrow-counterclockwise text-success" style="font-size:12px;"></i>
+                                          Restore sale
+                                       </button>
+                                    </li>
+                                 `}
+                              </ul>
+                           </div>
+                        </div>
+                     </td>
+                  </tr>
+               `);
+            });
 
-               compute_pos_sales_report_total();
+            compute_pos_sales_report_total();
 
-               $('.void_sale')
-                   .off('click')
-                   .on('click', function () {
-                       let pos_checkout_code = $(this).data('pos_checkout_code');
+            $('.void_sale')
+            .off('click')
+            .on('click', function() {
+               let pos_checkout_code = $(this).data('pos_checkout_code');
+               if (!confirm(`Void entire sale #${pos_checkout_code}?`)) return;
 
-                       if (!confirm(`Void entire sale #${pos_checkout_code}?`)) return;
+               let second_confirm = prompt(
+                  `Final confirmation required.\n\nType VOID to confirm voiding sale #${pos_checkout_code}.`
+               );
 
-                       let second_confirm = prompt(
-                           `Final confirmation required.\n\nType VOID to confirm voiding sale #${pos_checkout_code}.`
-                       );
+               if (second_confirm !== 'VOID') {
+                  alert('Void action cancelled.');
+                  return;
+               }
+               void_sale(pos_checkout_code);
+            });
 
-                       if (second_confirm !== 'VOID') {
-                           alert('Void action cancelled.');
-                           return;
-                       }
+            $('.restore_sale')
+            .off('click')
+            .on('click', function() {
+               let pos_checkout_code = $(this).data('pos_checkout_code');
 
-                       $.ajax({
-                           url: '<?php echo base_url();?>i.php/sys_control/void_pos_sale',
-                           method: 'POST',
-                           data: { pos_checkout_code: pos_checkout_code },
-                           dataType: 'json',
-                           success: function (res) {
-                               if (res.status === 'success') {
-                                   alert(`Sale #${pos_checkout_code} successfully voided.`);
-                                   load_pos_inventory(current_page);
-                                   load_pos_sales_report($('#pos_sales_report_date').val());
-                               } else {
-                                   alert(res.message);
-                               }
-                           },
-                           error: function () { alert('Server error'); }
-                       });
-                   });
-
-               $('.restore_sale')
-                   .off('click')
-                   .on('click', function () {
-                       let pos_checkout_code = $(this).data('pos_checkout_code');
-
-                       if (!confirm(`Restore sale #${pos_checkout_code}?`)) return;
-
-                       $.ajax({
-                           url: '<?php echo base_url();?>i.php/sys_control/restore_pos_sale',
-                           method: 'POST',
-                           data: { pos_checkout_code: pos_checkout_code },
-                           dataType: 'json',
-                           success: function (res) {
-                               if (res.status === 'success') {
-                                   alert(`Sale #${pos_checkout_code} successfully restored.`);
-                                   load_pos_inventory(current_page);
-                                   load_pos_sales_report($('#pos_sales_report_date').val());
-                               } else {
-                                   alert(res.message);
-                               }
-                           },
-                           error: function () { alert('Server error'); }
-                       });
-                   });
-           },
-           error: function () {
-               $('#pos_sales_report_container')
-                   .html(`<tr><td colspan="11">Server error</td></tr>`);
-           }
-       });
+               if (!confirm(`Restore sale #${pos_checkout_code}?`)) return;
+               restore_sale(pos_checkout_code);
+            });
+         },
+         error: function() {
+            $('#pos_sales_report_container')
+               .html(`<tr><td colspan="11">Server error</td></tr>`);
+         }
+      });
+   }
+   function void_sale(pos_checkout_code) {
+      $.ajax({
+         url: '<?php echo base_url();?>i.php/sys_control/void_pos_sale',
+         method: 'POST',
+         data: {
+            pos_checkout_code: pos_checkout_code
+         },
+         dataType: 'json',
+         success: function(res) {
+            if (res.status === 'success') {
+               alert(`Sale #${pos_checkout_code} successfully voided.`);
+               load_pos_inventory(current_page);
+               load_pos_sales_report($('#pos_sales_report_date').val());
+            } else {
+               alert(res.message);
+            }
+         },
+         error: function() {
+            alert('Server error');
+         }
+      });
+   }
+   function restore_sale(pos_checkout_code) {
+      $.ajax({
+         url: '<?php echo base_url();?>i.php/sys_control/restore_pos_sale',
+         method: 'POST',
+         data: {
+            pos_checkout_code: pos_checkout_code
+         },
+         dataType: 'json',
+         success: function(res) {
+            if (res.status === 'success') {
+               alert(`Sale #${pos_checkout_code} successfully restored.`);
+               load_pos_inventory(current_page);
+               load_pos_sales_report($('#pos_sales_report_date').val());
+            } else {
+               alert(res.message);
+            }
+         },
+         error: function() {
+            alert('Server error');
+         }
+      });
    }
    $('#pos_sales_report_date').on('change', function () {
       load_pos_sales_report($(this).val());
@@ -1498,13 +1600,8 @@
 
    $('#pos_restocking_form').on('submit', function (e) {
       e.preventDefault();
-      let restock_code = $('#pos_restocking_code').val().trim();
       let restock_date = $('#pos_restocking_date').val();
 
-      if (!restock_code) {
-         alert('Please enter a restock code.');
-         return;
-      }
       if (!restock_date) {
          alert('Please select a restock date.');
          return;
@@ -1533,7 +1630,6 @@
          url: '<?php echo base_url();?>i.php/sys_control/process_restocking',
          method: 'POST',
          data: {
-            pos_restocking_code: restock_code,
             pos_restocking_date: restock_date,
             items: JSON.stringify(items)
          },
@@ -1815,32 +1911,44 @@
            url: '<?php echo base_url();?>i.php/sys_control/load_pos_logs',
            method: 'POST',
            dataType: 'json',
-           success: function(res) {
-               const $tbody = $('#pos_logs_modal tbody');
+           success: function (res) {
+               const $tbody = $('#pos_logs_modal_container');
                $tbody.empty();
 
                if (res.data.length) {
                    res.data.forEach((row, index) => {
-                       const tr = `
-                           <tr>
-                               <td>${index + 1}</td>
-                               <td>${row.pos_activity_type}</td>
-                               <td class="text-start">${row.pos_code}</td>
-                               <td class="text-start">${row.pos_activity}</td>
-                               <td>${format_date_time(row.timestamp)}</td>
+                       $tbody.append(`
+                           <tr class="border-top">
+                               <td class="ps-3 text-muted">${index + 1}</td>
+                               <td>
+                                   <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
+                                       ${row.pos_activity_type}
+                                   </span>
+                               </td>
+                               <td class="text-start">
+                                   <span class="badge rounded-pill bg-secondary-subtle text-secondary fw-normal px-2 font-monospace">
+                                       ${row.pos_code}
+                                   </span>
+                               </td>
+                               <td class="text-start text-muted">${row.pos_activity}</td>
+                               <td class="pe-3 text-muted" style="font-size:11px; white-space:nowrap;">
+                                   ${format_date_time(row.timestamp)}
+                               </td>
                            </tr>
-                       `;
-                       $tbody.append(tr);
+                       `);
                    });
                } else {
                    $tbody.html(`
                        <tr>
-                           <td colspan="5" class="text-center text-muted">No logs found</td>
+                           <td colspan="5" class="text-center text-muted py-4">
+                               <i class="bi bi-journal-x d-block mb-2" style="font-size:2rem;"></i>
+                               No logs found
+                           </td>
                        </tr>
                    `);
                }
            },
-           error: function() {
+           error: function () {
                alert('Failed to load logs.');
            }
        });
@@ -2178,26 +2286,11 @@
             $('.void_receipt_item')
             .off('click')
             .on('click', function () {
-               let pos_item_id       = $(this).data('pos_item_id');
                let pos_item_name     = $(this).data('pos_item_name');
                let pos_checkout_code = $(this).data('pos_checkout_code');
                if (!confirm(`Void "${pos_item_name}" from sale #${pos_checkout_code}?`)) return;
-               $.ajax({
-                  url: '<?php echo base_url();?>i.php/sys_control/void_pos_checkout_item',
-                  method: 'POST',
-                  data: { pos_item_id: pos_item_id, pos_checkout_code: pos_checkout_code },
-                  dataType: 'json',
-                  success: function(res) {
-                     if (res.status === 'success') {
-                        alert(`"${pos_item_name}" successfully voided.`);
-                        load_pos_inventory(current_page);
-                        load_pos_checkout_receipt(pos_checkout_code);
-                     } else {
-                        alert(res.message);
-                     }
-                  },
-                  error: function() { alert('Server error'); }
-               });
+
+               void_pos_checkout_item(this)
             });
 
             $('.restore_receipt_item')
@@ -2228,6 +2321,27 @@
          error: function() {
             $('#receipt_items').html('<tr><td colspan="4">Server error</td></tr>');
          }
+      });
+   }
+   function void_pos_checkout_item(item_data) {
+      let pos_item_id = $(item_data).data('pos_item_id');
+      let pos_item_name = $(item_data).data('pos_item_name');
+      let pos_checkout_code = $(item_data).data('pos_checkout_code');
+      $.ajax({
+         url: '<?php echo base_url();?>i.php/sys_control/void_pos_checkout_item',
+         method: 'POST',
+         data: { pos_item_id: pos_item_id, pos_checkout_code: pos_checkout_code },
+         dataType: 'json',
+         success: function(res) {
+            if (res.status === 'success') {
+               alert(`"${pos_item_name}" successfully voided.`);
+               load_pos_inventory(current_page);
+               load_pos_checkout_receipt(pos_checkout_code);
+            } else {
+               alert(res.message);
+            }
+         },
+         error: function() { alert('Server error'); }
       });
    }
    $(document).on('click', '.view_receipt_activator', function() {
@@ -2548,48 +2662,174 @@
 
    // Load accounts table
    function load_accounts() {
-      $.ajax({
-         url: '<?php echo base_url();?>i.php/sys_control/load_accounts',
-         method: 'POST',
-         dataType: 'json',
-         success: function (res) {
-            let $tbody = $('#accounts_table_container');
-            $tbody.empty();
-            if (!res.data || res.data.length === 0) {
-               $tbody.html('<tr><td colspan="7" class="text-center text-muted">No accounts found</td></tr>');
-               return;
-            }
-            res.data.forEach((row, index) => {
-               let status_badge = row.user_status == 1
-                  ? `<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Active</span>`
-                  : `<span class="badge rounded-pill bg-secondary-subtle text-secondary fw-normal px-2">Inactive</span>`;
-               let type_badge = row.user_type == 1
-                  ? `<span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">Admin</span>`
-                  : `<span class="badge rounded-pill bg-info-subtle text-info fw-normal px-2">Cashier</span>`;
-               $tbody.append(`
-                  <tr class="border-top">
-                     <td class="ps-3 text-muted">${index + 1}</td>
-                     <td class="fw-medium">${row.first_name} ${row.last_name}</td>
-                     <td class="text-muted">${row.username}</td>
-                     <td class="text-muted">${row.email_address}</td>
-                     <td>${type_badge}</td>
-                     <td>${status_badge}</td>
-                     <td class="pe-3">
-                        <button
-                           type="button"
-                           class="btn btn-sm btn-outline-primary account_update_activator rounded-pill px-2"
-                           data-user_id="${row.user_id}"
-                           title="Edit account">
-                           <i class="bi bi-pencil" style="font-size:11px;"></i>
-                        </button>
-                     </td>
-                  </tr>
-               `);
-            });
-         },
-         error: function () { alert('Failed to load accounts.'); }
-      });
+       $.ajax({
+           url: '<?php echo base_url();?>i.php/sys_control/load_accounts',
+           method: 'POST',
+           dataType: 'json',
+           success: function (res) {
+               let $tbody = $('#accounts_table_container');
+               $tbody.empty();
+               if (!res.data || res.data.length === 0) {
+                   $tbody.html('<tr><td colspan="7" class="text-center text-muted">No accounts found</td></tr>');
+                   return;
+               }
+               res.data.forEach((row, index) => {
+                   let status_badge = row.user_status == 1
+                       ? `<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Active</span>`
+                       : `<span class="badge rounded-pill bg-secondary-subtle text-secondary fw-normal px-2">Inactive</span>`;
+
+                   let type_badge = row.user_type == 8
+                       ? `<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Superadmin</span>`
+                       : row.user_type == 1
+                       ? `<span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">Admin</span>`
+                       : `<span class="badge rounded-pill bg-info-subtle text-info fw-normal px-2">Cashier</span>`;
+
+                   $tbody.append(`
+                       <tr class="border-top">
+                           <td class="ps-3 text-muted">${index + 1}</td>
+                           <td class="fw-medium">${row.first_name} ${row.last_name}</td>
+                           <td class="text-muted">${row.username}</td>
+                           <td class="text-muted">${row.email_address}</td>
+                           <td>${type_badge}</td>
+                           <td>${status_badge}</td>
+                           <td class="pe-3">
+                               <button
+                                   type="button"
+                                   class="btn btn-sm btn-outline-primary account_update_activator rounded-pill px-2"
+                                   data-user_id="${row.user_id}"
+                                   title="Edit account">
+                                   <i class="bi bi-pencil" style="font-size:11px;"></i>
+                               </button>
+                           </td>
+                       </tr>
+                   `);
+               });
+           },
+           error: function () { alert('Failed to load accounts.'); }
+       });
    }
+   function load_pos_voiding_requests() {
+       $.ajax({
+           url: '<?php echo base_url();?>i.php/sys_control/load_pos_voiding_requests',
+           method: 'POST',
+           dataType: 'json',
+           success: function (res) {
+               let $container = $('#pos_voiding_requests_container');
+               $container.empty();
+
+               if (res.status !== 'success' || res.data.length === 0) {
+                   $container.html(`
+                       <tr>
+                           <td colspan="8" class="text-center text-muted py-4">
+                               <i class="bi bi-slash-circle d-block mb-2" style="font-size:2rem;"></i>
+                               No pending void requests
+                           </td>
+                       </tr>
+                   `);
+                   return;
+               }
+
+               res.data.forEach((row, index) => {
+                   let unit_price = parseFloat(row.pos_item_price);
+                   let total      = unit_price * parseFloat(row.pos_item_quantity);
+
+                   let raw_date       = new Date(row.pos_checkout_date);
+                   let formatted_date = isNaN(raw_date)
+                       ? row.pos_checkout_date
+                       : raw_date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+                         + ' · '
+                         + raw_date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
+
+                   $container.append(`
+                       <tr class="border-top">
+                           <td class="ps-3 text-muted">${index + 1}</td>
+                           <td class="text-start fw-medium">
+                               ${row.pos_item_name}
+                               <div class="text-muted" style="font-size:10px;">${formatted_date}</div>
+                           </td>
+                           <td>
+                               <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
+                                   ${row.pos_checkout_code}
+                               </span>
+                           </td>
+                           <td class="text-muted">${row.pos_item_quantity}</td>
+                           <td class="text-muted">₱${unit_price.toFixed(2)}</td>
+                           <td class="fw-semibold text-success">₱${total.toFixed(2)}</td>
+                           <td class="text-muted">${row.cashier_name ?? 'Unknown'}</td>
+                           <td class="pe-3">
+                               <div class="d-flex gap-1 justify-content-end">
+                                   <button type="button"
+                                       class="btn btn-sm btn-success rounded-pill px-2 approve_void_request"
+                                       data-pos_item_id="${row.pos_item_id}"
+                                       data-pos_item_name="${row.pos_item_name}"
+                                       data-pos_checkout_code="${row.pos_checkout_code}"
+                                       title="Approve void">
+                                       <i class="bi bi-check-lg" style="font-size:11px;"></i>
+                                   </button>
+                                   <button type="button"
+                                       class="btn btn-sm btn-outline-secondary rounded-pill px-2 reject_void_request"
+                                       data-pos_item_id="${row.pos_item_id}"
+                                       data-pos_item_name="${row.pos_item_name}"
+                                       data-pos_checkout_code="${row.pos_checkout_code}"
+                                       title="Reject void">
+                                       <i class="bi bi-x-lg" style="font-size:11px;"></i>
+                                   </button>
+                               </div>
+                           </td>
+                       </tr>
+                   `);
+               });
+
+               // Approve void
+               // Approve void
+               $('.approve_void_request')
+               .off('click')
+               .on('click', function () {
+                   let pos_item_id       = $(this).data('pos_item_id');
+                   let pos_item_name     = $(this).data('pos_item_name');
+                   let pos_checkout_code = $(this).data('pos_checkout_code');
+                   if (!confirm(`Approve void for "${pos_item_name}" from sale #${pos_checkout_code}?`)) return;
+                   void_pos_checkout_item(this);
+                   load_pos_voiding_requests();
+               });
+
+               // Reject void
+               $('.reject_void_request')
+               .off('click')
+               .on('click', function () {
+                   let pos_item_id       = $(this).data('pos_item_id');
+                   let pos_item_name     = $(this).data('pos_item_name');
+                   let pos_checkout_code = $(this).data('pos_checkout_code');
+                   if (!confirm(`Reject void request for "${pos_item_name}"?`)) return;
+                   $.ajax({
+                       url: '<?php echo base_url();?>i.php/sys_control/cancel_void_request_pos_checkout_item',
+                       method: 'POST',
+                       data: { pos_item_id: pos_item_id, pos_checkout_code: pos_checkout_code },
+                       dataType: 'json',
+                       success: function (res) {
+                           if (res.status === 'success') {
+                               alert(`Void request for "${pos_item_name}" rejected.`);
+                               load_pos_voiding_requests();
+                           } else {
+                               alert(res.message);
+                           }
+                       },
+                       error: function () { alert('Server error'); }
+                   });
+               });
+           },
+           error: function () {
+               $('#pos_voiding_requests_container').html(`
+                   <tr><td colspan="8" class="text-center text-danger">Server error</td></tr>
+               `);
+           }
+       });
+   }
+
+   // Load when modal opens
+   $('#pos_voiding_modal').on('show.bs.modal', function () {
+       load_pos_voiding_requests();
+   });
    $('#open_accounts_modal').on('click', function () {
       let modal_el = document.getElementById('accounts_modal');
       if (!modal_el) {
@@ -2621,5 +2861,17 @@
            );
        });
       compute_pos_sales_report_total();
+   });
+   $('#pos_voiding_search').on('input', function () {
+   let keyword = $(this).val().toLowerCase();
+      $('#pos_voiding_requests_container tr').filter(function () {
+        $(this).toggle(
+            $(this).text().toLowerCase().indexOf(keyword) > -1
+        );
+      });
+   });
+   $('#pos_voiding_modal').on('hidden.bs.modal', function () {
+       $('#pos_voiding_search').val('');
+       $('#pos_voiding_requests_container tr').show();
    });
 </script>

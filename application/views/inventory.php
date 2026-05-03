@@ -42,50 +42,23 @@
 	</header>
 	<main>
 		<div class="container">
-			<div class="row mt-3 mb-4 text-center">
+			<div class="row mt-3 mb-2 text-center">
 				<h4>Inventory</h4>
 			</div>
 		</div>
 		<div class="container mt-4">
-			<!-- <svg id="barcode"></svg> -->
-			<div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4" id="pos_item_cards_container">
-					<!-- <div class="card h-100 p2">
-						<div class="position-relative img-hover-wrapper">
-							<img src="<?php echo base_url();?>photos/pos_images/c2_apple_1l.jpg"
-							class="card-img-top"
-							alt="product_image"
-							style="aspect-ratio:5/3;object-fit:contain;background-color:#edf1f4;">
-
-							<div class="position-absolute top-0 start-0 w-100 h-100 hover-dimmer d-flex justify-content-center align-items-center">
-								<small class="btn btn-secondary btn-sm hover-btn pos_item_update_activator" role="button">
-									Modify
-								</small>
-							</div>
-						</div>
-						<small class="card-body">
-							<div class="card-title fs-6 text-truncate overflow-tooltip" role="button">
-								Faber-Castell das dasd asd asd asdasd ballpen
-							</div>
-							<small class="card-subtitle text-muted d-block text-truncate">
-								BO-001
-							</small>
-							<div class="d-flex fs-6 mt-1 fw-semibold align-items-center gap-2">
-								<span>20</span>
-								<span>pcs</span>
-							</div>
-						</small>
-						<div class="card-footer">
-							<div class="d-flex justify-content-start align-items-center">
-								<button class="bi bi-dash mx-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
-								<small contenteditable class="px-2">0</small>
-								<button class="bi bi-plus ms-1 fs-5 btn p-0 border-0 bg-transparent" role="button"></button>	
-								<button class="bi bi-cart-plus ms-auto fs-5 btn p-0 border-0 bg-transparent" role="button"></button>
-							</div>
-						</div>
-					</div> -->
-				</div>
-			</div>
+		    <div class="d-flex justify-content-center align-items-center gap-3 mt-3 mb-4">
+		        <button id="prev_page" class="btn btn-outline-secondary btn-sm">
+		            <i class="bi bi-chevron-left"></i>
+		        </button>
+		        <span id="page_info" class="text-muted small fw-medium"></span>
+		        <button id="next_page" class="btn btn-outline-primary btn-sm">
+		            <i class="bi bi-chevron-right"></i>
+		        </button>
+		    </div>
+		    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4" id="pos_item_cards_container"></div>
 		</div>
+		<div class="mt-5"></div>
 	</main>
 	<footer>
 	</footer>
