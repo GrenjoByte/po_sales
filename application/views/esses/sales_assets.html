@@ -228,11 +228,13 @@
 </div>
 
 <!-- Receipt Modal -->
-<div class="modal fade" id="receipt_modal" tabindex="-1" aria-labelledby="receipt_modal_label" aria-hidden="true">
-   <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
-      <div class="modal-content border-0">
+<div class="modal fade" id="receipt_modal" tabindex="-1" aria-labelledby="receipt_modal_label" aria-hidden="true"
+     data-bs-backdrop="true" data-bs-keyboard="true">
 
-         <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 420px;">
+      <div class="modal-content border-0 shadow-lg rounded-4 receipt-modal">
+
+         <div class="modal-header border-bottom px-4 pt-4 pb-2 bg-light-subtle rounded-top-4">
             <div>
                <h5 class="modal-title fw-semibold" id="receipt_modal_label">
                   <i class="bi bi-receipt me-2 text-primary"></i>Receipt
@@ -242,7 +244,7 @@
             <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
 
-         <div class="modal-body px-4 pt-3 pb-2">
+         <div class="modal-body px-4 pt-3 pb-2 bg-white">
             <div id="receipt_content" style="font-family: Arial, sans-serif;">
 
                <div class="text-center mb-3">
@@ -251,27 +253,31 @@
                   <div class="text-muted small">Tel: 0995-330-6583</div>
                </div>
 
-               <hr class="my-2">
+               <hr class="my-2 border-secondary-subtle">
+
                <div id="receipt_info" class="mb-2 small"></div>
-               <hr class="my-2">
+
+               <hr class="my-2 border-secondary-subtle">
 
                <table class="table table-borderless table-sm mb-0" style="font-size: 0.82rem;">
                   <thead>
-                     <tr class="text-muted" style="font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase;">
+                     <tr class="text-muted small text-uppercase">
                         <th class="text-start ps-0 fw-semibold">Item</th>
                         <th class="text-center fw-semibold">Qty</th>
                         <th class="text-center fw-semibold">Unit</th>
                         <th class="text-end fw-semibold">Price</th>
                         <th class="text-end fw-semibold">Subtotal</th>
-                        <!-- <th class="no-print" style="width: 36px;"></th> -->
+                        <th class="no-print" style="width: 36px;"></th>
                      </tr>
                   </thead>
                   <tbody id="receipt_items"></tbody>
                </table>
 
-               <hr class="my-2">
+               <hr class="my-2 border-secondary-subtle">
+
                <div id="receipt_totals"></div>
-               <hr class="my-2">
+
+               <hr class="my-2 border-secondary-subtle">
 
                <div class="text-center text-muted small py-1">
                   Thank you for your purchase!<br>Visit us again.
@@ -280,7 +286,7 @@
             </div>
          </div>
 
-         <div class="modal-footer border-top-0 px-4 pb-4 pt-2 no-print">
+         <div class="modal-footer border-top px-4 pb-4 pt-2 bg-light-subtle rounded-bottom-4 no-print">
             <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Close</button>
             <button type="button" class="btn btn-sm btn-success rounded-pill px-3" id="print_receipt_btn">
                <i class="bi bi-printer me-1"></i>Print
@@ -574,6 +580,7 @@
    </div>
 
 </div>
+<span class="d-none" id="active_sale_code"></span>
 <script type="text/javascript">
    // const value = "ABC123456"; // your characters here
 
@@ -614,6 +621,7 @@
                   let pos_item_name  = item.pos_item_name;
                   let pos_item_code  = item.pos_item_code;
                   let pos_item_price = item.pos_item_price;
+                  let price_display = Number(pos_item_price).toFixed(2);
                   let pos_item_stock = Number(item.pos_item_stock);
                   let pos_item_unit  = item.pos_item_unit;
                   let pos_item_low   = Number(item.pos_item_low);
@@ -669,7 +677,7 @@
                            </div>
                            <div class="d-flex align-items-center gap-1 mt-1">
                               <div class="fw-semibold text-truncate overflow-tooltip" style="font-size:0.875rem;" role="button">
-                                 ₱${pos_item_price}
+                                 ₱${price_display}
                               </div>
                            </div>
                            <div class="d-flex align-items-center gap-1 mt-1">
@@ -1203,6 +1211,10 @@
                 render_pos_sales_cart();
                 load_pos_inventory(current_page);
                 load_pos_checkout_receipt(sale_code);
+                setTimeout(function() {
+                   print_receipt();
+                },1000);
+
                 // reset UI
                 $('#discount_type').val('none');
                 $('#other_discount').val('');
@@ -1290,7 +1302,8 @@
 
                let subtotal = parseFloat(row.pos_checkout_total);
                let discount = parseFloat(row.pos_discount_value) || 0;
-               let final_total = subtotal - discount;
+               let discount_value = subtotal * discount;
+               let final_total = subtotal - discount_value;
 
                grand_total += final_total;
 
@@ -1341,8 +1354,8 @@
                               </td>
                               <td class="text-muted">${row.total_items}</td>
                               <td class="fw-medium">${row.total_quantity}</td>
-                              <td class="${discount > 0 ? 'text-danger' : 'text-muted'}">
-                                 ${discount > 0 ? '−₱' + discount.toFixed(2) : '—'}
+                              <td class="${discount_value > 0 ? 'text-danger' : 'text-muted'}">
+                                 ${discount_value > 0 ? '−₱' + discount_value.toFixed(2) : '—'}
                               </td>
                               <td class="fw-semibold text-success">₱${final_total.toFixed(2)}</td>
                               <td class="text-muted">Cash</td>
@@ -1353,8 +1366,6 @@
                                  <button 
                                     type="button" 
                                     class="btn btn-sm btn-outline-primary view_receipt_activator rounded-pill px-2"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#receipt_modal"
                                     data-sale-code="${row.pos_checkout_code}">
                                     <i class="bi bi-eye" style="font-size:11px;"></i>
                                  </button>
@@ -1894,8 +1905,8 @@
                } else {
                    $('#receipt_discount_section').addClass('d-none');
                }
-
-               let final_total = subtotal - discount;
+               discount_value = subtotal * discount;
+               let final_total = subtotal - discount_value;
                $('#receipt_totals').html(`
                    <div class="d-flex justify-content-between mb-1 small">
                        <span class="text-muted">Subtotal</span>
@@ -1904,7 +1915,7 @@
                    ${discount > 0 ? `
                    <div class="d-flex justify-content-between mb-1 small">
                        <span class="text-danger">Discount</span>
-                       <span class="text-danger">−₱${discount.toFixed(2)}</span>
+                       <span class="text-danger">−₱${discount_value.toFixed(2)}</span>
                    </div>` : ''}
                    <div class="d-flex justify-content-between fw-semibold border-top pt-2 mt-1">
                        <span>Total</span>
@@ -1915,6 +1926,9 @@
                        <span>Cash</span>
                    </div>
                `);
+               const modal_el = document.getElementById('receipt_modal');
+               const modal = new bootstrap.Modal(modal_el);
+               modal.show();
 
                // Request void handler
                $('.request_void_receipt_item')
@@ -1998,9 +2012,14 @@
    $(document).on('click', '.view_receipt_activator', function() {
       let sale_code = $(this).data('sale-code');
       load_pos_checkout_receipt(sale_code);
+      $('#active_sale_code').text(sale_code)
    });
 
    $('#print_receipt_btn').on('click', function () {
+      print_receipt();
+   });
+
+   function print_receipt() {
       let clone = document.getElementById('receipt_content').cloneNode(true);
       clone.querySelectorAll('.no-print').forEach(el => el.remove());
       let content = clone.innerHTML;
@@ -2040,7 +2059,9 @@
                     padding-bottom: 4px;
                     border-bottom: 1px dashed #000;
                 }
-                td { padding: 2px 0; } /* slightly tighter rows to match smaller text */
+                td { padding: 4px 0; 
+                    font-size: 10px; /* 20% smaller than 10px */
+                } /* slightly tighter rows to match smaller text */
                 th { padding: 2px 0; }
                 hr {
                     border: none;
@@ -2087,7 +2108,7 @@
         </html>
       `);
       printWindow.document.close();
-      });
+   }
 
    $(document).ready(function(){
       $('#posItemForm').on('submit', function(e){
@@ -2241,5 +2262,83 @@
            );
        });
       compute_pos_sales_report_total();
+   });
+   // ─── Server-Sent Events — Instant DB Change Listener ──────────────────
+
+   const reload_map = {
+       inventory: () => {
+           if (typeof load_pos_inventory === 'function')
+               load_pos_inventory(current_page ?? 1);
+       },
+       sales: () => {
+           if (typeof load_pos_sales_report === 'function')
+               load_pos_sales_report();
+       },
+       restocking: () => {
+           if (typeof load_pos_restocking_report === 'function')
+               load_pos_restocking_report();
+       },
+       logs: () => {
+           if (typeof load_pos_logs === 'function')
+               load_pos_logs();
+       },
+       void_requests: () => {
+           if (typeof load_pos_voiding_requests === 'function')
+               load_pos_voiding_requests();
+       },
+       receipt: () => {
+           if (typeof load_pos_checkout_receipt === 'function')
+               load_pos_checkout_receipt($('#active_sale_code').text());
+       }
+   };
+
+   function reload_visible_sections() {
+       const visibility_map = {
+           inventory:     $('#pos_item_cards_container').is(':visible'),
+           sales:         $('#pos_sales_report_container').is(':visible'),
+           restocking:    $('#pos_restocking_report_container').is(':visible'),
+           logs:          $('#pos_logs_container').is(':visible'),
+           void_requests: $('#pos_voiding_requests_container').is(':visible'),
+           receipt:       $('#receipt_modal').is(':visible')
+       };
+
+       $.each(visibility_map, function(section, is_visible) {
+           if (is_visible && typeof reload_map[section] === 'function') {
+               reload_map[section]();
+           }
+       });
+   }
+
+   function init_sse() {
+       const sse = new EventSource('<?php echo base_url(); ?>i.php/sys_control/stream_db_changes');
+
+       sse.addEventListener('connected', function() {
+           console.log('[SSE] Connection established — listening for changes');
+       });
+
+       sse.addEventListener('db_changed', function(e) {
+           console.log('[SSE] DB changed at', JSON.parse(e.data).timestamp);
+           reload_visible_sections();
+       });
+
+       sse.onerror = function() {
+           console.warn('[SSE] Connection lost — browser will auto-reconnect');
+           // EventSource auto-reconnects natively — no manual retry needed
+       };
+
+       // Pause stream when tab is hidden, resume when visible
+       document.addEventListener('visibilitychange', function() {
+           if (document.hidden) {
+               sse.close();
+               console.log('[SSE] Tab hidden — stream closed');
+           } else {
+               console.log('[SSE] Tab visible — reconnecting');
+               init_sse();
+           }
+       });
+   }
+
+   $(document).ready(function() {
+       init_sse();
    });
 </script>

@@ -52,7 +52,7 @@
                   <span class="input-group-text bg-transparent border-end-0">
                      <i class="bi bi-calendar3 text-muted" style="font-size:12px;"></i>
                   </span>
-                  <input type="date" id="pos_restocking_report_date" class="form-control border-start-0 ps-0" value="<?php echo date('Y-m-d'); ?>" >
+                  <input type="date" id="pos_restocking_report_date" class="form-control border-start-0 ps-0">
                </div>
                <div class="d-flex align-items-center gap-2">
                   <span class="text-muted small">Grand Total:</span>
@@ -111,7 +111,7 @@
                   <span class="input-group-text bg-transparent border-end-0">
                      <i class="bi bi-calendar3 text-muted" style="font-size:12px;"></i>
                   </span>
-                  <input type="date" id="pos_sales_report_date" class="form-control border-start-0 ps-0"  value="<?php echo date('Y-m-d'); ?>" >
+                  <input type="date" id="pos_sales_report_date" class="form-control border-start-0 ps-0">
                </div>
                <div class="d-flex align-items-center gap-2">
                   <span class="text-muted small">Grand Total:</span>
@@ -175,7 +175,7 @@
                         <th class="fw-semibold pe-3">Timestamp</th>
                      </tr>
                   </thead>
-                  <tbody class="text-center small" id="pos_logs_modal_container">
+                  <tbody class="text-center small" id="pos_logs_container">
                   </tbody>
                </table>
             </div>
@@ -268,11 +268,13 @@
    </div>
 </div>
 
-<div class="modal fade" id="receipt_modal" tabindex="-1" aria-labelledby="receipt_modal_label" aria-hidden="true">
-   <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
-      <div class="modal-content border-0">
+<div class="modal fade" id="receipt_modal" tabindex="-1" aria-labelledby="receipt_modal_label" aria-hidden="true"
+     data-bs-backdrop="true" data-bs-keyboard="true">
 
-         <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 420px;">
+      <div class="modal-content border-0 shadow-lg rounded-4 receipt-modal">
+
+         <div class="modal-header border-bottom px-4 pt-4 pb-2 bg-light-subtle rounded-top-4">
             <div>
                <h5 class="modal-title fw-semibold" id="receipt_modal_label">
                   <i class="bi bi-receipt me-2 text-primary"></i>Receipt
@@ -282,7 +284,7 @@
             <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
 
-         <div class="modal-body px-4 pt-3 pb-2">
+         <div class="modal-body px-4 pt-3 pb-2 bg-white">
             <div id="receipt_content" style="font-family: Arial, sans-serif;">
 
                <div class="text-center mb-3">
@@ -291,13 +293,15 @@
                   <div class="text-muted small">Tel: 0995-330-6583</div>
                </div>
 
-               <hr class="my-2">
+               <hr class="my-2 border-secondary-subtle">
+
                <div id="receipt_info" class="mb-2 small"></div>
-               <hr class="my-2">
+
+               <hr class="my-2 border-secondary-subtle">
 
                <table class="table table-borderless table-sm mb-0" style="font-size: 0.82rem;">
                   <thead>
-                     <tr class="text-muted" style="font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase;">
+                     <tr class="text-muted small text-uppercase">
                         <th class="text-start ps-0 fw-semibold">Item</th>
                         <th class="text-center fw-semibold">Qty</th>
                         <th class="text-center fw-semibold">Unit</th>
@@ -309,9 +313,11 @@
                   <tbody id="receipt_items"></tbody>
                </table>
 
-               <hr class="my-2">
+               <hr class="my-2 border-secondary-subtle">
+
                <div id="receipt_totals"></div>
-               <hr class="my-2">
+
+               <hr class="my-2 border-secondary-subtle">
 
                <div class="text-center text-muted small py-1">
                   Thank you for your purchase!<br>Visit us again.
@@ -320,7 +326,7 @@
             </div>
          </div>
 
-         <div class="modal-footer border-top-0 px-4 pb-4 pt-2 no-print">
+         <div class="modal-footer border-top px-4 pb-4 pt-2 bg-light-subtle rounded-bottom-4 no-print">
             <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Close</button>
             <button type="button" class="btn btn-sm btn-success rounded-pill px-3" id="print_receipt_btn">
                <i class="bi bi-printer me-1"></i>Print
@@ -409,7 +415,7 @@
                      <label for="new_pos_item_unit" class="form-label small fw-semibold">Unit</label>
                      <input type="text" class="form-control form-control-sm"
                         id="new_pos_item_unit" name="new_pos_item_unit"
-                        maxlength="10" placeholder="e.g. pcs" required>
+                        maxlength="10" placeholder="Singular (e.g. piece)" required>
                   </div>
                   <div class="col-6">
                      <label for="new_pos_item_low" class="form-label small fw-semibold">Low Stock Threshold</label>
@@ -473,7 +479,7 @@
                      <label for="update_pos_item_unit" class="form-label small fw-semibold">Unit</label>
                      <input type="text" class="form-control form-control-sm"
                         id="update_pos_item_unit" name="update_pos_item_unit"
-                        maxlength="10" placeholder="e.g. pcs" required>
+                        maxlength="10" placeholder="Singular (e.g. piece)" required>
                   </div>
                   <div class="col-6">
                      <label for="update_pos_item_low" class="form-label small fw-semibold">Low Stock Threshold</label>
@@ -817,6 +823,7 @@
       </div>
    </div>
 </div>
+<span class="d-none" id="active_sale_code"></span>
 <script type="text/javascript">
    // const value = "ABC123456"; // your characters here
 
@@ -1365,7 +1372,8 @@
 
                let subtotal    = parseFloat(row.pos_checkout_total);
                let discount    = parseFloat(row.pos_discount_value) || 0;
-               let final_total = subtotal - discount;
+               let discount_value = subtotal * discount;
+               let final_total = subtotal - discount_value;
 
                let raw_date       = new Date(row.pos_checkout_date);
                let formatted_date = isNaN(raw_date)
@@ -1415,8 +1423,8 @@
                      </td>
                      <td class="text-muted">${row.total_items}</td>
                      <td class="fw-medium">${row.total_quantity}</td>
-                     <td class="${discount > 0 ? 'text-danger' : 'text-muted'}">
-                        ${discount > 0 ? '−₱' + discount.toFixed(2) : '—'}
+                     <td class="${discount_value > 0 ? 'text-danger' : 'text-muted'}">
+                        ${discount_value > 0 ? '−₱' + discount_value.toFixed(2) : '—'}
                      </td>
                      <td class="fw-semibold ${row.pos_checkout_status === '2' ? 'text-muted' : 'text-success'}">
                         ₱${final_total.toFixed(2)}
@@ -1559,7 +1567,7 @@
       load_pos_sales_report($(this).val());
    });
    $('#pos_sales_report_modal').on('shown.bs.modal', function () {
-      load_pos_sales_report();
+      load_pos_sales_report($('#pos_sales_report_date').val()  );
    });
 
    $(document).on('click', '.remove_barcode', function (e) {
@@ -1884,7 +1892,7 @@
       load_pos_restocking_report($(this).val());
    });
    $('#pos_restocking_report_modal').on('shown.bs.modal', function () {
-      load_pos_restocking_report();
+      load_pos_restocking_report($('#pos_restocking_report_date').val());
    });
 
    function format_date_time(datetime) {
@@ -1912,7 +1920,7 @@
            method: 'POST',
            dataType: 'json',
            success: function (res) {
-               const $tbody = $('#pos_logs_modal_container');
+               const $tbody = $('#pos_logs_container');
                $tbody.empty();
 
                if (res.data.length) {
@@ -2260,8 +2268,9 @@
                `;
             });
             $('#receipt_items').html(items_html);
-
-            let final_total = subtotal - discount;
+            
+            discount_value = subtotal * discount;
+            let final_total = subtotal - discount_value;
             $('#receipt_totals').html(`
                <div class="d-flex justify-content-between mb-1 small">
                   <span class="text-muted">Subtotal</span>
@@ -2347,6 +2356,7 @@
    $(document).on('click', '.view_receipt_activator', function() {
       let sale_code = $(this).data('sale-code');
       load_pos_checkout_receipt(sale_code);
+      $('#active_sale_code').text(sale_code)
    });
 
    $('#print_receipt_btn').on('click', function () {
@@ -2873,5 +2883,83 @@
    $('#pos_voiding_modal').on('hidden.bs.modal', function () {
        $('#pos_voiding_search').val('');
        $('#pos_voiding_requests_container tr').show();
+   });
+   // ─── Server-Sent Events — Instant DB Change Listener ──────────────────
+
+   const reload_map = {
+       inventory: () => {
+           if (typeof load_pos_inventory === 'function')
+               load_pos_inventory(current_page ?? 1);
+       },
+       sales: () => {
+           if (typeof load_pos_sales_report === 'function')
+               load_pos_sales_report();
+       },
+       restocking: () => {
+           if (typeof load_pos_restocking_report === 'function')
+               load_pos_restocking_report();
+       },
+       logs: () => {
+           if (typeof load_pos_logs === 'function')
+               load_pos_logs();
+       },
+       void_requests: () => {
+           if (typeof load_pos_voiding_requests === 'function')
+               load_pos_voiding_requests();
+       },
+       receipt: () => {
+           if (typeof load_pos_checkout_receipt === 'function')
+               load_pos_checkout_receipt($('#active_sale_code').text());
+       }
+   };
+
+   function reload_visible_sections() {
+       const visibility_map = {
+           inventory:     $('#pos_item_cards_container').is(':visible'),
+           sales:         $('#pos_sales_report_container').is(':visible'),
+           restocking:    $('#pos_restocking_report_container').is(':visible'),
+           logs:          $('#pos_logs_container').is(':visible'),
+           void_requests: $('#pos_voiding_requests_container').is(':visible'),
+           receipt:       $('#receipt_modal').is(':visible')
+       };
+
+       $.each(visibility_map, function(section, is_visible) {
+           if (is_visible && typeof reload_map[section] === 'function') {
+               reload_map[section]();
+           }
+       });
+   }
+
+   function init_sse() {
+       const sse = new EventSource('<?php echo base_url(); ?>i.php/sys_control/stream_db_changes');
+
+       sse.addEventListener('connected', function() {
+           console.log('[SSE] Connection established — listening for changes');
+       });
+
+       sse.addEventListener('db_changed', function(e) {
+           console.log('[SSE] DB changed at', JSON.parse(e.data).timestamp);
+           reload_visible_sections();
+       });
+
+       sse.onerror = function() {
+           console.warn('[SSE] Connection lost — browser will auto-reconnect');
+           // EventSource auto-reconnects natively — no manual retry needed
+       };
+
+       // Pause stream when tab is hidden, resume when visible
+       document.addEventListener('visibilitychange', function() {
+           if (document.hidden) {
+               sse.close();
+               console.log('[SSE] Tab hidden — stream closed');
+           } else {
+               console.log('[SSE] Tab visible — reconnecting');
+               init_sse();
+           }
+       });
+   }
+
+   $(document).ready(function() {
+       init_sse();
    });
 </script>
