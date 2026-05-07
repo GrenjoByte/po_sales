@@ -120,7 +120,7 @@
 		
 				var status = response.status;
 				var user_type = response.user_type;
-				var last_name = response.last_name.UCwords();
+				var last_name = response.last_name;
 				var gender = response.gender;
 
 				if (status == 'success') {
@@ -145,7 +145,7 @@
 						address_text = 'Ms. '+last_name;
 					}	
 					else {
-						address_text = last_name;
+						address_text = last_name.UCwords();
 					}
 					var address_element = `
 					    <span class="text-success fw-semibold">
@@ -162,12 +162,14 @@
 				  	}, 2500);
 				}
 				else if (status == 'inactive') {
+					status = "error";
 				    title = "Account Disabled";
 				    message = "Your account has been deactivated. Please contact the administrator.";
 				    status = "error";
 				    load_notification(title, message, status);
 				}
 				else if (status == 'error') {
+					status = "error";
 				    title = "Login Failed";
 				    message = "Invalid username or password.";
 				    status = "error";
