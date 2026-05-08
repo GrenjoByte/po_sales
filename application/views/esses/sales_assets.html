@@ -326,7 +326,7 @@
                      <option value="other">Other</option>
                    </select>
                  </div>
-                 <div class="col-6 d-none" id="other_discount_container">
+                 <div class="col-4 d-none" id="other_discount_container">
                    <label class="form-label small fw-semibold">Custom Discount (%)</label>
                    <input type="number"
                           class="form-control form-control-sm"
@@ -336,6 +336,9 @@
                           step="0.01"
                           placeholder="e.g. 5 for 5%">
                  </div>
+                 <button type="button" class="btn btn-outline-primary rounded-pill px-3" id="start_scan_btn">
+                   <i class="bi bi-upc-scan me-1"></i>Scan
+               </button>
                </div>
                <div class="table-responsive rounded-3 border">
                   <table class="table align-middle mb-0">
@@ -580,7 +583,7 @@
    </div>
 
 </div>
-<span class="d-none" id="active_sale_code"></span>
+<x id="active_sale_code" data-sale_code=""></x>
 <script type="text/javascript">
    // const value = "ABC123456"; // your characters here
 
@@ -590,6 +593,21 @@
    //    height: 40,
    //    displayValue: true
    // });
+   $(document).on('hidden.bs.modal', function () {
+       // If there's still a modal open, keep one backdrop
+       if ($('.modal.show').length > 0) {
+           if ($('.modal-backdrop').length === 0) {
+               $('body').append('<div class="modal-backdrop fade show"></div>');
+           } else {
+               // Remove extras, keep only one
+               $('.modal-backdrop').not(':first').remove();
+           }
+       } else {
+           // No modals open — remove all backdrops and restore body
+           $('.modal-backdrop').remove();
+           $('body').removeClass('modal-open').css('padding-right', '');
+       }
+   });
    
    const pos_items = {};
 
@@ -874,76 +892,114 @@
       toast.show();
    }
 
-   $('#pos_sales_cart_modal').on('shown.bs.modal', function () {
-       if (!$('#pos_scan_input').length) {
-           $('body').append('<input type="text" id="pos_scan_input" autocomplete="off" style="position:absolute;opacity:0;pointer-events:none;">');
-       }
-       $('#pos_scan_input').focus();
+   let scan_mode = false;
+   let discount_type_open = false;
+
+   function start_scan() {
+       if (scan_mode) return;
+       scan_mode = true;
+       $('#start_scan_btn').addClass('active').html('<i class="bi bi-upc-scan me-1"></i>Scanning...');
+       $('#pos_scan_input').val('').focus();
+       $('#scan_alert').remove();
+       $('body').append(`
+           <div id="scan_alert" class="position-fixed top-0 start-0 m-3 alert alert-success alert-dismissible shadow d-flex align-items-center gap-2" style="z-index:9999; min-width:260px;">
+               <i class="bi bi-upc-scan fs-5"></i>
+               <span>Ready to scan — go ahead!</span>
+               <button type="button" class="btn-close ms-auto" id="stop_scan_btn"></button>
+           </div>
+       `);
+       $(document).off('click.stop_scan').on('click.stop_scan', '#stop_scan_btn', function () {
+           stop_scan();
+       });
+   }
+
+   function stop_scan() {
+       scan_mode = false;
+       $('#scan_alert').remove();
+       $('#start_scan_btn').removeClass('active').html('<i class="bi bi-upc-scan me-1"></i>Scan');
+   }
+
+   $('#pos_scan_input').off('keypress blur').on('keypress', function (e) {
+       if (e.which !== 13) return;
+       e.preventDefault();
+       if (!$('#pos_sales_cart_modal').is(':visible')) return;
+
+       let barcode = $(this).val().trim();
+       if (!barcode) return;
+
+       $.ajax({
+           url: '<?php echo base_url();?>i.php/sys_control/search_barcode',
+           method: 'POST',
+           data: { pos_barcode_value: barcode },
+           dataType: 'json',
+           success: function (res) {
+               $('#pos_scan_input').val('').focus();
+
+               if (res.status === 'empty')     return show_cart_toast(`Out of stock: ${barcode}`);
+               if (res.status === 'not_found') return show_cart_toast(`Item not found: ${barcode}`);
+               if (res.status !== 'success')   return show_cart_toast('Unexpected error');
+
+               let item = pos_items[res.pos_item_id];
+               if (!item) return show_cart_toast(`Item ID ${res.pos_item_id} not found in pos_items`);
+
+               if (!item.cart_quantity) item.cart_quantity = 0;
+
+               let max = parseInt(item.pos_item_stock) || 0;
+               if (item.cart_quantity >= max) return show_cart_toast(`Max stock reached for ${item.pos_item_name} (${max})`);
+
+               item.cart_quantity += 1;
+               render_pos_sales_cart();
+               show_cart_toast(`${item.pos_item_name} (x1) added to cart`);
+           },
+           error: function () {
+               $('#pos_scan_input').val('');
+               show_cart_toast('Failed to retrieve item from barcode');
+           }
+       });
+   }).on('blur', function () {
+       if (!scan_mode) return;
+       stop_scan();
    });
 
-   // bring focus back after discount input blur
+   // Auto-start when modal opens
+   $('#pos_sales_cart_modal').on('shown.bs.modal', function () {
+       start_scan();
+   }).on('hidden.bs.modal', function () {
+       stop_scan();
+   });
+
+   // Start scan button — only starts, never stops
+   $('#start_scan_btn').on('click', function () {
+       start_scan();
+   });
+
+   // Re-activate after interacting with discount fields
+   $(document).on('mousedown', '#discount_type', function () {
+       discount_type_open = $(this).prop('size') > 1 || discount_type_open;
+   });
+
+   $(document).on('mouseup', '#discount_type', function () {
+       if (!discount_type_open) {
+           discount_type_open = true;
+           return;
+       }
+       discount_type_open = false;
+       $(this).blur();
+   });
+
    $(document).on('blur', '#discount_type, #other_discount', function () {
        setTimeout(function () {
-           $('#pos_scan_input').focus();
+           let $next = $(document.activeElement);
+           if ($next.is('#discount_type, #other_discount, #pos_scan_input, .qty_input')) return;
+           start_scan();
        }, 50);
    });
 
-   // Handle barcode scan
-   $('#pos_scan_input').off('keypress').on('keypress', function(e) {
-       if (e.which === 13) { // Enter
-           e.preventDefault();
-
-           if (!$('#pos_sales_cart_modal').is(':visible')) return;
-
-           let barcode = $(this).val().trim();
-           if (!barcode) return;
-
-           $.ajax({
-               url: '<?php echo base_url();?>i.php/sys_control/search_barcode',
-               method: 'POST',
-               data: { pos_barcode_value: barcode },
-               dataType: 'json',
-               success: function(res) {
-                  if (res.status === 'empty') {
-                     show_cart_toast(`Out of stock: ${barcode}`);
-                     $('#pos_scan_input').val('');
-                     return;
-                  }
-
-                  if (res.status === 'not_found') {
-                     show_cart_toast(`Item not found: ${barcode}`);
-                     $('#pos_scan_input').val('');
-                     return;
-                  }
-
-                  if (res.status !== 'success') {
-                     show_cart_toast('Unexpected error');
-                     $('#pos_scan_input').val('');
-                     return;
-                  }
-
-                  let item = pos_items[res.pos_item_id];
-
-                  if (!item) {
-                     show_cart_toast(`Item ID ${res.pos_item_id} not found in pos_items`);
-                     $('#pos_scan_input').val('');
-                     return;
-                  }
-
-                  if (!item.cart_quantity) item.cart_quantity = 0;
-                  item.cart_quantity += 1;
-
-                  render_pos_sales_cart();
-                  show_cart_toast(`${item.pos_item_name} (x1) added to cart`);
-
-                  $('#pos_scan_input').val('');
-               },
-               error: function() {
-                   show_cart_toast('Failed to retrieve item from barcode');
-                   $('#pos_scan_input').val('');
-               }
-           });
-       }
+   $(document).on('keypress', function (e) {
+       if (!$('#pos_sales_cart_modal').is(':visible')) return;
+       if (!scan_mode) return;
+       if ($(document.activeElement).is('#pos_scan_input')) return;
+       $('#pos_scan_input').focus();
    });
 
 
@@ -1207,6 +1263,7 @@
         success: function(res) {
             if (res.status === 'success') {
                 const sale_code = res.sale_code;
+               $('#active_sale_code').data('sale_code', sale_code)
                 Object.values(pos_items).forEach(item => item.cart_quantity = 0);
                 render_pos_sales_cart();
                 load_pos_inventory(current_page);
@@ -1788,6 +1845,10 @@
                        <span class="text-muted">Cashier</span>
                        <span>${first.cashier_name ?? 'Unknown'}</span>
                    </div>
+                   <div id="receipt_discount_section" class="d-flex justify-content-between mb-1 d-none" style="font-size: 0.8em;">
+                         <span class="text-muted">Discount</span>
+                         <span id="receipt_discount_badge"></span>
+                     </div>
                    <div class="d-flex justify-content-between" style="font-size: 0.8em;">
                        <span class="text-muted">Status</span>
                        ${is_sale_voided
@@ -1871,18 +1932,18 @@
                    `;
 
                    items_html += `
-                       <tr class="border-top ${row_class}">
-                           <td class="text-start ps-0">
-                               ${item.pos_item_name}
-                               ${status_badge}
-                           </td>
-                           <td class="text-center">${item.pos_item_quantity}</td>
-                           <td class="text-center text-muted">${item.pos_item_unit}</td>
-                           <td class="text-end text-muted">₱${unit_price.toFixed(2)}</td>
-                           <td class="text-end">${is_item_voided ? '<s>₱' + item_total.toFixed(2) + '</s>' : '₱' + item_total.toFixed(2)}</td>
-                           <td class="text-end pe-0 no-print">${action_dropdown}</td>
-                       </tr>
-                   `;
+                      <tr class="border-top ${row_class}">
+                          <td class="text-start ps-0">
+                              ${item.pos_item_name}
+                              ${status_badge}
+                          </td>
+                          <td class="text-center">${item.pos_item_quantity}</td>
+                          <td class="text-center text-muted">${item.pos_item_unit}</td>
+                          <td class="text-end text-muted">₱${format_number(unit_price.toFixed(2))}</td>
+                          <td class="text-end">${is_item_voided ? '<s>₱' + format_number(item_total.toFixed(2)) + '</s>' : '₱' + format_number(item_total.toFixed(2))}</td>
+                          <td class="text-end pe-0 no-print">${action_dropdown}</td>
+                      </tr>
+                  `;
                });
                $('#receipt_items').html(items_html);
 
@@ -1891,7 +1952,7 @@
                    senior: { label: 'Senior Citizen (20%)', color: 'bg-warning-subtle text-warning' },
                    pwd:    { label: 'PWD (20%)',             color: 'bg-warning-subtle text-warning' },
                    promo:  { label: 'Promo (10%)',           color: 'bg-info-subtle text-info'       },
-                   other:  { label: `Custom (${(discount * 100 / subtotal).toFixed(0)}%)`, color: 'bg-secondary-subtle text-secondary' },
+                   other:  { label: `Custom (${(discount * 100).toFixed(0)}%)`, color: 'bg-secondary-subtle text-secondary' },
                };
                let discount_type = first.pos_discount_type ?? 'none';
                let discount_info = discount_labels[discount_type];
@@ -1907,24 +1968,24 @@
                }
                discount_value = subtotal * discount;
                let final_total = subtotal - discount_value;
-               $('#receipt_totals').html(`
-                   <div class="d-flex justify-content-between mb-1 small">
-                       <span class="text-muted">Subtotal</span>
-                       <span>₱${subtotal.toFixed(2)}</span>
-                   </div>
-                   ${discount > 0 ? `
-                   <div class="d-flex justify-content-between mb-1 small">
-                       <span class="text-danger">Discount</span>
-                       <span class="text-danger">−₱${discount_value.toFixed(2)}</span>
-                   </div>` : ''}
-                   <div class="d-flex justify-content-between fw-semibold border-top pt-2 mt-1">
-                       <span>Total</span>
-                       <span class="text-success fs-6">₱${final_total.toFixed(2)}</span>
-                   </div>
-                   <div class="d-flex justify-content-between small text-muted mt-1">
-                       <span>Payment</span>
-                       <span>Cash</span>
-                   </div>
+                  $('#receipt_totals').html(`
+                  <div class="d-flex justify-content-between mb-1 small">
+                     <span class="text-muted">Subtotal</span>
+                     <span>₱${format_number(subtotal.toFixed(2))}</span>
+                  </div>
+                  ${discount > 0 ? `
+                  <div class="d-flex justify-content-between mb-1 small">
+                     <span class="text-danger">Discount</span>
+                     <span class="text-danger">−₱${format_number(discount_value.toFixed(2))}</span>
+                  </div>` : ''}
+                  <div class="d-flex justify-content-between fw-semibold">
+                     <span>Total</span>
+                     <span class="text-success">₱${format_number(final_total.toFixed(2))}</span>
+                  </div>
+                  <div class="d-flex justify-content-between small text-muted mt-1">
+                     <span>Payment</span>
+                     <span>Cash</span>
+                  </div>
                `);
                const modal_el = document.getElementById('receipt_modal');
                const modal = new bootstrap.Modal(modal_el);
@@ -2012,7 +2073,7 @@
    $(document).on('click', '.view_receipt_activator', function() {
       let sale_code = $(this).data('sale-code');
       load_pos_checkout_receipt(sale_code);
-      $('#active_sale_code').text(sale_code)
+      $('#active_sale_code').data('sale_code', sale_code)
    });
 
    $('#print_receipt_btn').on('click', function () {
@@ -2020,94 +2081,108 @@
    });
 
    function print_receipt() {
-      let clone = document.getElementById('receipt_content').cloneNode(true);
-      clone.querySelectorAll('.no-print').forEach(el => el.remove());
-      let content = clone.innerHTML;
-      let printWindow = window.open('', '', 'width=1000,height=600');
-      printWindow.document.write(`
-        <html>
-        <head>
-            <title>Print Receipt</title>
-            <style>
-                * { box-sizing: border-box; }
-                @page {
-                    size: 80mm auto;
-                    margin: 0;
-                }
-                body {
-                    font-family: Arial, sans-serif;
-                    width: 80mm;
-                    margin: 0 auto;
-                    padding: 6px 8px;
-                    font-size: 11px;
-                }
-                .fs-5, .fw-bold {
-                    font-size: 15px;
-                    font-weight: bold;
-                    margin: 0;
-                    padding: 4px 0;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    font-size: 8.8px; /* 20% smaller than 11px */
-                }
-                thead tr th {
-                    font-size: 8px; /* 20% smaller than 10px */
-                    text-transform: uppercase;
-                    letter-spacing: 0.03em;
-                    padding-bottom: 4px;
-                    border-bottom: 1px dashed #000;
-                }
-                td { padding: 4px 0; 
-                    font-size: 10px; /* 20% smaller than 10px */
-                } /* slightly tighter rows to match smaller text */
-                th { padding: 2px 0; }
-                hr {
-                    border: none;
-                    border-top: 1px dashed #000;
-                    margin: 6px 0;
-                }
-                .text-end    { text-align: right; }
-                .text-start  { text-align: left; }
-                .text-center { text-align: center; }
-                .text-muted  { color: #555; }
-                .text-success, .text-danger { color: #000; }
-                .fw-semibold, .fw-bold { font-weight: bold; }
-                .mb-1 { margin-bottom: 3px; }
-                .mb-2 { margin-bottom: 5px; }
-                .mb-3 { margin-bottom: 8px; }
-                .my-2 { margin: 6px 0; }
-                .ps-0 { padding-left: 0; }
-                .pe-0 { padding-right: 0; }
-                .py-1 { padding: 3px 0; }
-                .mt-1 { margin-top: 3px; }
-                .small, small { font-size: 10px; }
-                .d-flex {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: baseline;
-                }
-                .badge {
-                    background: none !important;
-                    color: #000 !important;
-                    padding: 0;
-                    font-weight: bold;
-                    font-size: inherit;
-                }
-                .border-top { border-top: 1px solid #ccc; }
-                td:first-child {
-                    max-width: 28mm;
-                    word-break: break-word;
-                }
-            </style>
-        </head>
-        <body onload="window.print(); window.close();">
-            ${content}
-        </body>
-        </html>
-      `);
-      printWindow.document.close();
+       let clone = document.getElementById('receipt_content').cloneNode(true);
+       clone.querySelectorAll('.no-print').forEach(el => el.remove());
+       let content = clone.innerHTML;
+       let printWindow = window.open('', '', 'width=1000,height=600');
+       printWindow.document.write(`
+           <html>
+           <head>
+               <title>Print Receipt</title>
+               <style>
+                   * { 
+                       box-sizing: border-box;
+                       color: #000 !important;
+                       -webkit-print-color-adjust: exact;
+                       print-color-adjust: exact;
+                   }
+                   @page {
+                       size: 58mm auto;
+                       margin: 0mm 3mm;
+                   }
+                   .badge {
+                     font-size: 7px !important;
+                   }
+                   body {
+                       font-family: Arial, sans-serif;
+                       width: 58mm;
+                       margin: 0 auto;
+                       padding: 0px 20px;
+                       font-size: 11px;
+                       color: #000 !important;
+                       background: #fff;
+                   }
+                   .fs-5, .fw-bold {
+                       font-size: 15px;
+                       font-weight: bold;
+                       margin: 0;
+                       padding: 4px 0;
+                   }
+                   table {
+                       width: 100%;
+                       border-collapse: collapse;
+                       font-size: 8.8px;
+                   }
+                   thead tr th {
+                       font-size: 8px;
+                       text-transform: uppercase;
+                       letter-spacing: 0.03em;
+                       padding-bottom: 4px;
+                   }
+                   tr { border-top: none !important; }
+                   td {
+                       padding: 2px 2px 2px 0;
+                       font-size: 7px;
+                   }
+                   td:first-child {
+                       max-width: 28mm;
+                       word-break: break-word;
+                       padding-left: 0;
+                   }
+                   td:last-child { padding-right: 0; }
+                   th {
+                       padding: 2px 6px 2px 0;
+                   }
+                   th:first-child { padding-left: 0; }
+                   th:last-child  { padding-right: 0; }
+                   .text-end      { text-align: right; }
+                   .text-start    { text-align: left; }
+                   .text-center   { text-align: center; }
+                   .text-muted    { color: #000 !important; }
+                   .text-success,
+                   .text-danger   { color: #000 !important; }
+                   .fw-semibold,
+                   .fw-bold       { font-weight: bold; }
+                   .mb-1 { margin-bottom: 3px; }
+                   .mb-2 { margin-bottom: 5px; }
+                   .mb-3 { margin-bottom: 8px; }
+                   .my-2 { margin: 6px 0; }
+                   .ps-0 { padding-left: 0; }
+                   .pe-0 { padding-right: 0; }
+                   .py-1 { padding: 3px 0; }
+                   .mt-1 { margin-top: 3px; }
+                   .small, small  { font-size: 10px; }
+                   .d-flex {
+                       display: flex;
+                       justify-content: space-between;
+                       align-items: baseline;
+                   }
+                   .badge {
+                       background: none !important;
+                       color: #000 !important;
+                       padding: 0;
+                       font-weight: bold;
+                       font-size: inherit;
+                   }
+                   .border-top { border-top: 1px solid #000; }
+               </style>
+           </head>
+           <body onload="window.print(); window.close();">
+               ${content}
+           </body>
+           </html>
+       `);
+       printWindow.document.close();
    }
 
    $(document).ready(function(){
@@ -2288,7 +2363,7 @@
        },
        receipt: () => {
            if (typeof load_pos_checkout_receipt === 'function')
-               load_pos_checkout_receipt($('#active_sale_code').text());
+               load_pos_checkout_receipt($('#active_sale_code').data('sale_code'));
        }
    };
 
@@ -2341,4 +2416,10 @@
    $(document).ready(function() {
        init_sse();
    });
+   function format_number(value, decimals = 2) {
+       return parseFloat(value).toLocaleString('en-PH', {
+           minimumFractionDigits: decimals,
+           maximumFractionDigits: decimals
+       });
+   }
 </script>

@@ -267,7 +267,6 @@
       </div>
    </div>
 </div>
-
 <div class="modal fade" id="receipt_modal" tabindex="-1" aria-labelledby="receipt_modal_label" aria-hidden="true"
      data-bs-backdrop="true" data-bs-keyboard="true">
 
@@ -833,6 +832,21 @@
    //    height: 40,
    //    displayValue: true
    // });
+   $(document).on('hidden.bs.modal', function () {
+       // If there's still a modal open, keep one backdrop
+       if ($('.modal.show').length > 0) {
+           if ($('.modal-backdrop').length === 0) {
+               $('body').append('<div class="modal-backdrop fade show"></div>');
+           } else {
+               // Remove extras, keep only one
+               $('.modal-backdrop').not(':first').remove();
+           }
+       } else {
+           // No modals open — remove all backdrops and restore body
+           $('.modal-backdrop').remove();
+           $('body').removeClass('modal-open').css('padding-right', '');
+       }
+   });
    
    const pos_items = {};
 
@@ -1484,7 +1498,6 @@
                   </tr>
                `);
             });
-
             compute_pos_sales_report_total();
 
             $('.void_sale')
@@ -1607,55 +1620,57 @@
    });
 
    $('#pos_restocking_form').on('submit', function (e) {
-      e.preventDefault();
-      let restock_date = $('#pos_restocking_date').val();
-
-      if (!restock_date) {
-         alert('Please select a restock date.');
-         return;
-      }
-
-      let items = [];
-      Object.values(pos_items).forEach(item => {
-         if (item.cart_quantity && item.cart_quantity > 0) {
-            items.push({
-               pos_item_id:      item.pos_item_id,
-               pos_item_code:    item.pos_item_code,
-               pos_item_name:    item.pos_item_name,
-               pos_item_price:   item.pos_item_price,
-               pos_item_quantity: item.cart_quantity,
-               pos_item_unit:    item.pos_item_unit
-            });
-         }
-      });
-
-      if (items.length === 0) {
-         alert('Cart is empty');
-         return;
-      }
-
-      $.ajax({
-         url: '<?php echo base_url();?>i.php/sys_control/process_restocking',
-         method: 'POST',
-         data: {
-            pos_restocking_date: restock_date,
-            items: JSON.stringify(items)
-         },
-         dataType: 'json',
-         success: function (res) {
-            if (res.status === 'success') {
-               Object.values(pos_items).forEach(item => { item.cart_quantity = 0; });
-               render_pos_restocking_cart();
-               load_pos_inventory(current_page);
-               $('#pos_restocking_form')[0].reset();
-               $('#pos_restocking_cart_modal').modal('hide');
-               alert('Restocking successful');
-            } else {
-               alert(res.message);
-            }
-         },
-         error: function () { alert('Server error'); }
-      });
+       e.preventDefault();
+       let restock_date = $('#pos_restocking_date').val();
+       if (!restock_date) {
+           alert('Please select a restock date.');
+           return;
+       }
+       let items = [];
+       Object.values(pos_items).forEach(item => {
+           if (item.cart_quantity && item.cart_quantity > 0) {
+               items.push({
+                   pos_item_id:       item.pos_item_id,
+                   pos_item_code:     item.pos_item_code,
+                   pos_item_name:     item.pos_item_name,
+                   pos_item_price:    item.pos_item_price,
+                   pos_item_quantity: item.cart_quantity,
+                   pos_item_unit:     item.pos_item_unit
+               });
+           }
+       });
+       if (items.length === 0) {
+           alert('Cart is empty');
+           return;
+       }
+       // Build confirmation summary
+       let item_summary = items.map(i => `• ${i.pos_item_name} (x${i.pos_item_quantity} ${i.pos_item_unit})`).join('\n');
+       let confirmed = confirm(
+           `Confirm restocking for ${restock_date}?\n\n${item_summary}\n\nTotal item types: ${items.length}`
+       );
+       if (!confirmed) return;
+       $.ajax({
+           url: '<?php echo base_url();?>i.php/sys_control/process_restocking',
+           method: 'POST',
+           data: {
+               pos_restocking_date: restock_date,
+               items: JSON.stringify(items)
+           },
+           dataType: 'json',
+           success: function (res) {
+               if (res.status === 'success') {
+                   Object.values(pos_items).forEach(item => { item.cart_quantity = 0; });
+                   render_pos_restocking_cart();
+                   load_pos_inventory(current_page);
+                   $('#pos_restocking_form')[0].reset();
+                   $('#pos_restocking_cart_modal').modal('hide');
+                   alert('Restocking successful');
+               } else {
+                   alert(res.message);
+               }
+           },
+           error: function () { alert('Server error'); }
+       });
    });
 
    function render_pos_restocking_cart() {
@@ -2146,80 +2161,94 @@
    });
 
    function load_pos_checkout_receipt(sale_code) {
-      $.ajax({
-         url: '<?php echo base_url();?>i.php/sys_control/load_pos_checkout_receipt',
-         method: 'POST',
-         data: { sale_code: sale_code },
-         dataType: 'json',
-         success: function(res) {
-            if (res.status !== 'success') {
-               $('#receipt_items').html('<tr><td colspan="6" class="text-center text-muted">Failed to load receipt</td></tr>');
-               return;
-            }
-            let data = res.data;
-            if (data.length === 0) {
-               $('#receipt_items').html('<tr><td colspan="6" class="text-center text-muted">No items found</td></tr>');
-               return;
-            }
-
-            let first    = data[0];
-            let subtotal = 0;
-            let discount = parseFloat(first.pos_discount_value) || 0;
-
-            // Format date
-            let raw_date       = new Date(first.pos_checkout_date);
-            let formatted_date = isNaN(raw_date)
-               ? first.pos_checkout_date
-               : raw_date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
-                 + ' · '
-                 + raw_date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
-
-            let is_sale_voided = parseInt(first.pos_checkout_status) === 2;
-
-            $('#receipt_info').html(`
-               <div class="d-flex justify-content-between mb-1">
-                  <span class="text-muted">Sale Code</span>
-                  <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
-                     ${first.pos_checkout_code}
-                  </span>
-               </div>
-               <div class="d-flex justify-content-between mb-1">
-                  <span class="text-muted">Date</span>
-                  <span>${formatted_date}</span>
-               </div>
-               <div class="d-flex justify-content-between mb-1">
-                  <span class="text-muted">Cashier</span>
-                  <span>${first.cashier_name ?? 'Unknown'}</span>
-               </div>
-               <div class="d-flex justify-content-between">
-                  <span class="text-muted">Status</span>
-                  ${is_sale_voided
-                     ? '<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Voided</span>'
-                     : '<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>'
-                  }
-               </div>
-            `);
-
-            // Show/hide print button based on sale status
-            if (is_sale_voided) {
-               $('#print_receipt_btn').hide();
-            } else {
-               $('#print_receipt_btn').show();
-            }
-
-            let items_html = '';
-            data.forEach(item => {
-               let unit_price = parseFloat(item.pos_item_price);
-               let item_total = unit_price * parseFloat(item.pos_item_quantity);
-               let is_item_voided = parseInt(item.pos_checkout_status) === 2;
-
-               // Only add to subtotal if item is not voided
-               if (!is_item_voided) {
-                  subtotal += item_total;
+       $.ajax({
+           url: '<?php echo base_url();?>i.php/sys_control/load_pos_checkout_receipt',
+           method: 'POST',
+           data: { sale_code: sale_code },
+           dataType: 'json',
+           success: function(res) {
+               if (res.status !== 'success') {
+                   $('#receipt_items').html('<tr><td colspan="6" class="text-center text-muted">Failed to load receipt</td></tr>');
+                   return;
+               }
+               let data = res.data;
+               if (data.length === 0) {
+                   $('#receipt_items').html('<tr><td colspan="6" class="text-center text-muted">No items found</td></tr>');
+                   return;
                }
 
-               let action_dropdown = `
-                  <div class="dropdown dropstart">
+               let first    = data[0];
+               let subtotal = 0;
+               let discount = parseFloat(first.pos_discount_value) || 0;
+
+               let raw_date       = new Date(first.pos_checkout_date);
+               let formatted_date = isNaN(raw_date)
+                   ? first.pos_checkout_date
+                   : raw_date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+                     + ' · '
+                     + raw_date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
+
+               let is_sale_voided = parseInt(first.pos_checkout_status) === 2;
+
+               $('#receipt_info').html(`
+                   <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
+                       <span class="text-muted">Sale Code</span>
+                       <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
+                           ${first.pos_checkout_code}
+                       </span>
+                   </div>
+                   <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
+                       <span class="text-muted">Date</span>
+                       <span>${formatted_date}</span>
+                   </div>
+                   <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
+                       <span class="text-muted">Cashier</span>
+                       <span>${first.cashier_name ?? 'Unknown'}</span>
+                   </div>
+                   <div id="receipt_discount_section" class="d-flex justify-content-between mb-1 d-none" style="font-size: 0.8em;">
+                         <span class="text-muted">Discount</span>
+                         <span id="receipt_discount_badge"></span>
+                     </div>
+                   <div class="d-flex justify-content-between" style="font-size: 0.8em;">
+                       <span class="text-muted">Status</span>
+                       ${is_sale_voided
+                           ? '<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Voided</span>'
+                           : '<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>'
+                       }
+                   </div>
+               `);
+
+               if (is_sale_voided) {
+                   $('#print_receipt_btn').hide();
+               } else {
+                   $('#print_receipt_btn').show();
+               }
+
+               let items_html = '';
+               data.forEach(item => {
+                   let unit_price       = parseFloat(item.pos_item_price);
+                   let item_total       = unit_price * parseFloat(item.pos_item_quantity);
+                   let item_status      = parseInt(item.pos_checkout_status);
+                   let is_item_voided   = item_status === 2;
+                   let is_item_pending  = item_status === 3;
+
+                   if (!is_item_voided && !is_item_pending) {
+                       subtotal += item_total;
+                   }
+
+                   let status_badge = '';
+                   if (is_item_voided) {
+                       status_badge = `<span class="badge bg-danger-subtle text-danger rounded-pill ms-1" style="font-size:9px;">Voided</span>`;
+                   } else if (is_item_pending) {
+                       status_badge = `<span class="badge bg-warning-subtle text-warning rounded-pill ms-1 no-print" style="font-size:9px;">Pending Void</span>`;
+                   }
+
+                   let row_class = '';
+                   if (is_item_voided)  row_class = 'opacity-50 text-decoration-line-through no-print';
+                   if (is_item_pending) row_class = 'opacity-75';
+
+                   let action_dropdown = `
+                      <div class="dropdown dropstart">
                      <button class="btn btn-sm btn-light rounded-pill px-2"
                         type="button"
                         data-bs-toggle="dropdown"
@@ -2250,87 +2279,107 @@
                         </li>`}
                      </ul>
                   </div>
-               `;
+                  `;
 
-               // Voided items get no-print so they are excluded when printing
-               items_html += `
-                  <tr class="border-top ${is_item_voided ? 'opacity-50 text-decoration-line-through no-print' : ''}">
-                     <td class="text-start ps-0">
-                        ${item.pos_item_name}
-                        ${is_item_voided ? '<span class="badge bg-danger-subtle text-danger rounded-pill ms-1" style="font-size:9px;">Voided</span>' : ''}
-                     </td>
-                     <td class="text-center">${item.pos_item_quantity}</td>
-                     <td class="text-center text-muted">${item.pos_item_unit}</td>
-                     <td class="text-end text-muted">₱${unit_price.toFixed(2)}</td>
-                     <td class="text-end">${is_item_voided ? '<s>₱' + item_total.toFixed(2) + '</s>' : '₱' + item_total.toFixed(2)}</td>
-                     <td class="text-end pe-0 no-print">${action_dropdown}</td>
-                  </tr>
-               `;
-            });
-            $('#receipt_items').html(items_html);
-            
-            discount_value = subtotal * discount;
-            let final_total = subtotal - discount_value;
-            $('#receipt_totals').html(`
-               <div class="d-flex justify-content-between mb-1 small">
-                  <span class="text-muted">Subtotal</span>
-                  <span>₱${subtotal.toFixed(2)}</span>
-               </div>
-               ${discount > 0 ? `
-               <div class="d-flex justify-content-between mb-1 small">
-                  <span class="text-danger">Discount</span>
-                  <span class="text-danger">−₱${discount.toFixed(2)}</span>
-               </div>` : ''}
-               <div class="d-flex justify-content-between fw-semibold">
-                  <span>Total</span>
-                  <span class="text-success">₱${final_total.toFixed(2)}</span>
-               </div>
-               <div class="d-flex justify-content-between small text-muted mt-1">
-                  <span>Payment</span>
-                  <span>Cash</span>
-               </div>
-            `);
-
-            // Void item handler
-            $('.void_receipt_item')
-            .off('click')
-            .on('click', function () {
-               let pos_item_name     = $(this).data('pos_item_name');
-               let pos_checkout_code = $(this).data('pos_checkout_code');
-               if (!confirm(`Void "${pos_item_name}" from sale #${pos_checkout_code}?`)) return;
-
-               void_pos_checkout_item(this)
-            });
-
-            $('.restore_receipt_item')
-            .off('click')
-            .on('click', function () {
-               let pos_item_id       = $(this).data('pos_item_id');
-               let pos_item_name     = $(this).data('pos_item_name');
-               let pos_checkout_code = $(this).data('pos_checkout_code');
-               if (!confirm(`Restore "${pos_item_name}" in sale #${pos_checkout_code}?`)) return;
-               $.ajax({
-                  url: '<?php echo base_url();?>i.php/sys_control/restore_pos_checkout_item',
-                  method: 'POST',
-                  data: { pos_item_id: pos_item_id, pos_checkout_code: pos_checkout_code },
-                  dataType: 'json',
-                  success: function(res) {
-                     if (res.status === 'success') {
-                        alert(`"${pos_item_name}" successfully restored.`);
-                        load_pos_inventory(current_page);
-                        load_pos_checkout_receipt(pos_checkout_code);
-                     } else {
-                        alert(res.message);
-                     }
-                  },
-                  error: function() { alert('Server error'); }
+                   items_html += `
+                     <tr class="border-top ${is_item_voided ? 'opacity-50 text-decoration-line-through no-print' : ''}">
+                        <td class="text-start ps-0">
+                           ${item.pos_item_name}
+                           ${is_item_voided ? '<span class="badge bg-danger-subtle text-danger rounded-pill ms-1" style="font-size:9px;">Voided</span>' : ''}
+                        </td>
+                        <td class="text-center">${item.pos_item_quantity}</td>
+                        <td class="text-center text-muted">${item.pos_item_unit}</td>
+                        <td class="text-end text-muted">₱${format_number(unit_price.toFixed(2))}</td>
+                        <td class="text-end">${is_item_voided ? '<s>₱' + format_number(item_total.toFixed(2)) + '</s>' : '₱' + format_number(item_total.toFixed(2))}</td>
+                        <td class="text-end pe-0 no-print">${action_dropdown}</td>
+                     </tr>
+                  `;
                });
-            });            
-         },
-         error: function() {
-            $('#receipt_items').html('<tr><td colspan="4">Server error</td></tr>');
-         }
-      });
+               $('#receipt_items').html(items_html);
+
+               // Discount type label
+               const discount_labels = {
+                   senior: { label: 'Senior Citizen (20%)', color: 'bg-warning-subtle text-warning' },
+                   pwd:    { label: 'PWD (20%)',             color: 'bg-warning-subtle text-warning' },
+                   promo:  { label: 'Promo (10%)',           color: 'bg-info-subtle text-info'       },
+                   other:  { label: `Custom (${(discount * 100).toFixed(0)}%)`, color: 'bg-secondary-subtle text-secondary' },
+               };
+               let discount_type = first.pos_discount_type ?? 'none';
+               let discount_info = discount_labels[discount_type];
+               if (discount_info && discount > 0) {
+                   $('#receipt_discount_section').removeClass('d-none');
+                   $('#receipt_discount_badge').html(`
+                       <span class="badge rounded-pill ${discount_info.color} fw-normal px-2" style="font-size: 11px;">
+                           <i class="bi bi-tag-fill me-1"></i>${discount_info.label}
+                       </span>
+                   `);
+               } else {
+                   $('#receipt_discount_section').addClass('d-none');
+               }
+               discount_value = subtotal * discount;
+               let final_total = subtotal - discount_value;
+                  $('#receipt_totals').html(`
+                  <div class="d-flex justify-content-between mb-1 small">
+                     <span class="text-muted">Subtotal</span>
+                     <span>₱${format_number(subtotal.toFixed(2))}</span>
+                  </div>
+                  ${discount > 0 ? `
+                  <div class="d-flex justify-content-between mb-1 small">
+                     <span class="text-danger">Discount</span>
+                     <span class="text-danger">−₱${format_number(discount_value.toFixed(2))}</span>
+                  </div>` : ''}
+                  <div class="d-flex justify-content-between fw-semibold">
+                     <span>Total</span>
+                     <span class="text-success">₱${format_number(final_total.toFixed(2))}</span>
+                  </div>
+                  <div class="d-flex justify-content-between small text-muted mt-1">
+                     <span>Payment</span>
+                     <span>Cash</span>
+                  </div>
+               `);
+               const modal_el = document.getElementById('receipt_modal');
+               const modal = new bootstrap.Modal(modal_el);
+               modal.show();
+
+               $('.void_receipt_item')
+               .off('click')
+               .on('click', function () {
+                  let pos_item_name     = $(this).data('pos_item_name');
+                  let pos_checkout_code = $(this).data('pos_checkout_code');
+                  if (!confirm(`Void "${pos_item_name}" from sale #${pos_checkout_code}?`)) return;
+
+                  void_pos_checkout_item(this)
+               });
+
+               $('.restore_receipt_item')
+               .off('click')
+               .on('click', function () {
+                  let pos_item_id       = $(this).data('pos_item_id');
+                  let pos_item_name     = $(this).data('pos_item_name');
+                  let pos_checkout_code = $(this).data('pos_checkout_code');
+                  if (!confirm(`Restore "${pos_item_name}" in sale #${pos_checkout_code}?`)) return;
+                  $.ajax({
+                     url: '<?php echo base_url();?>i.php/sys_control/restore_pos_checkout_item',
+                     method: 'POST',
+                     data: { pos_item_id: pos_item_id, pos_checkout_code: pos_checkout_code },
+                     dataType: 'json',
+                     success: function(res) {
+                        if (res.status === 'success') {
+                           alert(`"${pos_item_name}" successfully restored.`);
+                           load_pos_inventory(current_page);
+                           load_pos_checkout_receipt(pos_checkout_code);
+                        } else {
+                           alert(res.message);
+                        }
+                     },
+                     error: function() { alert('Server error'); }
+                  });
+               });  
+           },
+           error: function() {
+               $('#receipt_items').html('<tr><td colspan="4">Server error</td></tr>');
+           }
+       });
    }
    function void_pos_checkout_item(item_data) {
       let pos_item_id = $(item_data).data('pos_item_id');
@@ -2361,93 +2410,107 @@
 
    $('#print_receipt_btn').on('click', function () {
       let clone = document.getElementById('receipt_content').cloneNode(true);
-      clone.querySelectorAll('.no-print').forEach(el => el.remove());
-      let content = clone.innerHTML;
-
-      let printWindow = window.open('', '', 'width=1000,height=600');
-      printWindow.document.write(`
-         <html>
-         <head>
-            <title>Print Receipt</title>
-            <style>
-               * { box-sizing: border-box; }
-               @page {
-                  size: 80mm auto;
-                  margin: 0;
-               }
-               body {
-                  font-family: Arial, sans-serif;
-                  width: 80mm;
-                  margin: 0 auto;
-                  padding: 6px 8px;
-                  font-size: 11px;
-               }
-               .fs-5, .fw-bold {
-                  font-size: 15px;
-                  font-weight: bold;
-                  margin: 0;
-                  padding: 4px 0;
-               }
-               table {
-                  width: 100%;
-                  border-collapse: collapse;
-                  font-size: 11px;
-               }
-               thead tr th {
-                  font-size: 10px;
-                  text-transform: uppercase;
-                  letter-spacing: 0.03em;
-                  padding-bottom: 5px;
-                  border-bottom: 1px dashed #000;
-               }
-               td { padding: 3px 0; }
-               th { padding: 3px 0; }
-               hr {
-                  border: none;
-                  border-top: 1px dashed #000;
-                  margin: 6px 0;
-               }
-               .text-end    { text-align: right; }
-               .text-start  { text-align: left; }
-               .text-center { text-align: center; }
-               .text-muted  { color: #555; }
-               .text-success, .text-danger { color: #000; }
-               .fw-semibold, .fw-bold { font-weight: bold; }
-               .mb-1 { margin-bottom: 3px; }
-               .mb-2 { margin-bottom: 5px; }
-               .mb-3 { margin-bottom: 8px; }
-               .my-2 { margin: 6px 0; }
-               .ps-0 { padding-left: 0; }
-               .pe-0 { padding-right: 0; }
-               .py-1 { padding: 3px 0; }
-               .mt-1 { margin-top: 3px; }
-               .small, small { font-size: 10px; }
-               .d-flex {
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: baseline;
-               }
-               .badge {
-                  background: none !important;
-                  color: #000 !important;
-                  padding: 0;
-                  font-weight: bold;
-                  font-size: inherit;
-               }
-               .border-top { border-top: 1px solid #ccc; }
-               /* Prevent item names from overflowing into price columns */
-               td:first-child { 
-                  max-width: 28mm; 
-                  word-break: break-word; 
-               }
-            </style>
-         </head>
-         <body onload="window.print(); window.close();">
-            ${content}
-         </body>
-         </html>
-      `);
-      printWindow.document.close();
+       clone.querySelectorAll('.no-print').forEach(el => el.remove());
+       let content = clone.innerHTML;
+       let printWindow = window.open('', '', 'width=1000,height=600');
+       printWindow.document.write(`
+           <html>
+           <head>
+               <title>Print Receipt</title>
+               <style>
+                   * { 
+                       box-sizing: border-box;
+                       color: #000 !important;
+                       -webkit-print-color-adjust: exact;
+                       print-color-adjust: exact;
+                   }
+                   @page {
+                       size: 58mm auto;
+                       margin: 2mm 3mm;
+                   }
+                   .badge {
+                     font-size: 7px !important;
+                   }
+                   body {
+                       font-family: Arial, sans-serif;
+                       width: 58mm;
+                       margin: 0 auto;
+                       padding: 0px 20px;
+                       font-size: 11px;
+                       color: #000 !important;
+                       background: #fff;
+                   }
+                   .fs-5, .fw-bold {
+                       font-size: 15px;
+                       font-weight: bold;
+                       margin: 0;
+                       padding: 4px 0;
+                   }
+                   table {
+                       width: 100%;
+                       border-collapse: collapse;
+                       font-size: 8.8px;
+                   }
+                   thead tr th {
+                       font-size: 8px;
+                       text-transform: uppercase;
+                       letter-spacing: 0.03em;
+                       padding-bottom: 4px;
+                   }
+                   tr { border-top: none !important; }
+                   td {
+                       padding: 2px 2px 2px 0;
+                       font-size: 7px;
+                   }
+                   td:first-child {
+                       max-width: 28mm;
+                       word-break: break-word;
+                       padding-left: 0;
+                   }
+                   td:last-child { padding-right: 0; }
+                   th {
+                       padding: 2px 6px 2px 0;
+                   }
+                   th:first-child { padding-left: 0; }
+                   th:last-child  { padding-right: 0; }
+                   .text-end      { text-align: right; }
+                   .text-start    { text-align: left; }
+                   .text-center   { text-align: center; }
+                   .text-muted    { color: #000 !important; }
+                   .text-success,
+                   .text-danger   { color: #000 !important; }
+                   .fw-semibold,
+                   .fw-bold       { font-weight: bold; }
+                   .mb-1 { margin-bottom: 3px; }
+                   .mb-2 { margin-bottom: 5px; }
+                   .mb-3 { margin-bottom: 8px; }
+                   .my-2 { margin: 6px 0; }
+                   .ps-0 { padding-left: 0; }
+                   .pe-0 { padding-right: 0; }
+                   .py-1 { padding: 3px 0; }
+                   .mt-1 { margin-top: 3px; }
+                   .small, small  { font-size: 10px; }
+                   .d-flex {
+                       display: flex;
+                       justify-content: space-between;
+                       align-items: baseline;
+                   }
+                   .badge {
+                       background: none !important;
+                       color: #000 !important;
+                       padding: 0;
+                       font-weight: bold;
+                       font-size: inherit;
+                   }
+                   .border-top { border-top: 1px solid #000; }
+               </style>
+           </head>
+           <body onload="window.print(); window.close();">
+               ${content}
+           </body>
+           </html>
+       `);
+       printWindow.document.close();
    });
 
    $(document).ready(function(){
@@ -2962,4 +3025,10 @@
    $(document).ready(function() {
        init_sse();
    });
+   function format_number(value, decimals = 2) {
+       return parseFloat(value).toLocaleString('en-PH', {
+           minimumFractionDigits: decimals,
+           maximumFractionDigits: decimals
+       });
+   }
 </script>

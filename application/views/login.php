@@ -26,6 +26,44 @@
             font-weight: 800;
             letter-spacing: 0.08em;
         }
+        :root {
+		    --bs-primary: #0F6E56;
+		    --bs-primary-rgb: 15, 110, 86;
+		    --bs-btn-bg: #0F6E56;
+		    --bs-btn-border-color: #0F6E56;
+		    --bs-btn-hover-bg: #0a5240;
+		    --bs-btn-hover-border-color: #0a5240;
+		    --bs-link-color: #0F6E56;
+		}
+
+		.text-primary {
+		    color: #0F6E56 !important;
+		}
+
+		.btn-primary {
+		    background-color: #0F6E56;
+		    border-color: #0F6E56;
+		}
+
+		.btn-primary:hover {
+		    background-color: #0a5240;
+		    border-color: #0a5240;
+		}
+
+		.input-group-text {
+		    border-color: #dee2e6;
+		}
+
+		.form-control:focus {
+		    border-color: #0F6E56;
+		    box-shadow: 0 0 0 0.2rem rgba(15, 110, 86, 0.15);
+		}
+
+		.brand-title {
+		    font-size: 1.8rem;
+		    font-weight: 700;
+		    letter-spacing: 2px;
+		}
     </style>
 </head>
 <body>
@@ -56,26 +94,24 @@
                     </div>
                 </div>
                 <div class="mb-4">
-                    <label class="form-label small fw-semibold" for="password">Password</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-body border-end-0">
-                            <i class="bi bi-lock text-muted" style="font-size:14px;"></i>
-                        </span>
-                        <input id="password" name="password" type="password"
-                            class="form-control border-start-0 shadow-none"
-                            placeholder="Enter password"
-                            autocomplete="current-password">
-                        <button class="btn border-start-0 shadow-none"
-                            type="button" id="toggle_password" tabindex="-1">
-                            <i class="bi bi-eye" style="font-size:14px;"></i>
-                        </button>
-                    </div>
-                </div>
+				    <label class="form-label small fw-semibold" for="password">Password</label>
+				    <div class="input-group">
+				        <span class="input-group-text bg-body border-end-0">
+				            <i class="bi bi-lock text-muted" style="font-size:14px;"></i>
+				        </span>
+				        <input id="password" name="password" type="password"
+				            class="form-control border-start-0 border-end-0 shadow-none"
+				            placeholder="Enter password"
+				            autocomplete="current-password">
+				        <span class="input-group-text bg-body border-start-0" id="toggle_password" style="cursor:pointer;">
+				            <i class="bi bi-eye text-muted" style="font-size:14px;"></i>
+				        </span>
+				    </div>
+				</div>
                 <button type="button" class="btn btn-primary w-100 rounded-pill" id="login_button">
                     Sign In
                 </button>
             </form>
-
         </div>
         <p class="text-center text-muted small mt-3">Saki Mart POS &copy; <?php echo date('Y'); ?></p>
     </main>
@@ -162,7 +198,6 @@
 				  	}, 2500);
 				}
 				else if (status == 'inactive') {
-					status = "error";
 				    title = "Account Disabled";
 				    message = "Your account has been deactivated. Please contact the administrator.";
 				    status = "error";
@@ -184,62 +219,5 @@
 			})
 		;
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	$(document).ready(function() {
-		$('.announcements_activator').addClass('invisible');
-		$('.chat_activator').addClass('invisible');
-	});
-	$('#post_image_name')
-		.on('click', function() {
-		  	$('#post_image_input').trigger('click');
-		  	$('#post_image_name').trigger('blur');
-		})
-		.on('focus', function() {
-		  	$('#post_image_input').trigger('click');
-		  	$('#post_image_name').trigger('blur');
-		})
-	;
-	$('#post_image_input')
-	  	.on('change', function() {
-	  		var file = $('#post_image_input')[0].files[0]; 
-	  		// IF IMAGE INPUT IS NOT EMPTY
-	  		if (file) {
-	  			$('#post_image_name').val(file.name);
-	  			$('#post_image_inner')
-			  		.attr('src', URL.createObjectURL(file))
-				;
-				$('#post_image_outer')
-			  		.attr('src', URL.createObjectURL(file))
-				;
-	  		}
-	  		else {
-	  			$('#post_image_name').val(null);
-		  		$('#post_image_inner')
-  					.attr('src', '<?php echo base_url();?>photos/post_images/placeholder_landscape.png')
-				;
-				$('#post_image_outer')
-  					.attr('src', '<?php echo base_url();?>photos/post_images/placeholder_landscape.png')
-				;
-	  		}
-			$('#post_creation_form').form('validate field', 'post_image_name');
-	  	})
-	;
 </script>
 </html>

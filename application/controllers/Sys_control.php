@@ -4,7 +4,7 @@ class Sys_control extends CI_Controller
 	public function __construct() {
 		parent::__construct();
 
-		$allowed = ['login', 'attempt_login'];
+		$allowed = ['login', 'attempt_login', 'system_deactivated'];
 
         if (!in_array($this->router->fetch_method(), $allowed)) {
             if (!$this->session->userdata('active_user')) {
@@ -13,6 +13,28 @@ class Sys_control extends CI_Controller
             }
         }
 		$_SERVER['warning_message'] = "<br><h1 align='center' style='color: red;'>System Administrator Data Compromised!<br>Please contact the Developer!</h1>";
+	}
+	private function check_session($allowed_types = [])
+	{
+	    if (empty($_SESSION['active_user'])) {
+	        header('Location: ' . base_url('login'));
+	        exit;
+	    }
+	    if (
+	        $_SESSION['session_ip'] !== $_SERVER['REMOTE_ADDR'] ||
+	        $_SESSION['session_ua'] !== $_SERVER['HTTP_USER_AGENT']
+	    ) {
+	        session_destroy();
+	        header('Location: ' . base_url('login'));
+	        exit;
+	    }
+	    $user_type = (int) $_SESSION['active_user_type'];
+	    // Superadmin (8) bypasses all type restrictions
+	    if ($user_type === 8) return;
+	    if (!empty($allowed_types) && !in_array($user_type, $allowed_types)) {
+			header('Location: '.base_url().'i.php/sys_control/unauthorized');
+	        exit;
+	    }
 	}
 	public function load_system_datetime()
 	{
@@ -37,35 +59,23 @@ class Sys_control extends CI_Controller
 	}
 	public function login()
 	{
-		$this->session->sess_destroy();
-		$this->load->view('login');	
+	    $today = new DateTime('today');
+	    $start = new DateTime('2026-05-07');
+	    $end   = new DateTime('2026-05-11');
+
+	    if ($today < $start || $today > $end) {
+	        $this->session->sess_destroy();
+			header('Location: '.base_url().'i.php/sys_control/system_deactivated');
+	        exit;
+	    }
+
+	    $this->session->sess_destroy();
+	    $this->load->view('login');	
 	}
 	public function attempt_login()
 	{
 		$this->load->model('sys_model');	
 		$this->sys_model->attempt_login();
-	}
-	private function check_session($allowed_types = [])
-	{
-	    if (empty($_SESSION['active_user'])) {
-	        header('Location: ' . base_url('login'));
-	        exit;
-	    }
-	    if (
-	        $_SESSION['session_ip'] !== $_SERVER['REMOTE_ADDR'] ||
-	        $_SESSION['session_ua'] !== $_SERVER['HTTP_USER_AGENT']
-	    ) {
-	        session_destroy();
-	        header('Location: ' . base_url('login'));
-	        exit;
-	    }
-	    $user_type = (int) $_SESSION['active_user_type'];
-	    // Superadmin (8) bypasses all type restrictions
-	    if ($user_type === 8) return;
-	    if (!empty($allowed_types) && !in_array($user_type, $allowed_types)) {
-			header('Location: '.base_url().'i.php/sys_control/unauthorized');
-	        exit;
-	    }
 	}
 	public function inventory()
 	{
@@ -257,6 +267,11 @@ class Sys_control extends CI_Controller
 	public function unauthorized()
 	{
 		$this->load->view('unauthorized.html');
+	}
+	public function system_deactivated()
+	{
+	    $this->session->sess_destroy();
+	    $this->load->view('system_deactivated.html');	
 	}
 	public function stream_db_changes()
 	{

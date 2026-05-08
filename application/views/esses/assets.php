@@ -51,7 +51,7 @@
             </div>
             <div class="modal-body px-4 pt-3 pb-4 text-center">
                 <div class="mb-3" id="notification_spinner">
-                    <div class="spinner-grow text-primary" role="status">
+                    <div class="spinner-grow" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
@@ -78,7 +78,8 @@
         return long_date;
     }
     function load_notification(title, message, status) {
-        $('#notification_status').removeClass('text-danger','text-success','text-primary')
+        $('#notification_spinner').removeClass('text-danger text-success text-primary')
+        $('#notification_status').removeClass('text-danger text-success text-primary')
         if (status == 'error') {
             status_class = 'text-danger';
         }
@@ -94,6 +95,7 @@
         }
         else {
             $('#notification_spinner').removeClass('d-none');
+            $('#notification_spinner').addClass(status_class);
             $('#notification_status').addClass(status_class);
         }
 
