@@ -61,7 +61,7 @@ class Sys_control extends CI_Controller
 	{
 	    $today = new DateTime('today');
 	    $start = new DateTime('2026-05-07');
-	    $end   = new DateTime('2026-05-11');
+	    $end   = new DateTime('2026-05-18');
 
 	    if ($today < $start || $today > $end) {
 	        $this->session->sess_destroy();
@@ -104,6 +104,22 @@ class Sys_control extends CI_Controller
 		$this->check_session([1]);		
 		$this->load->model('sys_model');	
 		$this->sys_model->update_pos_item();
+	}
+	public function delete_pos_item()
+	{
+	    $this->load->model('sys_model');
+	    $this->sys_model->delete_pos_item();
+	}
+	public function load_manage_items()
+	{
+	    $this->load->model('sys_model');
+	    $this->sys_model->load_manage_items();
+	}
+
+	public function restore_pos_item()
+	{
+	    $this->load->model('sys_model');
+	    $this->sys_model->restore_pos_item();
 	}
 	public function add_new_barcode()
 	{
@@ -194,6 +210,11 @@ class Sys_control extends CI_Controller
 		$this->check_session([1]);		
 		$this->load->model('sys_model');
 	    $this->sys_model->void_pos_restocking();
+	}
+	public function restore_pos_restocking()
+	{
+	    $this->load->model('sys_model');
+	    $this->sys_model->restore_pos_restocking();
 	}
 	public function load_accounts()
 	{

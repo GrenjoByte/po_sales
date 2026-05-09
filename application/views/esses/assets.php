@@ -45,7 +45,6 @@
             <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
                 <div>
                     <h5 class="modal-title fw-semibold" id="notification_title">Notification</h5>
-                    <p class="text-muted small mb-0 mt-1">Please wait...</p>
                 </div>
                 <button type="button" tabindex="-1" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>

@@ -49,7 +49,9 @@
             </div>
             <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
+
          <div class="modal-body px-4 pt-3">
+
             <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                <div class="input-group input-group-sm" style="width: 220px;">
                   <span class="input-group-text bg-transparent border-end-0">
@@ -68,10 +70,11 @@
                   <input type="text" class="form-control" id="pos_restocking_search" placeholder="Search restocking...">
                </div>
             </div>
+
             <div class="table-responsive rounded-3 border">
                <table class="table table-sm align-middle mb-0 sortable">
                   <thead style="background: var(--bs-tertiary-bg);">
-                     <tr class="text-center small text-muted pointered" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
+                     <tr class="text-center small text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
                         <th class="fw-semibold ps-3" style="width:40px;">#</th>
                         <th class="fw-semibold">Restock Code</th>
                         <th class="fw-semibold">Item Code</th>
@@ -80,20 +83,15 @@
                         <th class="fw-semibold">Qty</th>
                         <th class="fw-semibold">Unit</th>
                         <th class="fw-semibold">Total</th>
-                        <th class="fw-semibold pe-3">Date</th>
+                        <th class="fw-semibold">Status</th>
+                        <th class="fw-semibold">Date & Time</th>
                      </tr>
                   </thead>
                   <tbody class="text-center small" id="pos_restocking_report_container">
                   </tbody>
-                  <tfoot style="background: var(--bs-tertiary-bg);">
-                     <tr class="fw-semibold text-center small">
-                        <td colspan="7" class="text-end pe-3">Grand Total:</td>
-                        <td class="text-success" id="pos_restocking_report_total_foot"></td>
-                        <td></td>
-                     </tr>
-                  </tfoot>
                </table>
             </div>
+
          </div>
       </div>
    </div>
@@ -132,7 +130,7 @@
                </div>
             </div>
             <div class="table-responsive rounded-3 border">
-               <table class="table table-sm align-middle mb-0">
+               <table class="table table-sm align-middle mb-0 sortable">
                   <thead style="background: var(--bs-tertiary-bg);">
                      <tr class="text-center small text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
                         <th class="fw-semibold ps-3" style="width:40px;">#</th>
@@ -206,7 +204,7 @@
          </div>
          <div class="modal-body px-4 pt-3 pb-2">
             <div class="table-responsive rounded-3 border">
-               <table class="table table-sm align-middle mb-0">
+               <table class="table table-sm align-middle mb-0 sortable">
                   <thead style="background: var(--bs-tertiary-bg);">
                      <tr class="text-center text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
                         <th class="fw-semibold ps-3" style="width:40px;">#</th>
@@ -585,25 +583,38 @@
 </div>
 <x id="active_sale_code" data-sale_code=""></x>
 <script type="text/javascript">
-   // const value = "ABC123456"; // your characters here
-
-   // JsBarcode("#barcode", value, {
-   //    format: "CODE128", // supports letters + numbers
-   //    width: 1.8,
-   //    height: 40,
-   //    displayValue: true
-   // });
+   Number.prototype.toFixed = function(digits) {
+       return Number(this).toLocaleString('en-PH', {
+           minimumFractionDigits: digits,
+           maximumFractionDigits: digits
+       });
+   }
+   function safe_confirm(message) {
+       let backdrops = $('.modal-backdrop');
+       let backdrop_count = backdrops.length;
+       let result = window.confirm(message);
+       let current = $('.modal-backdrop').length;
+       if (current > backdrop_count) {
+           $('.modal-backdrop').slice(backdrop_count).remove();
+       }
+       return result;
+   }
+   $(document).on('show.bs.modal', function () {
+       setTimeout(() => {
+           let backdrops = $('.modal-backdrop');
+           if (backdrops.length > 1) {
+               backdrops.not(':first').remove();
+           }
+       }, 0);
+   });
    $(document).on('hidden.bs.modal', function () {
-       // If there's still a modal open, keep one backdrop
        if ($('.modal.show').length > 0) {
            if ($('.modal-backdrop').length === 0) {
                $('body').append('<div class="modal-backdrop fade show"></div>');
            } else {
-               // Remove extras, keep only one
                $('.modal-backdrop').not(':first').remove();
            }
        } else {
-           // No modals open — remove all backdrops and restore body
            $('.modal-backdrop').remove();
            $('body').removeClass('modal-open').css('padding-right', '');
        }
@@ -1199,7 +1210,7 @@
 
       if (!pos_item_id || !pos_barcode_value) return;
 
-      if (!confirm('Remove this barcode?')) return;
+      if (!safe_confirm('Remove this barcode?')) return;
 
       $.ajax({
          url: '<?php echo base_url();?>i.php/sys_control/remove_barcode',
@@ -1304,29 +1315,30 @@
       });
    });
 
-   let pos_sales_report_data = {};
    function compute_pos_sales_report_total() {
        let grand_total = 0;
-       $('#pos_sales_report_container tr:visible').each(function () {
-           if (!$(this).hasClass('opacity-50')) {
-               let total_text = $(this).find('td:nth-child(6)').text().replace('₱', '').trim();
-               let total = parseFloat(total_text) || 0;
-               grand_total += total;
-           }
+       Object.values(pos_sales_report_data).forEach(row => {
+           let subtotal = Number(row.pos_checkout_total) || 0;
+           let discount = Number(row.pos_discount_value) || 0;
+           let discount_value = subtotal * discount;
+           grand_total += subtotal - discount_value;
        });
        $('#pos_sales_report_total').text('₱' + grand_total.toFixed(2));
    }
+
    function compute_pos_restocking_report_total() {
        let grand_total = 0;
        $('#pos_restocking_report_container tr:visible').each(function () {
            if (!$(this).hasClass('opacity-50')) {
-               let total_text = $(this).find('td:nth-child(8)').text().replace('₱', '').trim();
-               let total = parseFloat(total_text) || 0;
+               let total_text = $(this).find('td:nth-child(8)').text().replace('₱', '').replace(/,/g, '').trim();
+               let total = Number(total_text) || 0;
                grand_total += total;
            }
        });
        $('#pos_restocking_report_total').text('₱' + grand_total.toFixed(2));
    }
+
+   let pos_sales_report_data = {};
    function load_pos_sales_report(report_date = '') {
       $.ajax({
           url: '<?php echo base_url();?>i.php/sys_control/load_pos_sales_report',
@@ -1357,8 +1369,8 @@
               res.data.forEach((row, index) => {
                pos_sales_report_data[row.pos_checkout_code] = row;
 
-               let subtotal = parseFloat(row.pos_checkout_total);
-               let discount = parseFloat(row.pos_discount_value) || 0;
+               let subtotal = Number(row.pos_checkout_total);
+               let discount = Number(row.pos_discount_value) || 0;
                let discount_value = subtotal * discount;
                let final_total = subtotal - discount_value;
 
@@ -1447,70 +1459,240 @@
    });
 
    function load_pos_restocking_report(report_date = '') {
+       $.ajax({
+           url: '<?php echo base_url();?>i.php/sys_control/load_pos_restocking_report',
+           method: 'POST',
+           data: { report_date: report_date },
+           dataType: 'json',
+           success: function (res) {
+               let container = $('#pos_restocking_report_container');
+               container.empty();
+               pos_restocking_report_data = {};
+
+               if (!res.data || res.data.length === 0) {
+                   container.append(`<tr><td colspan="10" class="text-center text-muted py-4">No records found</td></tr>`);
+                   $('#pos_restocking_report_total').text('₱0.00');
+                   return;
+               }
+
+               res.data.forEach((row, index) => {
+                   pos_restocking_report_data[row.pos_restocking_code] = row;
+                   let price     = Number(row.pos_item_price);
+                   let quantity  = Number(row.pos_item_quantity);
+                   let row_total = Number(row.pos_restocking_total);
+                   let is_voided = parseInt(row.pos_restocking_status) === 2;
+
+                   let raw_date       = new Date(row.pos_restocking_date);
+                   let formatted_date = isNaN(raw_date)
+                       ? row.pos_restocking_date
+                       : raw_date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+                         + ' · '
+                         + raw_date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
+
+                   let status_badge = is_voided
+                       ? `<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Voided</span>`
+                       : `<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>`;
+
+                   let row_class = is_voided ? 'text-muted opacity-50' : '';
+
+                   container.append(`
+                       <tr class="border-top ${row_class}">
+                           <td class="ps-3 text-muted">${index + 1}</td>
+                           <td>
+                               <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
+                                   ${row.pos_restocking_code}
+                               </span>
+                           </td>
+                           <td class="text-muted font-monospace" style="font-size:11px;">${row.pos_item_code}</td>
+                           <td class="text-start fw-medium">${row.pos_item_name}</td>
+                           <td class="text-muted">₱${price.toFixed(2)}</td>
+                           <td class="fw-medium">${quantity}</td>
+                           <td class="text-muted">${row.pos_item_unit}</td>
+                           <td class="fw-semibold ${is_voided ? 'text-muted' : 'text-success'}">
+                               ₱${row_total.toFixed(2)}
+                           </td>
+                           <td>${status_badge}</td>
+                           <td class="text-muted" style="font-size:11px; white-space:nowrap;">${formatted_date}</td>
+                       </tr>
+                   `);
+               });
+
+               compute_pos_restocking_report_total();
+
+               $('.void_restocking')
+               .off('click')
+               .on('click', function () {
+                   let pos_item_id         = $(this).data('pos_item_id');
+                   let pos_item_name       = $(this).data('pos_item_name');
+                   let pos_restocking_code = $(this).data('pos_restocking_code');
+                   if (!safe_confirm(`Void restocking of "${pos_item_name}" from restock #${pos_restocking_code}?\n\n`)) return;
+                   let second_confirm = prompt(`Final confirmation required.\n\nType VOID to confirm voiding restock #${pos_restocking_code}.`);
+                   if (second_confirm !== 'VOID') {
+                       alert('Void action cancelled.');
+                       return;
+                   }
+                   $.ajax({
+                       url: '<?php echo base_url();?>i.php/sys_control/void_pos_restocking',
+                       method: 'POST',
+                       data: { pos_item_id: pos_item_id, pos_restocking_code: pos_restocking_code },
+                       dataType: 'json',
+                       success: function (res) {
+                           if (res.status === 'success') {
+                               alert(`Restocking of "${pos_item_name}" from #${pos_restocking_code} successfully voided.`);
+                               load_pos_inventory(current_page);
+                               load_pos_restocking_report($('#pos_restocking_report_date').val());
+                           } else {
+                               alert(res.message);
+                           }
+                       },
+                       error: function () { alert('Server error'); }
+                   });
+               });
+
+               $('.restore_restocking')
+               .off('click')
+               .on('click', function () {
+                   let pos_item_id         = $(this).data('pos_item_id');
+                   let pos_item_name       = $(this).data('pos_item_name');
+                   let pos_restocking_code = $(this).data('pos_restocking_code');
+                   if (!safe_confirm(`Restore restocking of "${pos_item_name}" from restock #${pos_restocking_code}?`)) return;
+                   $.ajax({
+                       url: '<?php echo base_url();?>i.php/sys_control/restore_pos_restocking',
+                       method: 'POST',
+                       data: { pos_item_id: pos_item_id, pos_restocking_code: pos_restocking_code },
+                       dataType: 'json',
+                       success: function (res) {
+                           if (res.status === 'success') {
+                               alert(`Restocking of "${pos_item_name}" from #${pos_restocking_code} successfully restored.`);
+                               load_pos_inventory(current_page);
+                               load_pos_restocking_report($('#pos_restocking_report_date').val());
+                           } else {
+                               alert(res.message);
+                           }
+                       },
+                       error: function () { alert('Server error'); }
+                   });
+               });
+           },
+           error: function () {
+               $('#pos_restocking_report_container').html(`<tr><td colspan="10">Server error</td></tr>`);
+           }
+       });
+   }
+
+   function load_pos_sales_report(report_date = '') {
       $.ajax({
-         url: '<?php echo base_url();?>i.php/sys_control/load_pos_restocking_report',
+         url: '<?php echo base_url();?>i.php/sys_control/load_pos_sales_report',
          method: 'POST',
          data: {
             report_date: report_date
          },
          dataType: 'json',
-         success: function (res) {
+         success: function(res) {
 
-            let container = $('#pos_restocking_report_container');
+            let container = $('#pos_sales_report_container');
             container.empty();
 
-            pos_restocking_report_data = {};
+            if (res.status !== 'success') {
+               container.append(`<tr><td colspan="11">Failed to load data</td></tr>`);
+               return;
+            }
 
-            let grand_total = 0;
+            pos_sales_report_data = {};
 
             if (res.data.length === 0) {
-               container.append(`<tr><td colspan="9">No records found</td></tr>`);
-               $('#pos_restocking_report_total').text('₱0.00');
+               container.append(`<tr><td colspan="11">No records found</td></tr>`);
+               $('#pos_sales_report_total').text('₱0.00');
                return;
             }
 
             res.data.forEach((row, index) => {
+               pos_sales_report_data[row.pos_checkout_code] = row;
 
-               pos_restocking_report_data[row.pos_restocking_code] = row;
+               let subtotal    = Number(row.pos_checkout_subtotal);
+               let discount    = Number(row.pos_discount_value) || 0;
+               let discount_value = subtotal * discount;
+               let final_total    = Number(row.pos_checkout_total);
 
-               let price = parseFloat(row.pos_item_price);
-               let quantity = parseFloat(row.pos_item_quantity);
-               let row_total = parseFloat(row.pos_restocking_total);
-
-               grand_total += row_total;
-
-               let raw_date = new Date(row.pos_restocking_date);
+               let raw_date       = new Date(row.pos_checkout_date);
                let formatted_date = isNaN(raw_date)
-                  ? row.pos_restocking_date
-                  : raw_date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
-                    + ' · '
-                    + raw_date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
+                  ? row.pos_checkout_date
+                  : raw_date.toLocaleDateString('en-PH', {
+                       month: 'short',
+                       day: 'numeric',
+                       year: 'numeric'
+                    }) + ' · ' +
+                    raw_date.toLocaleTimeString('en-PH', {
+                       hour: 'numeric',
+                       minute: '2-digit'
+                    });
+
+               let voided_count = parseInt(row.voided_count) || 0;
+               let total_count = parseInt(row.total_count) || 0;
+               
+               let is_partially_voided = voided_count > 0 && voided_count < total_count;
+
+               let status_badge = '';
+               if (is_partially_voided) {
+                   status_badge = `<span class="badge rounded-pill bg-warning-subtle text-warning fw-normal px-2" style="color: #fd7e14 !important;">Partially Voided</span>`;
+               } else {
+                   switch (row.pos_checkout_status) {
+                       case '1':
+                           status_badge = `<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>`;
+                           break;
+                       case '2':
+                           status_badge = `<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Voided</span>`;
+                           break;
+                       case '3':
+                           status_badge = `<span class="badge rounded-pill bg-warning-subtle text-warning fw-normal px-2">Pending</span>`;
+                           break;
+                       default:
+                           status_badge = `<span class="badge rounded-pill bg-secondary-subtle text-secondary fw-normal px-2">${row.pos_checkout_status}</span>`;
+                   }
+               }
+
+               let row_class = (row.pos_checkout_status === '2' && !is_partially_voided) ? 'text-muted opacity-50' : '';
 
                container.append(`
-                  <tr class="border-top">
+                  <tr class="border-top ${row_class}">
                      <td class="ps-3 text-muted">${index + 1}</td>
                      <td>
                         <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
-                           ${row.pos_restocking_code}
+                           ${row.pos_checkout_code}
                         </span>
                      </td>
-                     <td class="text-muted font-monospace" style="font-size:11px;">${row.pos_item_code}</td>
-                     <td class="text-start fw-medium">${row.pos_item_name}</td>
-                     <td class="text-muted">₱${price.toFixed(2)}</td>
-                     <td class="fw-medium">${quantity}</td>
-                     <td class="text-muted">${row.pos_item_unit}</td>
-                     <td class="fw-semibold text-success">₱${row_total.toFixed(2)}</td>
-                     <td class="text-muted pe-3" style="font-size:11px; white-space:nowrap;">${formatted_date}</td>
+                     <td class="text-muted">${row.total_items}</td>
+                     <td class="fw-medium">${row.total_quantity}</td>
+                     <td class="${discount_value > 0 ? 'text-danger' : 'text-muted'}">
+                        ${discount_value > 0 ? '−₱' + discount_value.toFixed(2) : '—'}
+                     </td>
+                     <td class="fw-semibold ${row.pos_checkout_status === '2' ? 'text-muted' : 'text-success'}">
+                        ₱${final_total.toFixed(2)}
+                     </td>
+                     <td class="text-muted">Cash</td>
+                     <td class="text-muted">${row.cashier_name ?? 'Unknown'}</td>
+                     <td>${status_badge}</td>
+                     <td class="text-muted" style="font-size:11px; white-space:nowrap;">
+                        ${formatted_date}
+                     </td>
+                     <td class="pe-3">
+                        <div class="d-flex gap-1 justify-content-end">
+                           <button
+                              type="button"
+                              class="btn btn-sm btn-outline-primary view_receipt_activator rounded-pill px-2" data-sale-code="${row.pos_checkout_code}"
+                              title="View receipt">
+                              <i class="bi bi-eye" style="font-size:11px;"></i>
+                           </button>
+                        </div>
+                     </td>
                   </tr>
                `);
             });
-
-            $('#pos_restocking_report_total').text('₱' + grand_total.toFixed(2));
-            $('#pos_restocking_report_total_foot').text('₱' + grand_total.toFixed(2));
+            compute_pos_sales_report_total();
          },
-         error: function () {
-            $('#pos_restocking_report_container')
-               .html(`<tr><td colspan="9">Server error</td></tr>`);
+         error: function() {
+            $('#pos_sales_report_container')
+               .html(`<tr><td colspan="11">Server error</td></tr>`);
          }
       });
    }
@@ -1819,16 +2001,23 @@
 
                let first    = data[0];
                let subtotal = 0;
-               let discount = parseFloat(first.pos_discount_value) || 0;
-
-               let raw_date       = new Date(first.pos_checkout_date);
+               let discount = Number(first.pos_discount_value) || 0;
+               let raw_date = new Date(first.pos_checkout_date);
                let formatted_date = isNaN(raw_date)
                    ? first.pos_checkout_date
                    : raw_date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
                      + ' · '
                      + raw_date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
 
-               let is_sale_voided = parseInt(first.pos_checkout_status) === 2;
+               let voided_count      = data.filter(item => parseInt(item.pos_checkout_status) === 2).length;
+               let is_sale_voided    = voided_count === data.length;
+               let is_partially_voided = voided_count > 0 && voided_count < data.length;
+
+               let status_badge = is_sale_voided
+                   ? '<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Voided</span>'
+                   : is_partially_voided
+                       ? '<span class="badge rounded-pill bg-warning-subtle fw-normal px-2" style="color: #fd7e14 !important;">Partially Voided</span>'
+                       : '<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>';
 
                $('#receipt_info').html(`
                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
@@ -1846,15 +2035,12 @@
                        <span>${first.cashier_name ?? 'Unknown'}</span>
                    </div>
                    <div id="receipt_discount_section" class="d-flex justify-content-between mb-1 d-none" style="font-size: 0.8em;">
-                         <span class="text-muted">Discount</span>
-                         <span id="receipt_discount_badge"></span>
-                     </div>
+                       <span class="text-muted">Discount</span>
+                       <span id="receipt_discount_badge"></span>
+                   </div>
                    <div class="d-flex justify-content-between" style="font-size: 0.8em;">
                        <span class="text-muted">Status</span>
-                       ${is_sale_voided
-                           ? '<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Voided</span>'
-                           : '<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>'
-                       }
+                       ${status_badge}
                    </div>
                `);
 
@@ -1866,8 +2052,8 @@
 
                let items_html = '';
                data.forEach(item => {
-                   let unit_price       = parseFloat(item.pos_item_price);
-                   let item_total       = unit_price * parseFloat(item.pos_item_quantity);
+                   let unit_price       = Number(item.pos_item_price);
+                   let item_total       = unit_price * Number(item.pos_item_quantity);
                    let item_status      = parseInt(item.pos_checkout_status);
                    let is_item_voided   = item_status === 2;
                    let is_item_pending  = item_status === 3;
@@ -1888,59 +2074,60 @@
                    if (is_item_pending) row_class = 'opacity-75';
 
                    let action_dropdown = `
-                       <div class="dropdown dropstart">
-                           <button class="btn btn-sm btn-light rounded-pill px-2"
-                               type="button"
-                               data-bs-toggle="dropdown"
-                               aria-expanded="false">
-                               <i class="bi bi-three-dots" style="font-size:11px;"></i>
-                           </button>
-                           <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 py-1">
-                               ${!is_item_voided && !is_item_pending ? `
-                               <li>
-                                   <button type="button"
-                                       class="dropdown-item small request_void_receipt_item d-flex align-items-center gap-2"
-                                       data-pos_item_id="${item.pos_item_id}"
-                                       data-pos_item_name="${item.pos_item_name}"
-                                       data-pos_checkout_code="${item.pos_checkout_code}">
-                                       <i class="bi bi-slash-circle text-danger" style="font-size:12px;"></i>
-                                       Request Void
-                                   </button>
-                               </li>` : is_item_voided ? `
-                               <li>
-                                   <button type="button"
-                                       class="dropdown-item small restore_receipt_item d-flex align-items-center gap-2"
-                                       data-pos_item_id="${item.pos_item_id}"
-                                       data-pos_item_name="${item.pos_item_name}"
-                                       data-pos_checkout_code="${item.pos_checkout_code}">
-                                       <i class="bi bi-arrow-counterclockwise text-success" style="font-size:12px;"></i>
-                                       Restore item
-                                   </button>
-                               </li>` : `
-                               <li>
-                                   <button type="button"
-                                       class="dropdown-item small cancel_void_request d-flex align-items-center gap-2"
-                                       data-pos_item_id="${item.pos_item_id}"
-                                       data-pos_item_name="${item.pos_item_name}"
-                                       data-pos_checkout_code="${item.pos_checkout_code}">
-                                       <i class="bi bi-x-circle text-secondary" style="font-size:12px;"></i>
-                                       Cancel Request
-                                   </button>
-                               </li>`}
-                           </ul>
-                       </div>
-                   `;
+                      <div class="dropdown dropstart">
+                          <button class="btn btn-sm btn-light rounded-pill px-2"
+                              type="button"
+                              data-bs-toggle="dropdown"
+                              aria-expanded="false">
+                              <i class="bi bi-three-dots" style="font-size:11px;"></i>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 py-1">
+                              ${is_item_voided ? `
+                              <li>
+                                  <button type="button"
+                                      class="dropdown-item small restore_receipt_item d-flex align-items-center gap-2"
+                                      data-pos_item_id="${item.pos_item_id}"
+                                      data-pos_item_name="${item.pos_item_name}"
+                                      data-pos_checkout_code="${item.pos_checkout_code}">
+                                      <i class="bi bi-arrow-counterclockwise text-success" style="font-size:12px;"></i>
+                                      Restore item
+                                  </button>
+                              </li>` : is_item_pending ? `
+                              <li>
+                                  <button type="button"
+                                      class="dropdown-item small cancel_void_request d-flex align-items-center gap-2"
+                                      data-pos_item_id="${item.pos_item_id}"
+                                      data-pos_item_name="${item.pos_item_name}"
+                                      data-pos_checkout_code="${item.pos_checkout_code}">
+                                      <i class="bi bi-x-circle text-warning" style="font-size:12px;"></i>
+                                      Cancel void
+                                  </button>
+                              </li>` : `
+                              <li>
+                                  <button type="button"
+                                      class="dropdown-item small request_void_receipt_item d-flex align-items-center gap-2"
+                                      data-pos_item_id="${item.pos_item_id}"
+                                      data-pos_item_name="${item.pos_item_name}"
+                                      data-pos_checkout_code="${item.pos_checkout_code}">
+                                      <i class="bi bi-x-circle text-danger" style="font-size:12px;"></i>
+                                      Request void
+                                  </button>
+                              </li>`}
+                          </ul>
+                      </div>
+                  `;
 
-                   items_html += `
-                      <tr class="border-top ${row_class}">
+                  items_html += `
+                      <tr class="border-top ${is_item_voided ? 'opacity-50' : is_item_pending ? 'opacity-75' : ''}">
                           <td class="text-start ps-0">
-                              ${item.pos_item_name}
-                              ${status_badge}
+                              ${is_item_voided ? `<s>${item.pos_item_name}</s>` : item.pos_item_name}
+                              ${is_item_voided ? '<span class="badge bg-danger-subtle text-danger rounded-pill ms-1 no-print" style="font-size:9px;">Voided</span>' : ''}
+                              ${is_item_pending ? '<span class="badge bg-warning-subtle text-warning rounded-pill ms-1 no-print" style="font-size:9px;">Pending</span>' : ''}
                           </td>
-                          <td class="text-center">${item.pos_item_quantity}</td>
-                          <td class="text-center text-muted">${item.pos_item_unit}</td>
-                          <td class="text-end text-muted">₱${format_number(unit_price.toFixed(2))}</td>
-                          <td class="text-end">${is_item_voided ? '<s>₱' + format_number(item_total.toFixed(2)) + '</s>' : '₱' + format_number(item_total.toFixed(2))}</td>
+                          <td class="text-center">${is_item_voided ? `<s>${item.pos_item_quantity}</s>` : item.pos_item_quantity}</td>
+                          <td class="text-center text-muted">${is_item_voided ? `<s>${item.pos_item_unit}</s>` : item.pos_item_unit}</td>
+                          <td class="text-end text-muted">${is_item_voided ? `<s>₱${unit_price.toFixed(2)}</s>` : `₱${unit_price.toFixed(2)}`}</td>
+                          <td class="text-end">${is_item_voided ? `<s>₱${item_total.toFixed(2)}</s>` : `₱${item_total.toFixed(2)}`}</td>
                           <td class="text-end pe-0 no-print">${action_dropdown}</td>
                       </tr>
                   `;
@@ -1971,16 +2158,16 @@
                   $('#receipt_totals').html(`
                   <div class="d-flex justify-content-between mb-1 small">
                      <span class="text-muted">Subtotal</span>
-                     <span>₱${format_number(subtotal.toFixed(2))}</span>
+                     <span>₱${subtotal.toFixed(2)}</span>
                   </div>
                   ${discount > 0 ? `
                   <div class="d-flex justify-content-between mb-1 small">
                      <span class="text-danger">Discount</span>
-                     <span class="text-danger">−₱${format_number(discount_value.toFixed(2))}</span>
+                     <span class="text-danger">−₱${discount_value.toFixed(2)}</span>
                   </div>` : ''}
                   <div class="d-flex justify-content-between fw-semibold">
                      <span>Total</span>
-                     <span class="text-success">₱${format_number(final_total.toFixed(2))}</span>
+                     <span class="text-success">₱${final_total.toFixed(2)}</span>
                   </div>
                   <div class="d-flex justify-content-between small text-muted mt-1">
                      <span>Payment</span>
@@ -1991,14 +2178,13 @@
                const modal = new bootstrap.Modal(modal_el);
                modal.show();
 
-               // Request void handler
                $('.request_void_receipt_item')
                .off('click')
                .on('click', function () {
                    let pos_item_id       = $(this).data('pos_item_id');
                    let pos_item_name     = $(this).data('pos_item_name');
                    let pos_checkout_code = $(this).data('pos_checkout_code');
-                   if (!confirm(`Request void for "${pos_item_name}" from sale #${pos_checkout_code}?`)) return;
+                   if (!safe_confirm(`Request void for "${pos_item_name}" from sale #${pos_checkout_code}?`)) return;
                    $.ajax({
                        url: '<?php echo base_url();?>i.php/sys_control/request_void_pos_checkout_item',
                        method: 'POST',
@@ -2023,7 +2209,7 @@
                    let pos_item_id       = $(this).data('pos_item_id');
                    let pos_item_name     = $(this).data('pos_item_name');
                    let pos_checkout_code = $(this).data('pos_checkout_code');
-                   if (!confirm(`Cancel void request for "${pos_item_name}"?`)) return;
+                   if (!safe_confirm(`Cancel void request for "${pos_item_name}"?`)) return;
                    $.ajax({
                        url: '<?php echo base_url();?>i.php/sys_control/cancel_void_request_pos_checkout_item',
                        method: 'POST',
@@ -2046,7 +2232,7 @@
                   let pos_item_id       = $(this).data('pos_item_id');
                   let pos_item_name     = $(this).data('pos_item_name');
                   let pos_checkout_code = $(this).data('pos_checkout_code');
-                  if (!confirm(`Restore "${pos_item_name}" in sale #${pos_checkout_code}?`)) return;
+                  if (!safe_confirm(`Restore "${pos_item_name}" in sale #${pos_checkout_code}?`)) return;
                   $.ajax({
                      url: '<?php echo base_url();?>i.php/sys_control/restore_pos_checkout_item',
                      method: 'POST',
@@ -2063,7 +2249,7 @@
                      },
                      error: function() { alert('Server error'); }
                   });
-               });  
+               });   
            },
            error: function() {
                $('#receipt_items').html('<tr><td colspan="4">Server error</td></tr>');
@@ -2256,7 +2442,7 @@
       $(document).on('click', '.remove_row', function (e) {
          e.preventDefault();
 
-         if (!confirm('Remove this item?')) return;
+         if (!safe_confirm('Remove this item?')) return;
 
          let row = $(this).closest('tr');
          let item_id = row.data('id'); // matches your render
@@ -2270,53 +2456,57 @@
       });
    });
    $(document).on('click', '.table.sortable th', function () {
+       const table     = $(this).closest('table');
+       const tbody     = table.find('tbody');
+       const rows      = tbody.find('tr').toArray();
+       const index     = $(this).index();
+       const ascending = !$(this).hasClass('sorted ascending');
 
-      const table = $(this).closest('table');
-      const tbody = table.find('tbody');
-      const rows = tbody.find('tr').toArray();
-      const index = $(this).index();
+       if ($(this).hasClass('no-sort')) return;
 
-      const ascending = !$(this).hasClass('sorted ascending');
+       table.find('th').removeClass('sorted ascending descending');
 
-      // Reset all headers
-      table.find('th').removeClass('sorted ascending descending');
+       rows.sort((a, b) => {
+           let tdA = $(a).children('td').eq(index);
+           let tdB = $(b).children('td').eq(index);
 
-      rows.sort((a, b) => {
+           let sortAttrA = tdA.find('[data-sort]').data('sort');
+           let sortAttrB = tdB.find('[data-sort]').data('sort');
 
-         let A = $(a).children('td').eq(index).text().trim();
-         let B = $(b).children('td').eq(index).text().trim();
+           // --- Handle data-sort attribute ---
+           if (sortAttrA !== undefined && sortAttrB !== undefined) {
+               return ascending ? sortAttrA - sortAttrB : sortAttrB - sortAttrA;
+           }
 
-         // --- Handle currency / numbers ---
-         let numA = parseFloat(A.replace(/[^\d.-]/g, ''));
-         let numB = parseFloat(B.replace(/[^\d.-]/g, ''));
+           let A = String(tdA.text().trim());
+           let B = String(tdB.text().trim());
 
-         if (!isNaN(numA) && !isNaN(numB)) {
-            return ascending ? numA - numB : numB - numA;
-         }
+           // --- Handle currency / numbers ---
+           let strippedA = A.replace(/[^\d.-]/g, '');
+           let strippedB = B.replace(/[^\d.-]/g, '');
+           let numA = Number(strippedA);
+           let numB = Number(strippedB);
+           if (strippedA !== '' && strippedB !== '' && !isNaN(numA) && !isNaN(numB)) {
+               return ascending ? numA - numB : numB - numA;
+           }
 
-         // --- Handle dates ---
-         let dateA = new Date(A);
-         let dateB = new Date(B);
+           // --- Handle dates (strip · separator) ---
+           let dateA = new Date(A.replace(' · ', ' '));
+           let dateB = new Date(B.replace(' · ', ' '));
+           if (!isNaN(dateA) && !isNaN(dateB)) {
+               return ascending ? dateA - dateB : dateB - dateA;
+           }
 
-         if (!isNaN(dateA) && !isNaN(dateB)) {
-            return ascending ? dateA - dateB : dateB - dateA;
-         }
+           // --- Fallback: string compare ---
+           A = A.toUpperCase();
+           B = B.toUpperCase();
+           if (A < B) return ascending ? -1 : 1;
+           if (A > B) return ascending ? 1 : -1;
+           return 0;
+       });
 
-         // --- Fallback: string compare ---
-         A = A.toUpperCase();
-         B = B.toUpperCase();
-
-         if (A < B) return ascending ? -1 : 1;
-         if (A > B) return ascending ? 1 : -1;
-
-         return 0;
-      });
-
-      // Re-append sorted rows
-      $.each(rows, (_, row) => tbody.append(row));
-
-      // Apply sorting class
-      $(this).addClass(`sorted ${ascending ? 'ascending' : 'descending'}`);
+       $.each(rows, (_, row) => tbody.append(row));
+       $(this).addClass(`sorted ${ascending ? 'ascending' : 'descending'}`);
    });
    $('#pos_restocking_search').on('input', function () {
       let keyword = $(this).val().toLowerCase();
@@ -2384,42 +2574,34 @@
        });
    }
 
-   function init_sse() {
-       const sse = new EventSource('<?php echo base_url(); ?>i.php/sys_control/stream_db_changes');
+   let sse_instance = null;
 
-       sse.addEventListener('connected', function() {
+   function init_sse() {
+       if (sse_instance) sse_instance.close();
+       sse_instance = new EventSource('<?php echo base_url(); ?>i.php/sys_control/stream_db_changes');
+       sse_instance.addEventListener('connected', function () {
            console.log('[SSE] Connection established — listening for changes');
        });
-
-       sse.addEventListener('db_changed', function(e) {
+       sse_instance.addEventListener('db_changed', function (e) {
            console.log('[SSE] DB changed at', JSON.parse(e.data).timestamp);
            reload_visible_sections();
        });
-
-       sse.onerror = function() {
+       sse_instance.onerror = function () {
            console.warn('[SSE] Connection lost — browser will auto-reconnect');
-           // EventSource auto-reconnects natively — no manual retry needed
        };
-
-       // Pause stream when tab is hidden, resume when visible
-       document.addEventListener('visibilitychange', function() {
-           if (document.hidden) {
-               sse.close();
-               console.log('[SSE] Tab hidden — stream closed');
-           } else {
-               console.log('[SSE] Tab visible — reconnecting');
-               init_sse();
-           }
-       });
    }
 
-   $(document).ready(function() {
+   document.addEventListener('visibilitychange', function () {
+       if (document.hidden) {
+           if (sse_instance) sse_instance.close();
+           console.log('[SSE] Tab hidden — stream closed');
+       } else {
+           console.log('[SSE] Tab visible — reconnecting');
+           init_sse();
+       }
+   });
+
+   $(document).ready(function () {
        init_sse();
    });
-   function format_number(value, decimals = 2) {
-       return parseFloat(value).toLocaleString('en-PH', {
-           minimumFractionDigits: decimals,
-           maximumFractionDigits: decimals
-       });
-   }
 </script>

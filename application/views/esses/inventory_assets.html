@@ -18,19 +18,14 @@
       cursor: pointer;
       user-select: none;
    }
-   @media print {
-      .no-print { display: none !important; }
-      body > *:not(.modal) { display: none !important; }
-      .modal, .modal-dialog, .modal-content, .modal-body {
-         display: block !important;
-         position: static !important;
-         border: none !important;
-         box-shadow: none !important;
-         padding: 0 !important;
-         margin: 0 !important;
-         max-width: 100% !important;
-      }
+   .modal-backdrop ~ .modal-backdrop {
+       display: none !important;
    }
+   #accounts_modal       { z-index: 1055; }
+	#create_account_modal { z-index: 1060; }
+	#update_account_modal { z-index: 1065; }
+   @media print {
+      
 </style>
 <div class="modal fade" id="pos_restocking_report_modal" tabindex="-1" aria-labelledby="pos_restocking_report_title" aria-hidden="true">
    <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -78,6 +73,7 @@
                         <th class="fw-semibold">Qty</th>
                         <th class="fw-semibold">Unit</th>
                         <th class="fw-semibold">Total</th>
+                        <th class="fw-semibold">Status</th>
                         <th class="fw-semibold">Date & Time</th>
                         <th class="fw-semibold pe-3"></th>
                      </tr>
@@ -126,7 +122,7 @@
             </div>
 
             <div class="table-responsive rounded-3 border">
-               <table class="table table-sm align-middle mb-0">
+               <table class="table table-sm align-middle mb-0 sortable">
                   <thead style="background: var(--bs-tertiary-bg);">
                      <tr class="text-center small text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
                         <th class="fw-semibold ps-3" style="width:40px;">#</th>
@@ -165,7 +161,7 @@
          </div>
          <div class="modal-body px-4 pt-3 pb-2">
             <div class="table-responsive rounded-3 border">
-               <table class="table table-sm align-middle mb-0">
+               <table class="table table-sm align-middle mb-0 sortable">
                   <thead style="background: var(--bs-tertiary-bg);">
                      <tr class="text-center text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
                         <th class="fw-semibold ps-3" style="width:40px;">#</th>
@@ -201,7 +197,7 @@
          </div>
          <div class="modal-body px-4 pt-3 pb-2">
             <div class="table-responsive rounded-3 border">
-               <table class="table table-sm align-middle mb-0">
+               <table class="table table-sm align-middle mb-0 sortable">
                   <thead style="background: var(--bs-tertiary-bg);">
                      <tr class="text-center text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
                         <th class="fw-semibold ps-3" style="width:40px;">#</th>
@@ -243,7 +239,7 @@
                 </div>
             </div>
             <div class="table-responsive rounded-3 border">
-               <table class="table table-sm align-middle mb-0">
+               <table class="table table-sm align-middle mb-0 sortable">
                   <thead style="background: var(--bs-tertiary-bg);">
                      <tr class="text-center text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
                         <th class="fw-semibold ps-3" style="width:40px;">#</th>
@@ -253,7 +249,7 @@
                         <th class="fw-semibold">Unit Price</th>
                         <th class="fw-semibold">Total</th>
                         <th class="fw-semibold">Cashier</th>
-                        <th class="fw-semibold pe-3">Actions</th>
+                        <th class="fw-semibold pe-3"></th>
                      </tr>
                   </thead>
                   <tbody class="text-center small" id="pos_voiding_requests_container">
@@ -435,6 +431,49 @@
    </div>
 </div>
 
+<div class="modal fade" id="manage_items_modal" tabindex="-1" aria-labelledby="manage_items_title" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                <div>
+                    <h5 class="modal-title fw-semibold" id="manage_items_title">
+                        <i class="bi bi-archive me-2 text-warning"></i>Archived Items
+                    </h5>
+                    <p class="text-muted small mb-0 mt-1">Restore deleted items back to the active inventory</p>
+                </div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-4 pt-3 pb-2">
+                <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text bg-body border-end-0">
+                        <i class="bi bi-search text-muted" style="font-size:12px;"></i>
+                    </span>
+                    <input type="text" id="manage_items_search" class="form-control border-start-0 shadow-none" placeholder="Search archived items...">
+                </div>
+                <div class="table-responsive rounded-3 border">
+                    <table class="table table-sm align-middle mb-0 sortable">
+                        <thead style="background: var(--bs-tertiary-bg);">
+                            <tr class="text-center text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
+                                <th class="fw-semibold ps-3" style="width: 40px;">#</th>
+                                <th class="fw-semibold text-start">Item Name</th>
+                                <th class="fw-semibold">Code</th>
+                                <th class="fw-semibold">Price</th>
+                                <th class="fw-semibold">Stock</th>
+                                <th class="fw-semibold">Unit</th>
+                                <th class="fw-semibold pe-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center small" id="manage_items_container"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 px-4 pb-4 pt-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="update_pos_item_modal" tabindex="-1" aria-labelledby="update_pos_item_title" aria-hidden="true">
    <div class="modal-dialog modal-dialog-scrollable">
       <div class="modal-content border-0">
@@ -490,11 +529,13 @@
             </form>
          </div>
          <div class="modal-footer border-top-0 px-4 pb-4 pt-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" form="update_pos_item_form" class="btn btn-sm btn-primary rounded-pill px-3">
-               <i class="bi bi-check-lg me-1"></i>Update Item
-            </button>
-         </div>
+			    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" id="delete_pos_item_btn">
+			        <i class="bi bi-trash me-1"></i>Delete Item
+			    </button>
+			    <button type="submit" form="update_pos_item_form" class="btn btn-sm btn-primary rounded-pill px-3">
+			        <i class="bi bi-check-lg me-1"></i>Update Item
+			    </button>
+			</div>
       </div>
    </div>
 </div>
@@ -558,6 +599,15 @@
             <span class="small">New Item</span>
          </button>
       </li>
+      <li>
+		    <button type="button"
+		        class="dropdown-item rounded-2 mx-1 px-3 py-2 d-flex align-items-center gap-2"
+		        style="width: calc(100% - 8px);"
+		        id="open_manage_items_modal">
+		        <i class="bi bi-archive text-warning" style="font-size: 14px; width: 16px;"></i>
+		        <span class="small">Archived Items</span>
+		    </button>
+		</li>
 
       <li><hr class="dropdown-divider mx-3 my-1"></li>
 
@@ -690,8 +740,8 @@
 <!-- Update Account Modal -->
 <div class="modal fade" id="update_account_modal" tabindex="-1" aria-labelledby="update_account_title" aria-hidden="true">
    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0">
-         <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+         <div class="modal-header border-bottom px-4 pt-4 pb-2 bg-light-subtle rounded-top-4">
             <div>
                <h5 class="modal-title fw-semibold" id="update_account_title">
                   <i class="bi bi-person-gear me-2 text-primary"></i>Update Account
@@ -700,7 +750,7 @@
             </div>
             <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
          </div>
-         <div class="modal-body px-4 pt-3">
+         <div class="modal-body px-4 pt-3 pb-2 bg-white">
             <input type="hidden" id="update_user_id">
             <div class="row g-3">
                <div class="col-12 col-md-4">
@@ -762,7 +812,7 @@
                </div>
             </div>
          </div>
-         <div class="modal-footer border-top-0 px-4 pb-4 pt-2">
+         <div class="modal-footer border-top px-4 pb-4 pt-2 bg-light-subtle rounded-bottom-4">
             <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
             <button type="button" class="btn btn-sm btn-primary rounded-pill px-3" id="submit_update_account">
                <i class="bi bi-check-lg me-1"></i>Save Changes
@@ -795,7 +845,7 @@
             </div>
 
             <div class="table-responsive rounded-3 border">
-               <table class="table table-sm align-middle mb-0">
+               <table class="table table-sm align-middle mb-0 sortable">
                   <thead style="background: var(--bs-tertiary-bg);">
                      <tr class="text-center small text-muted" style="font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;">
                         <th class="fw-semibold ps-3" style="width: 40px;">#</th>
@@ -824,30 +874,43 @@
 </div>
 <span class="d-none" id="active_sale_code"></span>
 <script type="text/javascript">
-   // const value = "ABC123456"; // your characters here
-
-   // JsBarcode("#barcode", value, {
-   //    format: "CODE128", // supports letters + numbers
-   //    width: 1.8,
-   //    height: 40,
-   //    displayValue: true
-   // });
+	Number.prototype.toFixed = function(digits) {
+	    return Number(this).toLocaleString('en-PH', {
+	        minimumFractionDigits: digits,
+	        maximumFractionDigits: digits
+	    });
+	}
+   function safe_confirm(message) {
+       let backdrops = $('.modal-backdrop');
+       let backdrop_count = backdrops.length;
+       let result = window.confirm(message);
+       let current = $('.modal-backdrop').length;
+       if (current > backdrop_count) {
+           $('.modal-backdrop').slice(backdrop_count).remove();
+       }
+       return result;
+   }
+   $(document).on('show.bs.modal', function () {
+       setTimeout(() => {
+           let backdrops = $('.modal-backdrop');
+           if (backdrops.length > 1) {
+               backdrops.not(':first').remove();
+           }
+       }, 0);
+   });
    $(document).on('hidden.bs.modal', function () {
-       // If there's still a modal open, keep one backdrop
        if ($('.modal.show').length > 0) {
            if ($('.modal-backdrop').length === 0) {
                $('body').append('<div class="modal-backdrop fade show"></div>');
            } else {
-               // Remove extras, keep only one
                $('.modal-backdrop').not(':first').remove();
            }
        } else {
-           // No modals open — remove all backdrops and restore body
            $('.modal-backdrop').remove();
            $('body').removeClass('modal-open').css('padding-right', '');
        }
    });
-   
+
    const pos_items = {};
 
    let current_page = 1;
@@ -877,7 +940,7 @@
                   let pos_item_id    = item.pos_item_id;
                   let pos_item_name  = item.pos_item_name;
                   let pos_item_code  = item.pos_item_code;
-                  let pos_item_price = item.pos_item_price;
+                  let pos_item_price = Number(item.pos_item_price);
                   let pos_item_stock = Number(item.pos_item_stock);
                   let pos_item_unit  = item.pos_item_unit;
                   let pos_item_low   = Number(item.pos_item_low);
@@ -942,11 +1005,11 @@
                            </div>
                            <div class="d-flex align-items-center gap-1 mt-1">
                               <div class="fw-semibold text-truncate overflow-tooltip" style="font-size:0.875rem;" role="button">
-                                 ₱${pos_item_price}
+                                 ₱${pos_item_price.toFixed(2)}
                               </div>
                            </div>
                            <div class="d-flex align-items-center gap-1 mt-1">
-                              <span class="fw-semibold" style="font-size:0.85rem;">${pos_item_stock}</span>
+                              <span class="fw-semibold" style="font-size:0.85rem;">${pos_item_stock.toFixed(0)}</span>
                               <span class="text-muted" style="font-size:0.75rem;">${pos_item_unit}</span>
                            </div>
                         </div>
@@ -1052,6 +1115,18 @@
                   card.find('.pos_count_container').attr('data-text', 0).text(0);
                   item.restock_quantity = 0;
                });
+               $('.overflow-tooltip').each(function () {
+			         var $el = $(this);
+			         if (this.scrollWidth > this.clientWidth) {
+			            var full_text = $el.text().trim();
+
+			            $el.attr('title', full_text)
+			            .attr('data-bs-toggle', 'tooltip')
+			            .attr('data-bs-placement', 'top');
+
+			            new bootstrap.Tooltip(this);
+			         }
+			      });
 
             } else {
                $container.html('<p class="text-center">No items found.</p>');
@@ -1331,30 +1406,31 @@
          }
       });
    }
-   let pos_sales_report_data = {};
+   
    function compute_pos_sales_report_total() {
-       let grand_total = 0;
-       $('#pos_sales_report_container tr:visible').each(function () {
-           if (!$(this).hasClass('opacity-50')) {
-               let total_text = $(this).find('td:nth-child(6)').text().replace('₱', '').trim();
-               let total = parseFloat(total_text) || 0;
-               grand_total += total;
-           }
-       });
-       $('#pos_sales_report_total').text('₱' + grand_total.toFixed(2));
-   }
-   function compute_pos_restocking_report_total() {
-       let grand_total = 0;
-       $('#pos_restocking_report_container tr:visible').each(function () {
-           if (!$(this).hasClass('opacity-50')) {
-               let total_text = $(this).find('td:nth-child(8)').text().replace('₱', '').trim();
-               let total = parseFloat(total_text) || 0;
-               grand_total += total;
-           }
-       });
-       $('#pos_restocking_report_total').text('₱' + grand_total.toFixed(2));
-   }
+	    let grand_total = 0;
+	    Object.values(pos_sales_report_data).forEach(row => {
+	        let subtotal = Number(row.pos_checkout_total) || 0;
+	        let discount = Number(row.pos_discount_value) || 0;
+	        let discount_value = subtotal * discount;
+	        grand_total += subtotal - discount_value;
+	    });
+	    $('#pos_sales_report_total').text('₱' + grand_total.toFixed(2));
+	}
 
+	function compute_pos_restocking_report_total() {
+	    let grand_total = 0;
+	    $('#pos_restocking_report_container tr:visible').each(function () {
+	        if (!$(this).hasClass('opacity-50')) {
+	            let total_text = $(this).find('td:nth-child(8)').text().replace('₱', '').replace(/,/g, '').trim();
+	            let total = Number(total_text) || 0;
+	            grand_total += total;
+	        }
+	    });
+	    $('#pos_restocking_report_total').text('₱' + grand_total.toFixed(2));
+	}
+
+   let pos_sales_report_data = {};
    function load_pos_sales_report(report_date = '') {
       $.ajax({
          url: '<?php echo base_url();?>i.php/sys_control/load_pos_sales_report',
@@ -1384,10 +1460,10 @@
             res.data.forEach((row, index) => {
                pos_sales_report_data[row.pos_checkout_code] = row;
 
-               let subtotal    = parseFloat(row.pos_checkout_total);
-               let discount    = parseFloat(row.pos_discount_value) || 0;
+               let subtotal    = Number(row.pos_checkout_subtotal);
+               let discount    = Number(row.pos_discount_value) || 0;
                let discount_value = subtotal * discount;
-               let final_total = subtotal - discount_value;
+               let final_total    = Number(row.pos_checkout_total);
 
                let raw_date       = new Date(row.pos_checkout_date);
                let formatted_date = isNaN(raw_date)
@@ -1404,6 +1480,7 @@
 
                let voided_count = parseInt(row.voided_count) || 0;
                let total_count = parseInt(row.total_count) || 0;
+
                let is_partially_voided = voided_count > 0 && voided_count < total_count;
 
                let status_badge = '';
@@ -1453,10 +1530,7 @@
                         <div class="d-flex gap-1 justify-content-end">
                            <button
                               type="button"
-                              class="btn btn-sm btn-outline-primary view_receipt_activator rounded-pill px-2"
-                              data-bs-toggle="modal"
-                              data-bs-target="#receipt_modal"
-                              data-sale-code="${row.pos_checkout_code}"
+                              class="btn btn-sm btn-outline-primary view_receipt_activator rounded-pill px-2" data-sale-code="${row.pos_checkout_code}"
                               title="View receipt">
                               <i class="bi bi-eye" style="font-size:11px;"></i>
                            </button>
@@ -1504,7 +1578,7 @@
             .off('click')
             .on('click', function() {
                let pos_checkout_code = $(this).data('pos_checkout_code');
-               if (!confirm(`Void entire sale #${pos_checkout_code}?`)) return;
+               if (!safe_confirm(`Void entire sale #${pos_checkout_code}?`)) return;
 
                let second_confirm = prompt(
                   `Final confirmation required.\n\nType VOID to confirm voiding sale #${pos_checkout_code}.`
@@ -1522,7 +1596,7 @@
             .on('click', function() {
                let pos_checkout_code = $(this).data('pos_checkout_code');
 
-               if (!confirm(`Restore sale #${pos_checkout_code}?`)) return;
+               if (!safe_confirm(`Restore sale #${pos_checkout_code}?`)) return;
                restore_sale(pos_checkout_code);
             });
          },
@@ -1593,7 +1667,7 @@
 
       if (!pos_item_id || !pos_barcode_value) return;
 
-      if (!confirm('Remove this barcode?')) return;
+      if (!safe_confirm('Remove this barcode?')) return;
 
 
       $.ajax({
@@ -1645,7 +1719,7 @@
        }
        // Build confirmation summary
        let item_summary = items.map(i => `• ${i.pos_item_name} (x${i.pos_item_quantity} ${i.pos_item_unit})`).join('\n');
-       let confirmed = confirm(
+       let confirmed = safe_confirm(
            `Confirm restocking for ${restock_date}?\n\n${item_summary}\n\nTotal item types: ${items.length}`
        );
        if (!confirmed) return;
@@ -1779,129 +1853,160 @@
       });
    }
 
-   function compute_pos_restocking_report_total() {
-       let grand_total = 0;
-       $('#pos_restocking_report_container tr:visible').each(function () {
-           let total_text = $(this).find('td:nth-child(8)').text().replace('₱', '').trim();
-           let total = parseFloat(total_text) || 0;
-           grand_total += total;
-       });
-       $('#pos_restocking_report_total').text('₱' + grand_total.toFixed(2));
-   }
-
    function load_pos_restocking_report(report_date = '') {
-       $.ajax({
-           url: '<?php echo base_url();?>i.php/sys_control/load_pos_restocking_report',
-           method: 'POST',
-           data: {
-               report_date: report_date
-           },
-           dataType: 'json',
-           success: function (res) {
+	    $.ajax({
+	        url: '<?php echo base_url();?>i.php/sys_control/load_pos_restocking_report',
+	        method: 'POST',
+	        data: { report_date: report_date },
+	        dataType: 'json',
+	        success: function (res) {
+	            let container = $('#pos_restocking_report_container');
+	            container.empty();
+	            pos_restocking_report_data = {};
 
-               let container = $('#pos_restocking_report_container');
-               container.empty();
+	            if (!res.data || res.data.length === 0) {
+	                container.append(`<tr><td colspan="10" class="text-center text-muted py-4">No records found</td></tr>`);
+	                $('#pos_restocking_report_total').text('₱0.00');
+	                return;
+	            }
 
-               pos_restocking_report_data = {};
+	            res.data.forEach((row, index) => {
+	                pos_restocking_report_data[row.pos_restocking_code] = row;
+	                let price     = Number(row.pos_item_price);
+	                let quantity  = Number(row.pos_item_quantity);
+	                let row_total = Number(row.pos_restocking_total);
+	                let is_voided = parseInt(row.pos_restocking_status) === 2;
 
-               if (res.data.length === 0) {
-                   container.append(`<tr><td colspan="9">No records found</td></tr>`);
-                   $('#pos_restocking_report_total').text('₱0.00');
-                   return;
-               }
+	                let raw_date       = new Date(row.pos_restocking_date);
+	                let formatted_date = isNaN(raw_date)
+	                    ? row.pos_restocking_date
+	                    : raw_date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+	                      + ' · '
+	                      + raw_date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
 
-               res.data.forEach((row, index) => {
-                   pos_restocking_report_data[row.pos_restocking_code] = row;
-                   let price     = parseFloat(row.pos_item_price);
-                   let quantity  = parseFloat(row.pos_item_quantity);
-                   let row_total = parseFloat(row.pos_restocking_total);
+	                let status_badge = is_voided
+ 							? `<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2" data-sort="1">Voided</span>`
+    						: `<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2" data-sort="0">Completed</span>`;
 
-                   let raw_date       = new Date(row.pos_restocking_date);
-                   let formatted_date = isNaN(raw_date)
-                       ? row.pos_restocking_date
-                       : raw_date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
-                         + ' · '
-                         + raw_date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
+	                let row_class = is_voided ? 'text-muted opacity-50' : '';
 
-                   container.append(`
-                       <tr class="border-top">
-                           <td class="ps-3 text-muted">${index + 1}</td>
-                           <td>
-                               <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
-                                   ${row.pos_restocking_code}
-                               </span>
-                           </td>
-                           <td class="text-muted font-monospace" style="font-size:11px;">${row.pos_item_code}</td>
-                           <td class="text-start fw-medium">${row.pos_item_name}</td>
-                           <td class="text-muted">₱${price.toFixed(2)}</td>
-                           <td class="fw-medium">${quantity}</td>
-                           <td class="text-muted">${row.pos_item_unit}</td>
-                           <td class="fw-semibold text-success">₱${row_total.toFixed(2)}</td>
-                           <td class="text-muted" style="font-size:11px; white-space:nowrap;">${formatted_date}</td>
-                           <td class="pe-3">
-                               <button
-                                   type="button"
-                                   class="btn btn-sm btn-outline-danger void_restocking rounded-pill px-2"
-                                   data-pos_item_id="${row.pos_item_id}"
-                                   data-pos_item_name="${row.pos_item_name}"
-                                   data-pos_restocking_code="${row.pos_restocking_code}"
-                                   title="Void this restocking">
-                                   <i class="bi bi-x-lg" style="font-size:10px;"></i>
-                               </button>
-                           </td>
-                       </tr>
-                   `);
-               });
+	                container.append(`
+	                    <tr class="border-top ${row_class}">
+	                        <td class="ps-3 text-muted">${index + 1}</td>
+	                        <td>
+	                            <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
+	                                ${row.pos_restocking_code}
+	                            </span>
+	                        </td>
+	                        <td class="text-muted font-monospace" style="font-size:11px;">${row.pos_item_code}</td>
+	                        <td class="text-start fw-medium">${row.pos_item_name}</td>
+	                        <td class="text-muted">₱${price.toFixed(2)}</td>
+	                        <td class="fw-medium">${quantity}</td>
+	                        <td class="text-muted">${row.pos_item_unit}</td>
+	                        <td class="fw-semibold ${is_voided ? 'text-muted' : 'text-success'}">
+	                            ₱${row_total.toFixed(2)}
+	                        </td>
+	                        <td>${status_badge}</td>
+	                        <td class="text-muted" style="font-size:11px; white-space:nowrap;">${formatted_date}</td>
+	                        <td class="pe-3">
+	                            <div class="d-flex gap-1 justify-content-end">
+	                                <div class="dropdown dropstart">
+	                                    <button class="btn btn-sm btn-light rounded-pill px-2" type="button"
+	                                        data-bs-toggle="dropdown" aria-expanded="false">
+	                                        <i class="bi bi-three-dots" style="font-size:11px;"></i>
+	                                    </button>
+	                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 py-1">
+	                                        ${!is_voided ? `
+	                                        <li>
+	                                            <button type="button"
+	                                                class="dropdown-item small void_restocking d-flex align-items-center gap-2"
+	                                                data-pos_item_id="${row.pos_item_id}"
+	                                                data-pos_item_name="${row.pos_item_name}"
+	                                                data-pos_restocking_code="${row.pos_restocking_code}">
+	                                                <i class="bi bi-slash-circle text-danger" style="font-size:12px;"></i>
+	                                                Void restock
+	                                            </button>
+	                                        </li>` : `
+	                                        <li>
+	                                            <button type="button"
+	                                                class="dropdown-item small restore_restocking d-flex align-items-center gap-2"
+	                                                data-pos_item_id="${row.pos_item_id}"
+	                                                data-pos_item_name="${row.pos_item_name}"
+	                                                data-pos_restocking_code="${row.pos_restocking_code}">
+	                                                <i class="bi bi-arrow-counterclockwise text-success" style="font-size:12px;"></i>
+	                                                Restore restock
+	                                            </button>
+	                                        </li>`}
+	                                    </ul>
+	                                </div>
+	                            </div>
+	                        </td>
+	                    </tr>
+	                `);
+	            });
 
-               compute_pos_restocking_report_total();
+	            compute_pos_restocking_report_total();
 
-               $('.void_restocking')
-                   .off('click')
-                   .on('click', function () {
-                       let pos_item_id         = $(this).data('pos_item_id');
-                       let pos_item_name       = $(this).data('pos_item_name');
-                       let pos_restocking_code = $(this).data('pos_restocking_code');
+	            $('.void_restocking')
+	            .off('click')
+	            .on('click', function () {
+	                let pos_item_id         = $(this).data('pos_item_id');
+	                let pos_item_name       = $(this).data('pos_item_name');
+	                let pos_restocking_code = $(this).data('pos_restocking_code');
+	                if (!safe_confirm(`Void restocking of "${pos_item_name}" from restock #${pos_restocking_code}?\n\n`)) return;
+	                let second_confirm = prompt(`Final confirmation required.\n\nType VOID to confirm voiding restock #${pos_restocking_code}.`);
+	                if (second_confirm !== 'VOID') {
+	                    alert('Void action cancelled.');
+	                    return;
+	                }
+	                $.ajax({
+	                    url: '<?php echo base_url();?>i.php/sys_control/void_pos_restocking',
+	                    method: 'POST',
+	                    data: { pos_item_id: pos_item_id, pos_restocking_code: pos_restocking_code },
+	                    dataType: 'json',
+	                    success: function (res) {
+	                        if (res.status === 'success') {
+	                            alert(`Restocking of "${pos_item_name}" from #${pos_restocking_code} successfully voided.`);
+	                            load_pos_inventory(current_page);
+	                            load_pos_restocking_report($('#pos_restocking_report_date').val());
+	                        } else {
+	                            alert(res.message);
+	                        }
+	                    },
+	                    error: function () { alert('Server error'); }
+	                });
+	            });
 
-                       if (!confirm(
-                           `Void restocking of "${pos_item_name}" from restock #${pos_restocking_code}?\n\nThis cannot be undone.`
-                       )) return;
-
-                       let second_confirm = prompt(
-                           `Final confirmation required.\n\nType VOID to confirm voiding restock #${pos_restocking_code}.`
-                       );
-
-                       if (second_confirm !== 'VOID') {
-                           alert('Void action cancelled.');
-                           return;
-                       }
-
-                       $.ajax({
-                           url: '<?php echo base_url();?>i.php/sys_control/void_pos_restocking',
-                           method: 'POST',
-                           data: {
-                               pos_item_id:         pos_item_id,
-                               pos_restocking_code: pos_restocking_code
-                           },
-                           dataType: 'json',
-                           success: function (res) {
-                               if (res.status === 'success') {
-                                   alert(`Restocking of "${pos_item_name}" from #${pos_restocking_code} successfully voided.`);
-                                   load_pos_inventory(current_page);
-                                   load_pos_restocking_report($('#pos_restocking_report_date').val());
-                               } else {
-                                   alert(res.message);
-                               }
-                           },
-                           error: function () { alert('Server error'); }
-                       });
-                   });
-           },
-           error: function () {
-               $('#pos_restocking_report_container')
-                   .html(`<tr><td colspan="9">Server error</td></tr>`);
-           }
-       });
-   }
+	            $('.restore_restocking')
+	            .off('click')
+	            .on('click', function () {
+	                let pos_item_id         = $(this).data('pos_item_id');
+	                let pos_item_name       = $(this).data('pos_item_name');
+	                let pos_restocking_code = $(this).data('pos_restocking_code');
+	                if (!safe_confirm(`Restore restocking of "${pos_item_name}" from restock #${pos_restocking_code}?`)) return;
+	                $.ajax({
+	                    url: '<?php echo base_url();?>i.php/sys_control/restore_pos_restocking',
+	                    method: 'POST',
+	                    data: { pos_item_id: pos_item_id, pos_restocking_code: pos_restocking_code },
+	                    dataType: 'json',
+	                    success: function (res) {
+	                        if (res.status === 'success') {
+	                            alert(`Restocking of "${pos_item_name}" from #${pos_restocking_code} successfully restored.`);
+	                            load_pos_inventory(current_page);
+	                            load_pos_restocking_report($('#pos_restocking_report_date').val());
+	                        } else {
+	                            alert(res.message);
+	                        }
+	                    },
+	                    error: function () { alert('Server error'); }
+	                });
+	            });
+	        },
+	        error: function () {
+	            $('#pos_restocking_report_container').html(`<tr><td colspan="10">Server error</td></tr>`);
+	        }
+	    });
+	}
 
    $('#pos_restocking_report_date').on('change', function () {
       load_pos_restocking_report($(this).val());
@@ -2024,18 +2129,18 @@
         dataType: 'json',
         success: function(response) {
             let html = '';
-            if(response.data.length > 0) {  // <-- access response.data
+            if(response.data.length > 0) {
                 $.each(response.data, function(index, item) {
-                    html += '<tr>';
-                    html += '<td>' + (index + 1) + '</td>';
-                    html += '<td>' + item.pos_item_name + '</td>';
-                    html += '<td>' + item.pos_item_code + '</td>';
-                    html += '<td>' + item.pos_item_stock + '</td>';
-                    html += '<td>' + item.pos_item_low + '</td>';
+                    html += '<tr class="border-top">';
+                    html += '<td class="ps-3 text-muted">' + (index + 1) + '</td>';
+                    html += '<td class="text-start fw-medium">' + item.pos_item_name + '</td>';
+                    html += '<td class="text-muted font-monospace" style="font-size:11px;">' + item.pos_item_code + '</td>';
+                    html += '<td class="fw-semibold text-warning">' + item.pos_item_stock + '</td>';
+                    html += '<td class="text-muted pe-3">' + item.pos_item_low + '</td>';
                     html += '</tr>';
                 });
             } else {
-                html = '<tr><td colspan="5">No low stock items found.</td></tr>';
+                html = '<tr><td colspan="5" class="text-center text-muted py-3">No low stock items found.</td></tr>';
             }
             $('#pos_low_stocks_container').html(html);
         },
@@ -2050,9 +2155,11 @@
    });
 
    function load_pos_item_form(pos_item_id) {
-
-      const item = pos_items[pos_item_id];
-      if (!item) return console.warn(`Item ${pos_item_id} not found.`);
+   	const item = pos_items[pos_item_id];
+		if (!item) {
+		  alert('Item not found or has been deleted.');
+		  return;
+		}
 
       $('#update_pos_item_modal').data('pos_item_id', pos_item_id);
 
@@ -2114,6 +2221,89 @@
       create_pos_item();
    });
 
+   $('#open_manage_items_modal').on('click', function () {
+	    bootstrap.Modal.getOrCreateInstance(document.getElementById('manage_items_modal')).show();
+	});
+
+	document.getElementById('manage_items_modal').addEventListener('show.bs.modal', function () {
+	    load_manage_items();
+	});
+
+	$('#manage_items_search').on('input', function () {
+	    let keyword = $(this).val().toLowerCase();
+	    $('#manage_items_container tr').filter(function () {
+	        $(this).toggle($(this).text().toLowerCase().indexOf(keyword) > -1);
+	    });
+	});
+
+	function load_manage_items() {
+	    $.ajax({
+	        url: '<?php echo base_url();?>i.php/sys_control/load_manage_items',
+	        method: 'POST',
+	        dataType: 'json',
+	        success: function (res) {
+	            let $tbody = $('#manage_items_container');
+	            $tbody.empty();
+	            if (!res.data || res.data.length === 0) {
+	                $tbody.html(`
+	                    <tr>
+	                        <td colspan="7" class="text-center text-muted py-4">
+	                            <i class="bi bi-archive d-block mb-2" style="font-size:2rem;"></i>
+	                            No archived items
+	                        </td>
+	                    </tr>
+	                `);
+	                return;
+	            }
+	            res.data.forEach((item, index) => {
+	                $tbody.append(`
+	                    <tr class="border-top opacity-75">
+	                        <td class="ps-3 text-muted">${index + 1}</td>
+	                        <td class="text-start fw-medium">${item.pos_item_name}</td>
+	                        <td class="text-muted font-monospace" style="font-size:11px;">${item.pos_item_code}</td>
+	                        <td class="text-muted">₱${item.pos_item_price}</td>
+	                        <td class="text-muted">${item.pos_item_stock}</td>
+	                        <td class="text-muted">${item.pos_item_unit}</td>
+	                        <td class="pe-3">
+	                            <button type="button"
+	                                class="btn btn-sm btn-outline-success manage_item_restore rounded-pill px-2"
+	                                data-pos_item_id="${item.pos_item_id}"
+	                                data-pos_item_name="${item.pos_item_name}"
+	                                title="Restore">
+	                                <i class="bi bi-arrow-counterclockwise me-1" style="font-size:11px;"></i>Restore
+	                            </button>
+	                        </td>
+	                    </tr>
+	                `);
+	            });
+
+	            $('.manage_item_restore').off('click').on('click', function () {
+	                let pos_item_id   = $(this).data('pos_item_id');
+	                let pos_item_name = $(this).data('pos_item_name');
+	                if (!safe_confirm(`Restore "${pos_item_name}" back to active inventory?`)) return;
+	                $.ajax({
+	                    url: '<?php echo base_url();?>i.php/sys_control/restore_pos_item',
+	                    method: 'POST',
+	                    data: { pos_item_id: pos_item_id },
+	                    dataType: 'json',
+	                    success: function (res) {
+	                        if (res.status === 'success') {
+	                            load_manage_items();
+	                            load_pos_inventory(current_page);
+	                        } else {
+	                            alert(res.message);
+	                        }
+	                    },
+	                    error: function () { alert('Server error'); }
+	                });
+	            });
+	        },
+	        error: function () {
+	            $('#manage_items_container').html('<tr><td colspan="7" class="text-center text-danger">Server error</td></tr>');
+	        }
+	    });
+	}
+
    function update_pos_item() {
       const form = $('#update_pos_item_form')[0];
       const form_data = new FormData(form);
@@ -2160,6 +2350,28 @@
       update_pos_item();
    });
 
+   $('#delete_pos_item_btn').on('click', function () {
+	    let pos_item_id   = $('#update_pos_item_modal').data('pos_item_id');
+	    let pos_item_name = $('#update_pos_item_name').val();
+	    if (!safe_confirm(`Delete "${pos_item_name}" from the active directory?`)) return;
+	    $.ajax({
+	        url: '<?php echo base_url();?>i.php/sys_control/delete_pos_item',
+	        method: 'POST',
+	        data: { pos_item_id: pos_item_id },
+	        dataType: 'json',
+	        success: function (res) {
+	            if (res.status === 'success') {
+	                $('#update_pos_item_modal').modal('hide');
+	                load_pos_inventory(current_page);
+	                load_notification('Deleted', `"${pos_item_name}" has been deleted.`, 'success');
+	            } else {
+	                alert(res.message);
+	            }
+	        },
+	        error: function () { alert('Server error'); }
+	    });
+	});
+
    function load_pos_checkout_receipt(sale_code) {
        $.ajax({
            url: '<?php echo base_url();?>i.php/sys_control/load_pos_checkout_receipt',
@@ -2178,45 +2390,49 @@
                }
 
                let first    = data[0];
-               let subtotal = 0;
-               let discount = parseFloat(first.pos_discount_value) || 0;
+					let subtotal = 0;
+					let discount = Number(first.pos_discount_value) || 0;
+					let raw_date       = new Date(first.pos_checkout_date);
+					let formatted_date = isNaN(raw_date)
+					    ? first.pos_checkout_date
+					    : raw_date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+					      + ' · '
+					      + raw_date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
 
-               let raw_date       = new Date(first.pos_checkout_date);
-               let formatted_date = isNaN(raw_date)
-                   ? first.pos_checkout_date
-                   : raw_date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
-                     + ' · '
-                     + raw_date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
+					let voided_count      = data.filter(item => parseInt(item.pos_checkout_status) === 2).length;
+					let is_sale_voided    = voided_count === data.length;
+					let is_partially_voided = voided_count > 0 && voided_count < data.length;
 
-               let is_sale_voided = parseInt(first.pos_checkout_status) === 2;
+					let status_badge = is_sale_voided
+					    ? '<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Voided</span>'
+					    : is_partially_voided
+					        ? '<span class="badge rounded-pill bg-warning-subtle fw-normal px-2" style="color: #fd7e14 !important;">Partially Voided</span>'
+					        : '<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>';
 
-               $('#receipt_info').html(`
-                   <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
-                       <span class="text-muted">Sale Code</span>
-                       <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
-                           ${first.pos_checkout_code}
-                       </span>
-                   </div>
-                   <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
-                       <span class="text-muted">Date</span>
-                       <span>${formatted_date}</span>
-                   </div>
-                   <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
-                       <span class="text-muted">Cashier</span>
-                       <span>${first.cashier_name ?? 'Unknown'}</span>
-                   </div>
-                   <div id="receipt_discount_section" class="d-flex justify-content-between mb-1 d-none" style="font-size: 0.8em;">
-                         <span class="text-muted">Discount</span>
-                         <span id="receipt_discount_badge"></span>
-                     </div>
-                   <div class="d-flex justify-content-between" style="font-size: 0.8em;">
-                       <span class="text-muted">Status</span>
-                       ${is_sale_voided
-                           ? '<span class="badge rounded-pill bg-danger-subtle text-danger fw-normal px-2">Voided</span>'
-                           : '<span class="badge rounded-pill bg-success-subtle text-success fw-normal px-2">Completed</span>'
-                       }
-                   </div>
-               `);
+					$('#receipt_info').html(`
+					    <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
+					        <span class="text-muted">Sale Code</span>
+					        <span class="badge rounded-pill bg-primary-subtle text-primary fw-normal px-2">
+					            ${first.pos_checkout_code}
+					        </span>
+					    </div>
+					    <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
+					        <span class="text-muted">Date</span>
+					        <span>${formatted_date}</span>
+					    </div>
+					    <div class="d-flex justify-content-between mb-1" style="font-size: 0.8em;">
+					        <span class="text-muted">Cashier</span>
+					        <span>${first.cashier_name ?? 'Unknown'}</span>
+					    </div>
+					    <div id="receipt_discount_section" class="d-flex justify-content-between mb-1 d-none" style="font-size: 0.8em;">
+					        <span class="text-muted">Discount</span>
+					        <span id="receipt_discount_badge"></span>
+					    </div>
+					    <div class="d-flex justify-content-between" style="font-size: 0.8em;">
+					        <span class="text-muted">Status</span>
+					        ${status_badge}
+					    </div>
+					`);
 
                if (is_sale_voided) {
                    $('#print_receipt_btn').hide();
@@ -2226,8 +2442,8 @@
 
                let items_html = '';
                data.forEach(item => {
-                   let unit_price       = parseFloat(item.pos_item_price);
-                   let item_total       = unit_price * parseFloat(item.pos_item_quantity);
+                   let unit_price       = Number(item.pos_item_price);
+                   let item_total       = unit_price * Number(item.pos_item_quantity);
                    let item_status      = parseInt(item.pos_checkout_status);
                    let is_item_voided   = item_status === 2;
                    let is_item_pending  = item_status === 3;
@@ -2281,18 +2497,19 @@
                   </div>
                   `;
 
-                   items_html += `
-                     <tr class="border-top ${is_item_voided ? 'opacity-50 text-decoration-line-through no-print' : ''}">
-                        <td class="text-start ps-0">
-                           ${item.pos_item_name}
-                           ${is_item_voided ? '<span class="badge bg-danger-subtle text-danger rounded-pill ms-1" style="font-size:9px;">Voided</span>' : ''}
-                        </td>
-                        <td class="text-center">${item.pos_item_quantity}</td>
-                        <td class="text-center text-muted">${item.pos_item_unit}</td>
-                        <td class="text-end text-muted">₱${format_number(unit_price.toFixed(2))}</td>
-                        <td class="text-end">${is_item_voided ? '<s>₱' + format_number(item_total.toFixed(2)) + '</s>' : '₱' + format_number(item_total.toFixed(2))}</td>
-                        <td class="text-end pe-0 no-print">${action_dropdown}</td>
-                     </tr>
+                  items_html += `
+                      <tr class="border-top ${is_item_voided ? 'opacity-50' : is_item_pending ? 'opacity-75' : ''}">
+                          <td class="text-start ps-0">
+                              ${is_item_voided ? `<s>${item.pos_item_name}</s>` : item.pos_item_name}
+                              ${is_item_voided ? '<span class="badge bg-danger-subtle text-danger rounded-pill ms-1 no-print" style="font-size:9px;">Voided</span>' : ''}
+                              ${is_item_pending ? '<span class="badge bg-warning-subtle text-warning rounded-pill ms-1 no-print" style="font-size:9px;">Pending</span>' : ''}
+                          </td>
+                          <td class="text-center">${is_item_voided ? `<s>${item.pos_item_quantity}</s>` : item.pos_item_quantity}</td>
+                          <td class="text-center text-muted">${is_item_voided ? `<s>${item.pos_item_unit}</s>` : item.pos_item_unit}</td>
+                          <td class="text-end text-muted">${is_item_voided ? `<s>₱${unit_price.toFixed(2)}</s>` : `₱${unit_price.toFixed(2)}`}</td>
+                          <td class="text-end">${is_item_voided ? `<s>₱${item_total.toFixed(2)}</s>` : `₱${item_total.toFixed(2)}`}</td>
+                          <td class="text-end pe-0 no-print">${action_dropdown}</td>
+                      </tr>
                   `;
                });
                $('#receipt_items').html(items_html);
@@ -2321,16 +2538,16 @@
                   $('#receipt_totals').html(`
                   <div class="d-flex justify-content-between mb-1 small">
                      <span class="text-muted">Subtotal</span>
-                     <span>₱${format_number(subtotal.toFixed(2))}</span>
+                     <span>₱${subtotal.toFixed(2)}</span>
                   </div>
                   ${discount > 0 ? `
                   <div class="d-flex justify-content-between mb-1 small">
                      <span class="text-danger">Discount</span>
-                     <span class="text-danger">−₱${format_number(discount_value.toFixed(2))}</span>
+                     <span class="text-danger">−₱${discount_value.toFixed(2)}</span>
                   </div>` : ''}
                   <div class="d-flex justify-content-between fw-semibold">
                      <span>Total</span>
-                     <span class="text-success">₱${format_number(final_total.toFixed(2))}</span>
+                     <span class="text-success">₱${final_total.toFixed(2)}</span>
                   </div>
                   <div class="d-flex justify-content-between small text-muted mt-1">
                      <span>Payment</span>
@@ -2346,7 +2563,7 @@
                .on('click', function () {
                   let pos_item_name     = $(this).data('pos_item_name');
                   let pos_checkout_code = $(this).data('pos_checkout_code');
-                  if (!confirm(`Void "${pos_item_name}" from sale #${pos_checkout_code}?`)) return;
+                  if (!safe_confirm(`Void "${pos_item_name}" from sale #${pos_checkout_code}?`)) return;
 
                   void_pos_checkout_item(this)
                });
@@ -2357,7 +2574,7 @@
                   let pos_item_id       = $(this).data('pos_item_id');
                   let pos_item_name     = $(this).data('pos_item_name');
                   let pos_checkout_code = $(this).data('pos_checkout_code');
-                  if (!confirm(`Restore "${pos_item_name}" in sale #${pos_checkout_code}?`)) return;
+                  if (!safe_confirm(`Restore "${pos_item_name}" in sale #${pos_checkout_code}?`)) return;
                   $.ajax({
                      url: '<?php echo base_url();?>i.php/sys_control/restore_pos_checkout_item',
                      method: 'POST',
@@ -2573,7 +2790,7 @@
       $(document).on('click', '.remove_row', function (e) {
          e.preventDefault();
 
-         if (!confirm('Remove this item?')) return;
+         if (!safe_confirm('Remove this item?')) return;
 
          let row = $(this).closest('tr');
          let pos_item_id = row.data('id'); // match your data-id
@@ -2585,7 +2802,59 @@
          render_pos_restocking_cart();
       });
    });
+   $(document).on('click', '.table.sortable th', function () {
+	    const table     = $(this).closest('table');
+	    const tbody     = table.find('tbody');
+	    const rows      = tbody.find('tr').toArray();
+	    const index     = $(this).index();
+	    const ascending = !$(this).hasClass('sorted ascending');
 
+	    if ($(this).hasClass('no-sort')) return;
+
+	    table.find('th').removeClass('sorted ascending descending');
+
+	    rows.sort((a, b) => {
+	        let tdA = $(a).children('td').eq(index);
+	        let tdB = $(b).children('td').eq(index);
+
+	        let sortAttrA = tdA.find('[data-sort]').data('sort');
+	        let sortAttrB = tdB.find('[data-sort]').data('sort');
+
+	        // --- Handle data-sort attribute ---
+	        if (sortAttrA !== undefined && sortAttrB !== undefined) {
+	            return ascending ? sortAttrA - sortAttrB : sortAttrB - sortAttrA;
+	        }
+
+	        let A = String(tdA.text().trim());
+	        let B = String(tdB.text().trim());
+
+	        // --- Handle currency / numbers ---
+	        let strippedA = A.replace(/[^\d.-]/g, '');
+	        let strippedB = B.replace(/[^\d.-]/g, '');
+	        let numA = Number(strippedA);
+	        let numB = Number(strippedB);
+	        if (strippedA !== '' && strippedB !== '' && !isNaN(numA) && !isNaN(numB)) {
+	            return ascending ? numA - numB : numB - numA;
+	        }
+
+	        // --- Handle dates (strip · separator) ---
+	        let dateA = new Date(A.replace(' · ', ' '));
+	        let dateB = new Date(B.replace(' · ', ' '));
+	        if (!isNaN(dateA) && !isNaN(dateB)) {
+	            return ascending ? dateA - dateB : dateB - dateA;
+	        }
+
+	        // --- Fallback: string compare ---
+	        A = A.toUpperCase();
+	        B = B.toUpperCase();
+	        if (A < B) return ascending ? -1 : 1;
+	        if (A > B) return ascending ? 1 : -1;
+	        return 0;
+	    });
+
+	    $.each(rows, (_, row) => tbody.append(row));
+	    $(this).addClass(`sorted ${ascending ? 'ascending' : 'descending'}`);
+	});
    // Toggle password visibility
    $(document).on('click', '.toggle_password', function () {
       let target = $('#' + $(this).data('target'));
@@ -2670,13 +2939,7 @@
             $('#update_password').val('');
 
             let $modal = $('#update_account_modal');
-            $modal.css('z-index', 1100);
             $modal.modal('show');
-
-            // Ensure backdrop appears above accounts_modal
-            $modal.on('shown.bs.modal', function () {
-               $('.modal-backdrop').last().css('z-index', 1075);
-            });
          },
          error: function () { alert('Server error.'); }
       });
@@ -2803,8 +3066,8 @@
                }
 
                res.data.forEach((row, index) => {
-                   let unit_price = parseFloat(row.pos_item_price);
-                   let total      = unit_price * parseFloat(row.pos_item_quantity);
+                   let unit_price = Number(row.pos_item_price);
+                   let total      = unit_price * Number(row.pos_item_quantity);
 
                    let raw_date       = new Date(row.pos_checkout_date);
                    let formatted_date = isNaN(raw_date)
@@ -2861,7 +3124,7 @@
                    let pos_item_id       = $(this).data('pos_item_id');
                    let pos_item_name     = $(this).data('pos_item_name');
                    let pos_checkout_code = $(this).data('pos_checkout_code');
-                   if (!confirm(`Approve void for "${pos_item_name}" from sale #${pos_checkout_code}?`)) return;
+                   if (!safe_confirm(`Approve void for "${pos_item_name}" from sale #${pos_checkout_code}?`)) return;
                    void_pos_checkout_item(this);
                    load_pos_voiding_requests();
                });
@@ -2873,7 +3136,7 @@
                    let pos_item_id       = $(this).data('pos_item_id');
                    let pos_item_name     = $(this).data('pos_item_name');
                    let pos_checkout_code = $(this).data('pos_checkout_code');
-                   if (!confirm(`Reject void request for "${pos_item_name}"?`)) return;
+                   if (!safe_confirm(`Reject void request for "${pos_item_name}"?`)) return;
                    $.ajax({
                        url: '<?php echo base_url();?>i.php/sys_control/cancel_void_request_pos_checkout_item',
                        method: 'POST',
@@ -2973,7 +3236,11 @@
        receipt: () => {
            if (typeof load_pos_checkout_receipt === 'function')
                load_pos_checkout_receipt($('#active_sale_code').text());
-       }
+       },
+       manage_items: () => {
+	        if (typeof load_manage_items === 'function' && $('#manage_items_modal').hasClass('show'))
+	            load_manage_items();
+	    }
    };
 
    function reload_visible_sections() {
@@ -2983,7 +3250,8 @@
            restocking:    $('#pos_restocking_report_container').is(':visible'),
            logs:          $('#pos_logs_container').is(':visible'),
            void_requests: $('#pos_voiding_requests_container').is(':visible'),
-           receipt:       $('#receipt_modal').is(':visible')
+           receipt:       $('#receipt_modal').is(':visible'),
+           manage_items:  $('#manage_items_container').is(':visible')
        };
 
        $.each(visibility_map, function(section, is_visible) {
@@ -2993,42 +3261,34 @@
        });
    }
 
-   function init_sse() {
-       const sse = new EventSource('<?php echo base_url(); ?>i.php/sys_control/stream_db_changes');
+   let sse_instance = null;
 
-       sse.addEventListener('connected', function() {
-           console.log('[SSE] Connection established — listening for changes');
-       });
+	function init_sse() {
+	    if (sse_instance) sse_instance.close();
+	    sse_instance = new EventSource('<?php echo base_url(); ?>i.php/sys_control/stream_db_changes');
+	    sse_instance.addEventListener('connected', function () {
+	        console.log('[SSE] Connection established — listening for changes');
+	    });
+	    sse_instance.addEventListener('db_changed', function (e) {
+	        console.log('[SSE] DB changed at', JSON.parse(e.data).timestamp);
+	        reload_visible_sections();
+	    });
+	    sse_instance.onerror = function () {
+	        console.warn('[SSE] Connection lost — browser will auto-reconnect');
+	    };
+	}
 
-       sse.addEventListener('db_changed', function(e) {
-           console.log('[SSE] DB changed at', JSON.parse(e.data).timestamp);
-           reload_visible_sections();
-       });
+	document.addEventListener('visibilitychange', function () {
+	    if (document.hidden) {
+	        if (sse_instance) sse_instance.close();
+	        console.log('[SSE] Tab hidden — stream closed');
+	    } else {
+	        console.log('[SSE] Tab visible — reconnecting');
+	        init_sse();
+	    }
+	});
 
-       sse.onerror = function() {
-           console.warn('[SSE] Connection lost — browser will auto-reconnect');
-           // EventSource auto-reconnects natively — no manual retry needed
-       };
-
-       // Pause stream when tab is hidden, resume when visible
-       document.addEventListener('visibilitychange', function() {
-           if (document.hidden) {
-               sse.close();
-               console.log('[SSE] Tab hidden — stream closed');
-           } else {
-               console.log('[SSE] Tab visible — reconnecting');
-               init_sse();
-           }
-       });
-   }
-
-   $(document).ready(function() {
-       init_sse();
-   });
-   function format_number(value, decimals = 2) {
-       return parseFloat(value).toLocaleString('en-PH', {
-           minimumFractionDigits: decimals,
-           maximumFractionDigits: decimals
-       });
-   }
+	$(document).ready(function () {
+	    init_sse();
+	});
 </script>
